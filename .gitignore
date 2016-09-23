@@ -1,2 +1,9 @@
 key.json
 conf.json
+.idea/misc.xml
+*.iml
+.idea/modules.xml
+.idea/workspace.xml
+.idea/vcs.xml
+Bot/manager/__pycache__/db_manager.cpython-35.pyc
+Bot/__pycache__/celery_worker.cpython-35.pyc
