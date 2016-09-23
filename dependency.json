@@ -1,0 +1,5 @@
+ptyhon 3.5.2
+rabbitmq 3.6.5
+redis 3.2.3
+mysql 5.7.15
+celery 3.1.23
