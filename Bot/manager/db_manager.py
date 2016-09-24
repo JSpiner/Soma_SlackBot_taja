@@ -1,15 +1,22 @@
 import pymysql
+import json
+with open('conf.json') as conf_json:
+    conf = json.load(conf_json)
 
 # MySQL Connection 연결
 conn = pymysql.connect(
-    host='localhost',
-    user='tester',
-    password='',
-    db='testdb',
-    charset='utf8')
+    conf["mysql"]["host"],
+    conf["mysql"]["user"],
+    conf["mysql"]["password"],
+    conf["mysql"]["database"],
+    'utf8')
+
+
 
 # Connection 으로부터 Cursor 생성
 curs = conn.cursor()
+
+"""
 
 # SQL문 실행
 sql = "select * from customer"
@@ -23,3 +30,5 @@ print(rows)  # 전체 rows
 
 # Connection 닫기
 conn.close()
+
+"""
