@@ -1,3 +1,4 @@
+# #-*- coding: utf-8 -*-
 import pymysql
 import json
 with open('conf.json') as conf_json:
@@ -32,3 +33,5 @@ print(rows)  # 전체 rows
 conn.close()
 
 """
+# slack 평강이형 코드 참고
+# https://namtang.slack.com/files/twpower/F2FKBHLJC/-.py

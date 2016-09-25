@@ -1,10 +1,35 @@
+# #-*- coding: utf-8 -*-
 import uuid
+import korean
+import threading
+from functools import wraps
 
-def get_edit_distance(s1, s2):
+# delay
+def delay(delay=0.):
+   def wrap(f):
+       @wraps(f)
+       def delayed(*args, **kwargs):
+           timer = threading.Timer(delay, f, args=args, kwargs=kwargs)
+           timer.start()
+       return delayed
+   return wrap
+
+def split_chracter(string):
+    response = ""
+    for char in string:
+        if korean.hangul.is_hangul(char):
+            response += ''.join(korean.hangul.split_char(char))
+        else:
+            response += char
+    return response
+
+def get_edit_distance(string1, string2):
+
+    s1 = split_chracter(string1)
+    s2 = split_chracter(string2)
+
     d = [[0 for col in range(len(s2) + 1)] for row in range(len(s1) + 1)]
 
-    print(s1)
-    print(s2)
     for i in range(0, len(s1) + 1):
         d[i][0] = i
 
