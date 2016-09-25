@@ -1,3 +1,4 @@
+# #-*- coding: utf-8 -*-
 import json
 import time
 import random
@@ -11,6 +12,9 @@ from slackclient import SlackClient
 with open('conf.json') as conf_json:
     conf = json.load(conf_json)
 
+with open('key.json') as key_json:
+    key = json.load(key_json)
+
 app = Celery('tasks', broker=conf["rabbitmq"]["broker"])
 
 # 현재는 임시로 텍스트 배열 있음
@@ -22,7 +26,7 @@ texts = [
 ]
 
 # 슬랙봇 불러오기
-slackclient_token = "xoxb-75584455510-ZUwvIjp8HxybnYbB5PhKAg0M"
+slackclient_token = key["slackbot"]["token"]
 slackclient = SlackClient(slackclient_token)
 
 # 타이머 실행 함수(게임 종료시)
@@ -45,7 +49,6 @@ def game_end(data):
     db_manager.curs.execute(sql, (game_id, data["channel"], data["team"], start_time, time.time(), problem_id , user_num))
 
 # 채널 가져오기
-
 def get_channel_list():
     channels_call = slackclient.api_call("channels.list")
     if channels_call.get('ok'):
