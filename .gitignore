@@ -2,3 +2,4 @@ key.json
 conf.json
 *.key
 *.crt
+__pycache__/
