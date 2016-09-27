@@ -1,4 +1,5 @@
 # #-*- coding: utf-8 -*-
+<<<<<<< HEAD
 import pymysql
 import json
 with open('conf.json') as conf_json:

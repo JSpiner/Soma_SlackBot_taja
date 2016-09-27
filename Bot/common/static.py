@@ -1,3 +1,4 @@
+
 # #-*- coding: utf-8 -*-
 # static variables
 
@@ -9,3 +10,4 @@ GAME_COMMAND_EXIT       = ".강제종료"
 GAME_STATE_IDLE = 0
 GAME_STATE_STARTING = 1
 GAME_STATE_PLAYING = 2
+
