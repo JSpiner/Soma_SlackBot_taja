@@ -23,10 +23,10 @@ def home():
 
     return html
 
-@app.route('/slack/oauth', methods = ['POST'])
+@app.route('/slack/oauth', methods = ['GET'])
 def slack_oauth():
     code = request.args.get('code')
-    r = requsts.post("https://slack.com/api/oauth.access", 
+    r = requests.post("https://slack.com/api/oauth.access", 
         data = {
             'client_id'     : key['slackapp']['client_id'], 
             'client_secret' : key['slackapp']['client_secret'], 
@@ -37,7 +37,7 @@ def slack_oauth():
     response = json.loads(r.text)
 
     access_token = response['access_token']
-
+    print(access_token)
     return 'auth success'
 
 @app.route('/slack/event', methods = ['POST'])
@@ -45,14 +45,19 @@ def slack_event():
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
+    print(data)
+    
     response = {}
 
-    if 'challenge' in response:
+    if data['type'] == 'url_vertification':     
         response['challenge'] = data['challenge']
+    elif data['type'] == 'event_callback':
+        worker.delay(data['event'])
 
-    return Response(json.dumps(response), mimetype='application/x-www-form-urlencoded')
+    return json.dumps(response)
 
 
-ssl_context = ('ssoma.xyz.crt', 'ca.key')
 
-app.run(host='0.0.0.0', debug='True', port = 99, ssl_context = ssl_context)
+ssl_context = ('last.crt', 'ssoma.key')
+
+app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
