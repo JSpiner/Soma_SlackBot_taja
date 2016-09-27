@@ -18,6 +18,23 @@ with open('key.json') as key_json:
 slackclient_token = key["slackbot"]["token"]
 slackclient = SlackClient(slackclient_token)
 
+@app.route("/url_connection",methods=["POST"])
+def url_connection() :
+
+    json_data =request.get_json()
+
+    """
+    challenge_value = request.form['challenge']
+    data = {}
+    data['challenge'] = challenge_value
+    json_data = json.dumps(data)
+    resp = Response(response=json_data,
+                    status=200,
+                    mimetype="application/x-www-form-urlencoded")
+    """
+    return json_data['challenge']
+
+
 # 슬랙봇 실행 후 이벤트로 메시지 받기
 if slackclient.rtm_connect():
     while True:
