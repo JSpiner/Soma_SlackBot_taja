@@ -1,2 +1,4 @@
 key.json
 conf.json
+*.key
+*.crt
