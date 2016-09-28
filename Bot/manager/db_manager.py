@@ -1,40 +1,22 @@
 # #-*- coding: utf-8 -*-
 
-import pymysql
+from sqlalchemy import create_engine
 import json
 with open('conf.json') as conf_json:
     conf = json.load(conf_json)
 
-
-# MySQL Connection 연결
-conn = pymysql.connect(
-    host        = conf["mysql"]["host"],
-    user        = conf["mysql"]["user"],
-    password    = conf["mysql"]["password"],
-    db          = conf["mysql"]["database"],
-    port        = 3306,
-    charset     = 'utf8')
-
-# Connection 으로부터 Cursor 생성
-curs = conn.cursor()
+# pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
+engine = create_engine('mysql+pymysql://'+conf["mysql"]["user"]+':'+conf["mysql"]["password"]+'@'+conf["mysql"]["host"]+'/'+conf["mysql"]["database"],pool_size=20, max_overflow=0,echo=True,execution_options={"autocommit": False})
 
 
-# Connection 으로부터 Cursor 생성
+#### DB_Connection EX ###
+# 아래와같이 trans인스턴스를 만들어주고 commit까지해야 올바르게 데이터에 값이 들어간다.
+# conn = engine.connect()
+# trans = conn.begin()
 
+# conn.execute("insert into PROBLEM (problem_id,problem_text) values(%s,%s) ",0,"hellocc")
 
-# # SQL문 실행
-# sql = "select * from customer"
-# curs.execute(sql)
-
-# # 데이타 Fetch
-# rows = curs.fetchall()
-# print(rows)  # 전체 rows
-# # print(rows[0])  # 첫번째 row: (1, '김정수', 1, '서울')
-# # print(rows[1])  # 두번째 row: (2, '강수정', 2, '서울')
-
-# # Connection 닫기
+# trans.commit()
 # conn.close()
+# 참고:http://docs.sqlalchemy.org/en/latest/core/connections.html#understanding-autocommit
 
-
-# slack 평강이형 코드 참고
-# https://namtang.slack.com/files/twpower/F2FKBHLJC/-.py

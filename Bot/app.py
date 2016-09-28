@@ -120,4 +120,8 @@ def slack_event():
 ssl_context = ('last.crt', 'ssoma.key')
 
 app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
-
+conn = engine.connect()
+trans = conn.begin()
+conn.execute(text("insert into PROBLEM (problem_id,problem_text) values(%i,%s) ",0,"hello").execution_options(autocommit=False))
+trans.commit()
+conn.close()
