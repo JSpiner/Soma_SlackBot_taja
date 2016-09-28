@@ -5,6 +5,7 @@ from common import static
 from common import util
 from common.slackapi import SlackApi
 
+
 import requests
 import json
 import time
@@ -34,33 +35,36 @@ def game_end(data, teamId):
     sendMessage(data["channel"], "Game End")
 
     # 현재 상태 변경
-    redis_manager.redis_client.set("status_" + data["channel"], 0)
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+    redis_manager.redis_client.set("user_num_" + data["channel"], 0)
 
     start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
     game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
     user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
     problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
 
-    sql = (
-        ' SELECT * FROM                             '
-        '           `slackbot`.`game_info`          '
-        '   WHERE                                   '
-        '           `game_id`    = '+game_id+'      '
-        '                                           '
-    )
-    db_manager.curs.execute(sql)
 
+    # 결과 DB 저장
+    sql_insert = "INSERT INTO `slack_typing_game_bot`.`game_info` " \
+          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
+          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    db_manager.curs.execute(sql_insert, (game_id, data["channel"], data["team"], start_time, time.time(), problem_id , user_num))
+
+    # 게임 결과들 가져오기
+    sql_select = "SELECT * FROM slack_typing_game_bot.game_result where game_id = %s;"
+    db_manager.curs.execute(sql_select, (game_id))
     rows = db_manager.curs.fetchall()
 
-    print(rows)
+    # score 기준으로 tuple list 정렬
+    sorted_by_score = sorted(rows, key=lambda tup: tup[3])
 
-#    sql = "INSERT INTO `slackbot`.`game_info` " \
-#          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
-#          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    result_string = "Game Result : \n"
+    rank = 1
+    for row in sorted_by_score:
+        result_string = result_string + str(rank) + ". ID : " + row["user_id"] + " " + "SCORE : " + row["score\n"]
+        rank = rank + 1
 
-#    db_manager.curs.execute(sql, (game_id, data["channel"], data["team"], start_time, time.time(), problem_id , user_num))
-
-
+    sendMessage(data["channel"], result_string)
 
 def sendMessage(channel, text):
     
@@ -72,22 +76,11 @@ def sendMessage(channel, text):
         }
     )
 
-    """
-    requests.post("https://slack.com/api/chat.postMessage", data=
-        {
-            'token': 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e',
-            'channel': channel,
-            'text': text,
-            'as_user': 'false'
-        }
-    )"""
 
 # 채널 가져오기
 def get_channel_list():
-    channels_call = slackclient.api_call("channels.list")
-    if channels_call.get('ok'):
-        return channels_call['channels']
-    return None
+
+    return slackApi.channels.list()
 
 
 
@@ -108,40 +101,77 @@ def worker(data, teamId):
             time.sleep(1.0)
             i = i - 1
 
-        # 문제 보내주기
+        # 문제 선택하기
         problem_id = int(random.random() * 100 % (len(texts)))
         problem_text = texts[problem_id]
-        ##문제내는 부분
+
+        # 문제내는 부분
         sendMessage(data["channel"], "*" + problem_text + "*")
 
+        # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
+
         # 시작 시간 설정
         redis_manager.redis_client.set("start_time_" + data["channel"], time.time())
+
         # 해당 게임 문자열 설정
         redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
         redis_manager.redis_client.set("problem_id_" + data["channel"], problem_id)
+
         # 현재 게임의 ID
         redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
 
-        # 타이머 돌리기
+        # 타이머 돌리기, 일단 시간은 문자열 길이/2
         threading.Timer(len(problem_text) / 2, game_end, [data, teamId]).start()
 
 
     elif data["text"] == static.GAME_COMMAND_RANK:
-        game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
 
-        # 점수디비에서 가져오기
-        # 해당 채널 전체 점수 보내주기
+        channel_id = data["channel"]
+
+        # 게임 결과들 가져오기
+        sql_select = "SELECT * FROM slack_typing_game_bot.game_result INNER JOIN slack_typing_game_bot.game_info where channel_id = %s;"
+        db_manager.curs.execute(sql_select, (channel_id))
+        rows = db_manager.curs.fetchall()
+
+        # score 기준으로 tuple list 정렬
+        sorted_by_score = sorted(rows, key=lambda tup: tup[3])
+
+        result_string = "Game Result : \n"
+        rank = 1
+        for row in sorted_by_score:
+            result_string = result_string + str(rank) + ". ID : " + row["user_id"] + " " + "SCORE : " + row["score\n"]
+            rank = rank + 1
+
+        sendMessage(data["channel"], result_string)
+
 
     elif data["text"] == static.GAME_COMMAND_MY_RANK:
         print("내 점수:)")
 
     # 채널에 접속했을때
     elif data["type"] == "channel_joined":
-        print("channel joined")
+
+        # 결과 DB 저장
+        sql_insert = "INSERT INTO `slack_typing_game_bot`.`channel` " \
+                     "(`channel_id`, `channel_name`, `channel_joined_time`, `team_id`)" \
+                     " VALUES (%s, %s, %s, %s);"
+
+        channel_name = ""
+        channel_list = get_channel_list()
+        for i in channel_list:
+            if(data["channel"] == i["id"]):
+                channel_name = i["name"]
+                break
+
+        db_manager.curs.execute(sql_insert,
+                                (data["channel"], channel_name, time.time(), data["team"]))
+
 
     elif data["type"] == "team_joined":
-        print("tema joined")
+        # 결과 DB 저장
+        print("team joined")
+
 
     else:
 

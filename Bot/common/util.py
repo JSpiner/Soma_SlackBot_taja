@@ -51,5 +51,15 @@ def get_accuracy (s, distance):
 def get_speed (s, time):
     return len(s) / ((time/1000)*60)
 
+#accur : 0.0 ~ 1.0
+#speed : 0.0 ~ 400(or more)
+#score : 0.0 ~ 400(or more)
+def get_score(speed, accur):
+    conv_accur = pow(accur, 2)
+    score = conv_accur * speed
+
+    return score
+
+
 def generate_game_id ():
     return uuid.uuid4()
