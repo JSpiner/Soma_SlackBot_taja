@@ -5,24 +5,17 @@ import json
 with open('conf.json') as conf_json:
     conf = json.load(conf_json)
 
-    ##안되서 임시로 
-conn = pymysql.connect(host='localhost', user='root', password='1234!',
-                       db='taja', charset='utf8')
-curs = conn.cursor()
-
 
 # MySQL Connection 연결
-# conn = pymysql.connect(
-#     conf["mysql"]["host"],
-#     port=3306,
-#     conf["mysql"]["user"],
-#     conf["mysql"]["password"],
-#     conf["mysql"]["db"],
-#     'utf8')
+conn = pymysql.connect(
+    conf["mysql"]["host"],
+    conf["mysql"]["user"],
+    conf["mysql"]["password"],
+    conf["mysql"]["database"],
+    'utf8')
 
-# conndb = MySQLdb.connect(host="localhost", port=3306, user="root", passwd="urungses", db="SMBand")
-
-
+# Connection 으로부터 Cursor 생성
+curs = conn.cursor()
 
 
 # Connection 으로부터 Cursor 생성
