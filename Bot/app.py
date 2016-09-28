@@ -1,6 +1,6 @@
 
 from celery_worker import worker
- 
+import common.test as tester
 from flask import Flask
 from flask import Response
 from flask import request
@@ -10,6 +10,9 @@ from manager import redis_manager
 from manager import db_manager
 from common import static
 from common import util
+
+# test before running flask
+tester.run_unit_test()
 
 app = Flask(__name__)
 
