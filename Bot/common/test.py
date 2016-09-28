@@ -45,9 +45,9 @@ class moduletest_get_edit_dinstace(unittest.TestCase):
 
     #
     def test_get_speed_1(self):
-        self.assertEqual(util.get_speed("ㅅㅓㅇㅜㄹ!", 1000), 0.1)
+        self.assertEqual(util.get_speed("ㅅㅓㅇㅜㄹ!", 1000), 360)
 
-
+        
 """
 class ModuleTest_2(unittest.TestCase):
     def setUp(self):
