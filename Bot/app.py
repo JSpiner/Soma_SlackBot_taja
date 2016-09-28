@@ -7,6 +7,7 @@ from flask import request
 import requests
 import json 
 from manager import redis_manager
+from manager import db_manager
 from common import static
 from common import util
 
@@ -56,33 +57,64 @@ def slack_event():
     if data['type'] == 'url_vertification':     
         response['challenge'] = data['challenge']
     elif data['type'] == 'event_callback':
+        #sql = "INSERT into GAME_INFO values(%s,%s,%s,%i,%s,%s,%i)"
+
+        # db_manager.curs.execute(sql, ("gameId","teamId","channel_id",4,"start_tiem","end_time",3))
+
+
+        # if(redis_manager.redis_client.get("hasTeam" + data['team_id'])==None){
+        #     sql = "insert into TEAM values(%s,%s,%s)"
+        #     curs.execute(sql)
+
+        #     # 데이타 Fetch
+        #     rows = curs.fetchall()
+        #     print(rows)  # 전체 rows
+        #     # print(rows[0])  # 첫번째 row: (1, '김정수', 1, '서울')
+        #     # print(rows[1])  # 두번째 row: (2, '강수정', 2, '서울')
+
+        #     # Connection 닫기
+        #     conn.close()    
+        # }
         # worker.delay(data['event'])
         eventData = data['event']
+        if 'subtype' in data['event']:
+            subtype = eventData['subtype']
+        else:
+            subtype = None
 
-        if eventData['type'] == "message":
+
+        if eventData['type'] == "message" and subtype == None or subtype != 'bot_message' :
 
             status_channel = redis_manager.redis_client.get("status_" + eventData["channel"])
+            # redis_manager.redis_client.set("status_" + eventData["channel"], static.GAME_STATE_IDLE)
+            # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
 
             # 게임이 플레이중이라면
             if status_channel == static.GAME_STATE_PLAYING :
-                worker.delay(eventData)
+                print('playing')
+                worker.delay(eventData,data['team_id'])
 
             # 게임 플레이중이 아니라면
             elif status_channel == static.GAME_STATE_IDLE or status_channel == None :
-
+                print('commend')
                 if eventData["text"] == static.GAME_COMMAND_START:
-                    worker.delay(eventData)
+                    print('.start')
+                    worker.delay(eventData,data['team_id'])
                 elif eventData["text"] == static.GAME_COMMAND_RANK:
-                    worker.delay(eventData)
+                    print('.rank')
+                    worker.delay(eventData,data['team_id'])
                 elif eventData["text"] == static.GAME_COMMAND_MY_RANK:
-                    worker.delay(eventData)
+                    print('.myrank')
+                    worker.delay(eventData,data['team_id'])
                 elif eventData["type"] == "channel_joined":
-                    worker.delay(eventData)
+                    print('others')
+                    worker.delay(eventData,data['team_id'])
+
     return json.dumps(response)
 
 
 
 ssl_context = ('./ssl/last.crt', './ssl/ssoma.key')
 
-app.run(host='0.0.0.0', debug='True', port = 50000, ssl_context = ssl_context)
+app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
 
