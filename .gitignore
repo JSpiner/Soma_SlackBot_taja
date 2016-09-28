@@ -2,7 +2,8 @@ key.json
 conf.json
 *.key
 *.crt
-__pycache__/
+*.pyc
+Bot/__pycache__/
 .idea/misc.xml
 .idea/vcs.xml
 .idea/Soma_SlackBot_taja.iml

@@ -5,7 +5,7 @@ from flask import Flask
 from flask import Response
 from flask import request
 import requests
-import json 
+import json  
 from manager import redis_manager
 from manager import db_manager
 from common import static
