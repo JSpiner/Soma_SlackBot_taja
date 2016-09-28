@@ -3,8 +3,8 @@ from manager import redis_manager
 from manager import db_manager
 from common import static
 from common import util
+from common.slackapi import SlackApi
 
-# from common import slackapi
 import requests
 import json
 import time
@@ -18,6 +18,7 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
+slackApi = SlackApi( 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e')
 
 texts = [
     "무궁화 꽃이 피었습니다.",
@@ -40,23 +41,46 @@ def game_end(data, teamId):
     user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
     problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
 
-    sql = "INSERT INTO `slack_typing_game_bot`.`game_info` " \
-          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
-          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    sql = (
+        ' SELECT * FROM                             '
+        '           `slackbot`.`game_info`          '
+        '   WHERE                                   '
+        '           `game_id`    = '+game_id+'      '
+        '                                           '
+    )
+    db_manager.curs.execute(sql)
 
-    db_manager.curs.execute(sql, (game_id, data["channel"], data["team"], start_time, time.time(), problem_id , user_num))
+    rows = db_manager.curs.fetchall()
+
+    print(rows)
+
+#    sql = "INSERT INTO `slackbot`.`game_info` " \
+#          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
+#          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+
+#    db_manager.curs.execute(sql, (game_id, data["channel"], data["team"], start_time, time.time(), problem_id , user_num))
 
 
 
 def sendMessage(channel, text):
+    
+    slackApi.chat.postMessage(
+        {
+            'channel'   : channel,
+            'text'      : text,
+            'as_user'   : 'false'
+        }
+    )
+
+    """
     requests.post("https://slack.com/api/chat.postMessage", data=
-    {
-        'token': 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e',
-        'channel': channel,
-        'text': text,
-        'as_user': 'false'
-    }
-                  )
+        {
+            'token': 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e',
+            'channel': channel,
+            'text': text,
+            'as_user': 'false'
+        }
+    )"""
 
 # 채널 가져오기
 def get_channel_list():
@@ -137,7 +161,7 @@ def worker(data, teamId):
 
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
         current_time = time.time()
-        elapsed_time = current_time - start_time
+        elapsed_time = current_time - float(start_time)
 
         game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
 
@@ -145,17 +169,11 @@ def worker(data, teamId):
         user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
         redis_manager.redis_client.set("user_num_" + data["channel"], user_num + 1)
 
-        # 만점
-        if distance == 0:
-            speed = util.get_speed(data["text"], elapsed_time)
-            accuracy = 100
+        # 점수 계산
+        speed = util.get_speed(data["text"], elapsed_time)
+        accuracy = util.get_accuracy(data["text"], distance)
 
-        # 틀린게 있을 때
-        else:
-            speed = util.get_speed(data["text"], elapsed_time)
-            accuracy = util.get_accuracy(data["text"], distance)
-
-        sql = "INSERT INTO `slack_typing_game_bot`.`game_result` " \
+        sql = "INSERT INTO `slackbot`.`game_result` " \
               "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
               "VALUES (%s, %s, %s, %s, %s, %s, %s);"
 

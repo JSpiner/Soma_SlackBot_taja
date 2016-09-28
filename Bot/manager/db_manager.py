@@ -8,11 +8,12 @@ with open('conf.json') as conf_json:
 
 # MySQL Connection 연결
 conn = pymysql.connect(
-    conf["mysql"]["host"],
-    conf["mysql"]["user"],
-    conf["mysql"]["password"],
-    conf["mysql"]["database"],
-    'utf8')
+    host        = conf["mysql"]["host"],
+    user        = conf["mysql"]["user"],
+    password    = conf["mysql"]["password"],
+    db          = conf["mysql"]["database"],
+    port        = 3306,
+    charset     = 'utf8')
 
 # Connection 으로부터 Cursor 생성
 curs = conn.cursor()

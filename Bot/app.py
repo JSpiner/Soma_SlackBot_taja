@@ -117,7 +117,7 @@ def slack_event():
 
 
 
-ssl_context = ('./ssl/last.crt', './ssl/ssoma.key')
+ssl_context = ('last.crt', 'ssoma.key')
 
 app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
 
