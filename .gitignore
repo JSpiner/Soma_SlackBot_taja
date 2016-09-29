@@ -3,7 +3,7 @@ conf.json
 *.key
 *.crt
 *.pyc
-Bot/__pycache__/
+__pycache__/
 .idea/misc.xml
 .idea/vcs.xml
 .idea/Soma_SlackBot_taja.iml
