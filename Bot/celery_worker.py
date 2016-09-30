@@ -36,11 +36,13 @@ sql_select = """
     SELECT problem_id, problem_text
       FROM PROBLEM   
     """
-db_manager.curs.execute(sql_select)
-rows = db_manager.curs.fetchall()
+
+result = db_manager.engine.connect().execute(sql_select)
+rows = util.fetch_all_json(result)
 
 for row in rows:
-    texts.append(row)
+    texts[row['problem_id']] = row['problem_text']
+    print(texts)
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(data, teamId):
@@ -173,7 +175,7 @@ def worker(data, teamId):
 
         channel_name = ""
         channel_list = get_channel_list()
-        for i in channel_list:
+        for i in channel_list: 
             if(data["channel"] == i["id"]):
                 channel_name = i["name"]
                 break
@@ -187,8 +189,8 @@ def worker(data, teamId):
         print("team joined")
 
 
-    else:
-
+    else: 
+        
         print("else!!")
         # 참여 유저수 증가
         if (redis_manager.redis_client.get("user_num_" + data["channel"]) == None):
