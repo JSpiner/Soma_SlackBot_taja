@@ -25,7 +25,7 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=team:read+channels:read+channels:history")
+        +"&scope=team:read+channels:read+channels:history+chat:write:bot")
 
     html = "<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
 

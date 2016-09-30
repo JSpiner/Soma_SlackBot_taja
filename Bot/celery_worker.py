@@ -19,7 +19,7 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
-slackApi = SlackApi( 'xoxp-71556812259-71624517154-86089129793-b6a886cce36e3b49a99b8f63553ea9cf')
+slackApi = SlackApi( 'xoxp-71556812259-71624517154-86116254208-997fca0fe8d400b3a18e5e5e284cd33b')
 
 texts = [
     "무궁화 꽃이 피었습니다.",
@@ -100,6 +100,9 @@ def sendMessage(channel, text):
 def get_channel_list():
 
     return slackApi.channels.list()
+
+# def get_channel_info():
+#     return slackApi.channels.info()
 
 
 
@@ -220,6 +223,7 @@ def worker(data):
         user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
         redis_manager.redis_client.set("user_num_" + data["channel"], user_num + 1)
 
+
         # 점수 계산
         speed =  round(util.get_speed(data["text"], elapsed_time), 3)
         accuracy = round(util.get_accuracy(data["text"], distance), 3)
@@ -227,7 +231,7 @@ def worker(data):
         print('speed : ' +str(speed))
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
-
+        # print('channelInfo:'+str(get_channel_info(data["channel"])))
         #디비 풀로 적용안된부분수정.
         #오타 수정
         
@@ -237,6 +241,16 @@ def worker(data):
         conn.execute("insert into GAME_RESULT (game_id,user_id,answer_text,score,speed,accuracy,elapsed_time) values(%s, %s, %s, %s, %s, %s, %s) ",game_id, data["user"], data["text"].encode('utf-8'), speed * accuracy, speed, accuracy, elapsed_time)
         trans.commit()
         conn.close()
+
+
+        #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
+        #유저를 매번 검색할것인가?
+        #임시로 데이터를 긁어서넣는다.
+        # conn = db_manager.engine.connect()
+        # trans = conn.begin()
+        # conn.execute("insert into USER (team_id,channel_id,user_id,user_name) values(%s,%s,%s,%s)",teamId,data["channel"],data["user"],)
+        # trans.commit()
+        # conn.close()        
 
         # sql = "INSERT INTO `GAME_RESULT` " \
         #       "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
