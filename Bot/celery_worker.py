@@ -21,13 +21,26 @@ with open('key.json') as key_json:
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 slackApi = SlackApi( 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e')
 
+"""
 texts = [
     "무궁화 꽃이 피었습니다.",
     "이것도 너프해 보시지!",
     "소프트웨어 마에스트로",
     "난 너를 사랑해 이 세상은 너 뿐이야"
 ]
+"""
+# TODO : db_manager에 conn이 구현이 안되있어 추후 테스트 필요 
+##load problem text array
+texts = {}
+sql_select = """
+    SELECT problem_id, problem_text
+      FROM PROBLEM   
+    """
+db_manager.curs.execute(sql_select)
+rows = db_manager.curs.fetchall()
 
+for row in rows:
+    texts.append(row)
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(data, teamId):
