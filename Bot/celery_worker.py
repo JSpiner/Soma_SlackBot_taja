@@ -19,7 +19,7 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
-slackApi = SlackApi( 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e')
+slackApi = SlackApi( 'xoxp-71556812259-71624517154-86089129793-b6a886cce36e3b49a99b8f63553ea9cf')
 
 texts = [
     "무궁화 꽃이 피었습니다.",
@@ -45,27 +45,45 @@ def game_end(data, teamId):
 
 
     # 결과 DB 저장
-    sql_insert = "INSERT INTO `slackbot`.`GAME_INFO` " \
-          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
-          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-    db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
-    db_manager.conn.commit()     
+    # sql_insert = "INSERT INTO `slackbot`.`GAME_INFO` " \
+    #       "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
+    #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    # db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
+    # db_manager.conn.commit()     
+
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute("insert into GAME_INFO (game_id,channel_id,team_id,start_time,end_time,problem_id,user_num) values(%s, %s, %s, %s, %s, %s, %s) ",game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num)
+    trans.commit()
+    conn.close()
+
 
     # 게임 결과들 가져오기
-    sql_select = "SELECT * FROM slackbot.GAME_RESULT where game_id = %s;"
-    db_manager.curs.execute(sql_select, (game_id))
-    rows = db_manager.curs.fetchall()
+    # sql_select = "SELECT * FROM slackbot.GAME_RESULT where game_id = %s;"
+    # db_manager.curs.execute(sql_select, (game_id))
+    # rows = db_manager.curs.fetchall()
+
+    conn = db_manager.engine.connect()
+    result = conn.execute("select *from GAME_RESULT where game_id = %s order by score desc",(game_id))
+    conn.close()
+    rows =util.fetch_all_json(result)
+    # print(util.fetch_all_json(result))
 
     # score 기준으로 tuple list 정렬
-    sorted_by_score = sorted(rows, key=lambda tup: tup[3])
+    # sorted_by_score = sorted(rows, key=lambda tup: tup[3])
+    # print('dat=>',str(result))
+    # print(data)
 
     result_string = "Game Result : \n"
     rank = 1
-    for row in sorted_by_score:
-        result_string = result_string + str(rank) + ". ID : " + str(row[1]) + " " + "SCORE : " + str(row[3]) + " \n"
+    for row in rows:
+        result_string = result_string + str(rank) + " ID : " + str(row["user_id"]) + " " + "SCORE : " + str(row["score"]) + " "
         rank = rank + 1
 
-    sendMessage(data["channel"], result_string)
+    # print(str(result_string))
+    sendResult = str(result_string)
+    print(data["channel"])
+    sendMessage(data["channel"],sendResult)
 
 def sendMessage(channel, text):
     
@@ -86,9 +104,11 @@ def get_channel_list():
 
 
 @app.task
-def worker(data, teamId):
+def worker(data):
 
     print(data)
+    # print(teamId)
+    teamId = data["team_id"]
     print(teamId)
 
     if data["text"] == static.GAME_COMMAND_START:
@@ -207,11 +227,22 @@ def worker(data, teamId):
         print('speed : ' +str(speed))
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
-        sql = "INSERT INTO `GAME_RESULT` " \
-              "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
-              "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        print(sql)
-        db_manager.curs.execute(sql,
-                                (game_id, data["user"], data["text"], speed * accuracy, speed, accuracy, elapsed_time))
-        db_manager.conn.commit()            
+
+        #디비 풀로 적용안된부분수정.
+        #오타 수정
+        
+        #새로 디비 연결하는부분.
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        conn.execute("insert into GAME_RESULT (game_id,user_id,answer_text,score,speed,accuracy,elapsed_time) values(%s, %s, %s, %s, %s, %s, %s) ",game_id, data["user"], data["text"].encode('utf-8'), speed * accuracy, speed, accuracy, elapsed_time)
+        trans.commit()
+        conn.close()
+
+        # sql = "INSERT INTO `GAME_RESULT` " \
+        #       "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
+        #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        # print(sql)
+        # db_manager.curs.execute(sql,
+        #                         (game_id, data["user"], data["text"], speed * accuracy, speed, accuracy, elapsed_time))
+        # db_manager.conn.commit()            
                 

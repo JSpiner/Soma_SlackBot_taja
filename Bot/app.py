@@ -12,7 +12,7 @@ from common import static
 from common import util
 
 # test before running flask
-tester.run_unit_test()
+# tester.run_unit_test()
 
 app = Flask(__name__)
 
@@ -80,12 +80,15 @@ def slack_event():
         # }
         # worker.delay(data['event'])
         eventData = data['event']
+        #eventData에 팀 아이디 추
+        eventData["team_id"] = data['team_id']
+
         if 'subtype' in data['event']:
             subtype = eventData['subtype']
         else:
             subtype = None
 
-
+        # print(eventData)
         if eventData['type'] == "message" and subtype == None or subtype != 'bot_message' :
 
             status_channel = redis_manager.redis_client.get("status_" + eventData["channel"])
@@ -95,23 +98,23 @@ def slack_event():
             # 게임이 플레이중이라면
             if status_channel == static.GAME_STATE_PLAYING :
                 print('playing')
-                worker.delay(eventData,data['team_id'])
+                worker.delay(eventData)
 
             # 게임 플레이중이 아니라면
             elif status_channel == static.GAME_STATE_IDLE or status_channel == None :
                 print('commend')
                 if eventData["text"] == static.GAME_COMMAND_START:
                     print('.start')
-                    worker.delay(eventData,data['team_id'])
+                    worker.delay(eventData)
                 elif eventData["text"] == static.GAME_COMMAND_RANK:
                     print('.rank')
-                    worker.delay(eventData,data['team_id'])
+                    worker.delay(eventData)
                 elif eventData["text"] == static.GAME_COMMAND_MY_RANK:
                     print('.myrank')
-                    worker.delay(eventData,data['team_id'])
+                    worker.delay(eventData)
                 elif eventData["type"] == "channel_joined":
                     print('others')
-                    worker.delay(eventData,data['team_id'])
+                    worker.delay(eventData)
 
     return json.dumps(response)
 

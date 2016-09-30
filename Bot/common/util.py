@@ -14,7 +14,7 @@ def delay(delay=0.):
        return delayed
    return wrap
 
-def split_chracter(string):
+def split_character(string):
     response = ""
     for char in string:
         if korean.hangul.is_hangul(char):
@@ -25,8 +25,8 @@ def split_chracter(string):
 
 def get_edit_distance(string1, string2):
 
-    s1 = split_chracter(string1)
-    s2 = split_chracter(string2)
+    s1 = split_character(string1)
+    s2 = split_character(string2)
 
     d = [[0 for col in range(len(s2) + 1)] for row in range(len(s1) + 1)]
 
