@@ -25,7 +25,7 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=team:read+channels:read+channels:history+chat:write:bot")
+        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read")
 
     html = "<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
 
@@ -55,10 +55,12 @@ def slack_event():
 
     print(data)
     
+    
     response = {}
 
-    if data['type'] == 'url_vertification':     
+    if data['type'] == 'url_verification':         
         response['challenge'] = data['challenge']
+        
     elif data['type'] == 'event_callback':
         #sql = "INSERT into GAME_INFO values(%s,%s,%s,%i,%s,%s,%i)"
 

@@ -1,3 +1,6 @@
+from sqlalchemy import exc
+
+
 from celery import Celery
 from manager import redis_manager
 from manager import db_manager
@@ -19,7 +22,7 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
-slackApi = SlackApi( 'xoxp-71556812259-71624517154-86116254208-997fca0fe8d400b3a18e5e5e284cd33b')
+slackApi = SlackApi(key['slackapp']['token'])
 
 texts = [
     "무궁화 꽃이 피었습니다.",
@@ -73,11 +76,12 @@ def game_end(data, teamId):
     # sorted_by_score = sorted(rows, key=lambda tup: tup[3])
     # print('dat=>',str(result))
     # print(data)
+    
 
     result_string = "Game Result : \n"
     rank = 1
     for row in rows:
-        result_string = result_string + str(rank) + " ID : " + str(row["user_id"]) + " " + "SCORE : " + str(row["score"]) + " "
+        result_string = result_string + str(rank) + " ID : " + str(get_user_info(row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + " "
         rank = rank + 1
 
     # print(str(result_string))
@@ -101,8 +105,10 @@ def get_channel_list():
 
     return slackApi.channels.list()
 
-# def get_channel_info():
-#     return slackApi.channels.info()
+def get_user_info(userId):
+    return slackApi.users.info({
+        "user":userId
+    })
 
 
 
@@ -112,12 +118,11 @@ def worker(data):
     print(data)
     # print(teamId)
     teamId = data["team_id"]
-    print(teamId)
+    # print(teamId)
 
     if data["text"] == static.GAME_COMMAND_START:
 
-        print('start')
-
+        # print('start')
         sendMessage(data["channel"], "Ready~")
         i = 3
         while i != 0:
@@ -196,7 +201,6 @@ def worker(data):
         # 결과 DB 저장
         print("team joined")
 
-
     else:
 
         print("else!!")
@@ -242,15 +246,19 @@ def worker(data):
         trans.commit()
         conn.close()
 
+        user_name = get_user_info(data["user"])["user"]["name"]
 
         #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
         #유저를 매번 검색할것인가?
         #임시로 데이터를 긁어서넣는다.
-        # conn = db_manager.engine.connect()
-        # trans = conn.begin()
-        # conn.execute("insert into USER (team_id,channel_id,user_id,user_name) values(%s,%s,%s,%s)",teamId,data["channel"],data["user"],)
-        # trans.commit()
-        # conn.close()        
+        try:
+            conn = db_manager.engine.connect()
+            trans = conn.begin()
+            conn.execute("insert into USER (team_id,channel_id,user_id,user_name) values(%s,%s,%s,%s)",teamId,data["channel"],data["user"],user_name)
+            trans.commit()
+            conn.close()        
+        except exc.SQLAlchemyError as e:
+            print("[DB] err==>"+str(e))
 
         # sql = "INSERT INTO `GAME_RESULT` " \
         #       "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
