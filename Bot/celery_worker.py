@@ -32,7 +32,7 @@ texts = [
 ]
 """
 ##load problem text array
-texts = {}
+texts = []
 sql_select = """
     SELECT problem_id, problem_text
       FROM PROBLEM   
@@ -41,7 +41,12 @@ result = db_manager.engine.connect().execute(sql_select)
 rows = util.fetch_all_json(result)
 
 for row in rows:
-    texts[row['problem_id']] = row['problem_text']
+    texts.append(
+        {
+            'problem_text'  : row['problem_text'],
+            'problem_id'    : row['problem_id']
+        }
+    )
     print(texts)
 
 # 타이머 실행 함수(게임 종료시)
@@ -93,7 +98,7 @@ def game_end(slackApi, data, teamId):
     result_string = "Game Result : \n"
     rank = 1
     for row in rows:
-        result_string = result_string + str(rank) + " ID : " + str(get_user_info(row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + " "
+        result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + " "
         rank = rank + 1
 
     sendResult = str(result_string)
@@ -112,11 +117,11 @@ def sendMessage(slackApi, channel, text):
 
 
 # 채널 가져오기
-def get_channel_list():
+def get_channel_list(slackAPi):
 
     return slackApi.channels.list()
 
-def get_user_info(userId):
+def get_user_info(slackApi, userId):
     return slackApi.users.info({
         "user":userId
     })
@@ -162,7 +167,7 @@ def worker(data):
 
         # 문제 선택하기
         problem_id = int(random.random() * 100 % (len(texts)))
-        problem_text = texts[problem_id]
+        problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
         sendMessage(slackApi, data["channel"], "*" + problem_text + "*")
@@ -181,7 +186,7 @@ def worker(data):
         redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
 
         # 타이머 돌리기, 일단 시간은 문자열 길이/2
-        threading.Timer(len(problem_text) / 2, game_end, [data, teamId]).start()
+        threading.Timer(len(problem_text) / 2, game_end, [slackApi, data, teamId]).start()
 
 
     elif data["text"] == static.GAME_COMMAND_RANK:
@@ -217,7 +222,7 @@ def worker(data):
                      " VALUES (%s, %s, %s, %s);"
 
         channel_name = ""
-        channel_list = get_channel_list()
+        channel_list = get_channel_list(slackApi)
         for i in channel_list: 
             if(data["channel"] == i["id"]):
                 channel_name = i["name"]
@@ -276,7 +281,7 @@ def worker(data):
         trans.commit()
         conn.close()
 
-        user_name = get_user_info(data["user"])["user"]["name"]
+        user_name = get_user_info(slackApi, data["user"])["user"]["name"]
 
         #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
         #유저를 매번 검색할것인가?
