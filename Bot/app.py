@@ -6,7 +6,9 @@ from flask import Flask
 from flask import Response
 from flask import request
 import requests
-import json  
+import json
+import time
+import sqlalchemy
 from manager import redis_manager
 from manager import db_manager
 from common import static
@@ -67,6 +69,34 @@ def slack_oauth():
     trans.commit()
     print(query)
     return 'auth success' + response['access_token']
+    """
+    twpower code
+    access_token = response['access_token']
+    print(access_token)
+
+    # access_token을 받고 받은 정보로 team info를 api로 요청
+    r = requests.post("https://slack.com/api/team.info",
+        data = {
+            'token' : access_token
+        }
+    )
+
+    # 요청 받은 결과를 변수에 할당
+    response = json.loads(r.text)
+    team_info_json = response['team']
+    team_info_id = team_info_json['id']
+    team_info_name = team_info_json['name']
+    team_info_joined_time = time.time()
+
+    # DB에 team 정보 insert
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute("insert into team (team_id, team_name, team_joined_time) values(%s, %s, %s);", team_info_id,
+                 team_info_name, team_info_joined_time)
+    trans.commit()
+    conn.close()
+
+    return 'auth success'"""
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
@@ -145,8 +175,3 @@ def slack_event():
 ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
 
 app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
-conn = engine.connect()
-trans = conn.begin()
-conn.execute(text("insert into PROBLEM (problem_id,problem_text) values(%i,%s) ",0,"hello").execution_options(autocommit=False))
-trans.commit()
-conn.close()

@@ -77,6 +77,14 @@ def game_end(slackApi, data, teamId):
     trans.commit()
     conn.close()
 
+    """
+    twpower code
+    sql_insert = "INSERT INTO `slackbot`.`GAME_INFO` " \
+          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
+          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+    db_manager.engine.connect().cursor()
+    db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
+    db_manager.conn.commit()"""
 
     # 게임 결과들 가져오기
     # sql_select = "SELECT * FROM slackbot.GAME_RESULT where game_id = %s;"
@@ -106,7 +114,6 @@ def game_end(slackApi, data, teamId):
     sendMessage(slackApi, data["channel"],sendResult)
 
 def sendMessage(slackApi, channel, text):
-    
     slackApi.chat.postMessage(
         {
             'channel'   : channel,
@@ -121,6 +128,7 @@ def get_channel_list(slackAPi):
 
     return slackApi.channels.list()
 
+# 유저 정보 가져오기
 def get_user_info(slackApi, userId):
     return slackApi.users.info({
         "user":userId
@@ -158,7 +166,27 @@ def worker(data):
 
         print('start')
 
-        sendMessage(slackApi, data["channel"], "Ready~")
+        # 채널 정보가 DB에 있는지 redis로 확인 후 없으면 DB에 저장
+        if(redis_manager.redis_client.get("is_channel_exist_" + data["channel"]) == None):
+            redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
+
+            # 채널 이름 가져오기
+            channel_list = get_channel_list()
+            channels = channel_list['channels']
+            channel_name = ""
+            for channel_info in channels:
+                # id가 같으면 name을 가져온다/
+                if(channel_info['id'] == data['channel']):
+                    channel_name = channel_info['name']
+
+            conn = db_manager.engine.connect()
+            trans = conn.begin()
+            conn.execute("insert into channel (team_id, channel_id, channel_name, channel_joined_time) values(%s, %s, %s, %s);"
+                         , teamId, data['channel'], channel_name, time.time())
+            trans.commit()
+            conn.close()
+
+        sendMessage(data["channel"], "Ready~")
         i = 3
         while i != 0:
             sendMessage(slackApi, data["channel"], str(i))
@@ -189,62 +217,98 @@ def worker(data):
         threading.Timer(len(problem_text) / 2, game_end, [slackApi, data, teamId]).start()
 
 
+    # .점수 : 해당 채널에 score기준으로 TOP 10을 출력
     elif data["text"] == static.GAME_COMMAND_RANK:
 
         channel_id = data["channel"]
 
         # 게임 결과들 가져오기
-        sql_select = "SELECT * FROM slackbot.game_result INNER JOIN slackbot.game_info where channel_id = %s;"
-        db_manager.curs.execute(sql_select, (channel_id))
-        rows = db_manager.curs.fetchall()
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        rows = conn.execute("SELECT * FROM slackbot.game_result INNER JOIN slackbot.game_info "
+                            "INNER JOIN slack_typing_bot.user where channel_id = %s;", channel_id)
+        trans.commit()
+        conn.close()
 
-        # score 기준으로 tuple list 정렬
-        sorted_by_score = sorted(rows, key=lambda tup: tup[3])
+        # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
+        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
 
         result_string = "Game Result : \n"
         rank = 1
-        for row in sorted_by_score:
-            result_string = result_string + str(rank) + ". ID : " + row["user_id"] + " " + "SCORE : " + row["score\n"]
-            rank = rank + 1
+
+        if(len(rows) <= 10):
+            for row in sorted_by_score:
+                result_string = result_string + str(rank) + ". Name : " + row[15] + " " + "SCORE : " + row[3] + "\n"
+                rank = rank + 1
+        else:
+            for row in sorted_by_score:
+                result_string = result_string + str(rank) + ". Name : " + row[15] + " " + "SCORE : " + row[3] + "\n"
+                rank = rank + 1
+
+                # 10위 까지만 출력
+                if(rank == 11):
+                    break;
 
         sendMessage(slackApi, data["channel"], result_string)
 
 
+    # .내점수 : 내 모든 점수를 Direct Message로 출력
     elif data["text"] == static.GAME_COMMAND_MY_RANK:
-        print("내 점수:)")
 
-    # 채널에 접속했을때
-    elif data["type"] == "channel_joined":
+        user_id = data["user"]
 
-        # 결과 DB 저장
-        sql_insert = "INSERT INTO `slackbot`.`channel` " \
-                     "(`channel_id`, `channel_name`, `channel_joined_time`, `team_id`)" \
-                     " VALUES (%s, %s, %s, %s);"
+        # user_name 가져오기
+        user_info = get_user_info(user_id)
+        user_name = user_info['name']
 
+        # 내 게임 결과들 가져오기
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        rows = conn.execute("SELECT * FROM slack_typing_bot.game_result where user_id = %s;", user_id)
+        trans.commit()
+        conn.close()
+
+        # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
+        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
+
+        # 출력할 텍스트 생성
+        result_string = "Game Result : \n"
+        result_string = result_string + "Name : " + user_name + "\n"
+        rank = 1
+
+"""<<<<<<< HEAD
         channel_name = ""
         channel_list = get_channel_list(slackApi)
         for i in channel_list: 
             if(data["channel"] == i["id"]):
                 channel_name = i["name"]
                 break
+======="""
+        if (len(rows) <= 10):
+            for row in sorted_by_score:
+                result_string = result_string + str(rank) + ". SCORE : " + row[3] + " "\
+                                + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
+                rank = rank + 1
+        else:
+            for row in sorted_by_score:
+                result_string = result_string + str(rank) + ". SCORE : " + row[3] + " " \
+                                + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
+                rank = rank + 1
 
-        db_manager.curs.execute(sql_insert,
-                                (data["channel"], channel_name, time.time(), teamId))
-        db_manager.conn.commit()     
+                # 10위 까지만 출력
+                if (rank == 11):
+                    break
 
-    elif data["type"] == "team_joined":
-        # 결과 DB 저장
-        print("team joined")
+        sendMessage(data["channel"], result_string)
 
-    else: 
-        
+    else :
         print("else!!")
         # 참여 유저수 증가
         if (redis_manager.redis_client.get("user_num_" + data["channel"]) == None):
-            redis_manager.redis_client.set("user_num_" + data["channel"], 0)
+            redis_manager.redis_client.set("user_num_" + data["channel"], 1)
 
         user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
-        redis_manager.redis_client.set("user_num_" + data["channel"], user_num + 1)
+        redis_manager.redis_client.set("user_num_" + data["channel"], int(user_num) + 1)
 
         distance = util.get_edit_distance(data["text"],
                                           redis_manager.redis_client.get("problem_text_" + data["channel"]))
@@ -270,6 +334,7 @@ def worker(data):
         print('speed : ' +str(speed))
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
+        
         # print('channelInfo:'+str(get_channel_info(data["channel"])))
         #디비 풀로 적용안된부분수정.
         #오타 수정
@@ -302,4 +367,24 @@ def worker(data):
         # db_manager.curs.execute(sql,
         #                         (game_id, data["user"], data["text"], speed * accuracy, speed, accuracy, elapsed_time))
         # db_manager.conn.commit()            
-                
+            
+
+        #twpower
+        """# user_name 가져오기
+        user_info = get_user_info(data['user'])
+        user_name = user_info['name']
+
+        # DB에 user 정보 저장 -> duplicate의 경우에는 team_id를 그대로 저장 -> 변동X
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        conn.execute("insert into user (user_id, user_name, team_id) values(%s, %s, %s) ON DUPLICATE KEY UPDATE team_id=%s;"
+                     , data['user'], user_name, teamId, teamId)
+        trans.commit()
+        conn.close()
+
+
+        sql = "INSERT INTO `GAME_RESULT` " \
+              "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
+              "VALUES (%s, %s, %s, %s, %s, %s, %s);"
+        print("abc")"""
+
