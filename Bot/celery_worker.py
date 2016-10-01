@@ -19,7 +19,6 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
-slackApi = SlackApi( 'xoxp-71556812259-71605382544-84534730421-fbd256dcbd202880585f3b8e17eba02e')
 
 """
 texts = [
@@ -29,14 +28,12 @@ texts = [
     "난 너를 사랑해 이 세상은 너 뿐이야"
 ]
 """
-# TODO : db_manager에 conn이 구현이 안되있어 추후 테스트 필요 
 ##load problem text array
 texts = {}
 sql_select = """
     SELECT problem_id, problem_text
       FROM PROBLEM   
     """
-
 result = db_manager.engine.connect().execute(sql_select)
 rows = util.fetch_all_json(result)
 
@@ -45,9 +42,9 @@ for row in rows:
     print(texts)
 
 # 타이머 실행 함수(게임 종료시)
-def game_end(data, teamId):
+def game_end(slackApi, data, teamId):
 
-    sendMessage(data["channel"], "Game End")
+    sendMessage(slackApi, data["channel"], "Game End")
 
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
@@ -80,9 +77,9 @@ def game_end(data, teamId):
         result_string = result_string + str(rank) + ". ID : " + str(row[1]) + " " + "SCORE : " + str(row[3]) + " \n"
         rank = rank + 1
 
-    sendMessage(data["channel"], result_string)
+    sendMessage(slackApi, data["channel"], result_string)
 
-def sendMessage(channel, text):
+def sendMessage(slackApi, channel, text):
     
     slackApi.chat.postMessage(
         {
@@ -98,22 +95,39 @@ def get_channel_list():
 
     return slackApi.channels.list()
 
+# 팀별 SlackApi 객체 생성
+def init_slackapi(teamId):
 
+    query = (
+        "SELECT team_access_token FROM TEAM"
+        " WHERE"
+        "       `team_id`   = '{0}'"
+        " LIMIT 1"
+        .format(teamId)
+    )
+
+    conn = db_manager.engine.connect()
+    result = util.fetch_all_json(conn.execute(query))
+    print(result)
+    slackApi = SlackApi(result[0]['team_access_token'])
+    return slackApi
 
 @app.task
 def worker(data, teamId):
 
     print(data)
     print(teamId)
+    
+    slackApi = init_slackapi(teamId)
 
     if data["text"] == static.GAME_COMMAND_START:
 
         print('start')
 
-        sendMessage(data["channel"], "Ready~")
+        sendMessage(slackApi, data["channel"], "Ready~")
         i = 3
         while i != 0:
-            sendMessage(data["channel"], str(i))
+            sendMessage(slackApi, data["channel"], str(i))
             time.sleep(1.0)
             i = i - 1
 
@@ -122,7 +136,7 @@ def worker(data, teamId):
         problem_text = texts[problem_id]
 
         # 문제내는 부분
-        sendMessage(data["channel"], "*" + problem_text + "*")
+        sendMessage(slackApi, data["channel"], "*" + problem_text + "*")
 
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
@@ -159,7 +173,7 @@ def worker(data, teamId):
             result_string = result_string + str(rank) + ". ID : " + row["user_id"] + " " + "SCORE : " + row["score\n"]
             rank = rank + 1
 
-        sendMessage(data["channel"], result_string)
+        sendMessage(slackApi, data["channel"], result_string)
 
 
     elif data["text"] == static.GAME_COMMAND_MY_RANK:

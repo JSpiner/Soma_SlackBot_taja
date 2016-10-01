@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 
 from celery_worker import worker
 import common.test as tester
@@ -9,7 +10,10 @@ import json
 from manager import redis_manager
 from manager import db_manager
 from common import static
+import datetime
 from common import util
+import time
+import base64
 
 # test before running flask
 tester.run_unit_test()
@@ -25,7 +29,7 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=team:read+channels:read+channels:history")
+        +"&scope=team:read+channels:read+channels:history+channels:read")
 
     html = "<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
 
@@ -44,9 +48,24 @@ def slack_oauth():
 
     response = json.loads(r.text)
 
-    access_token = response['access_token']
-    print(access_token)
-    return 'auth success'
+    print(response)
+    query = (
+        "INSERT INTO TEAM " 
+        "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`)"
+        "VALUES"
+        "('{0}', '{1}', '{2}', '{3}')"
+        .format(response['team_id'], 
+                base64.b64encode(bytes(response['team_name'], 'utf-8')).decode("utf-8"), 
+                datetime.date.fromtimestamp(time.time()),
+                response['access_token']
+                )
+    )
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute(query)
+    trans.commit()
+    print(query)
+    return 'auth success' + response['access_token']
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
@@ -117,7 +136,7 @@ def slack_event():
 
 
 
-ssl_context = ('last.crt', 'ssoma.key')
+ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
 
 app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
 conn = engine.connect()
