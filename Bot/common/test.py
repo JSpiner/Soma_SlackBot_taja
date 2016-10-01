@@ -25,19 +25,19 @@ class moduletest_get_edit_dinstace(unittest.TestCase):
 
     # 한글 분리
     def test_split_character_1(self):
-        self.assertEqual(util.split_chracter("한글"), "ㅎㅏㄴㄱㅡㄹ")
+        self.assertEqual(util.split_character("한글"), "ㅎㅏㄴㄱㅡㄹ")
 
     # 영어 분리
     def test_split_character_2(self):
-        self.assertEqual(util.split_chracter("abcd"), "abcd")
+        self.assertEqual(util.split_character("abcd"), "abcd")
 
     # 영어+한글 분리
     def test_split_character_3(self):
-        self.assertEqual(util.split_chracter("abcd함"), "abcdㅎㅏㅁ")
+        self.assertEqual(util.split_character("abcd함"), "abcdㅎㅏㅁ")
 
     # 영어+한글+숫자 분리
     def test_split_character_4(self):
-        self.assertEqual(util.split_chracter("abcd함 123"), "abcdㅎㅏㅁ 123")
+        self.assertEqual(util.split_character("abcd함 123"), "abcdㅎㅏㅁ 123")
 
     #
     def test_get_accuracy_1(self):
