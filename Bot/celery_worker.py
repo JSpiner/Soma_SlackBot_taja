@@ -65,7 +65,7 @@ def game_end(slackApi, data, teamId):
 
 
     # 결과 DB 저장
-    # sql_insert = "INSERT INTO `slackbot`.`GAME_INFO` " \
+    # sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \
     #       "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
     #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
     # db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
@@ -79,7 +79,7 @@ def game_end(slackApi, data, teamId):
 
     """
     twpower code
-    sql_insert = "INSERT INTO `slackbot`.`GAME_INFO` " \
+    sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \
           "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
           "VALUES (%s, %s, %s, %s, %s, %s, %s);"
     db_manager.engine.connect().cursor()
@@ -87,7 +87,7 @@ def game_end(slackApi, data, teamId):
     db_manager.conn.commit()"""
 
     # 게임 결과들 가져오기
-    # sql_select = "SELECT * FROM slackbot.GAME_RESULT where game_id = %s;"
+    # sql_select = "SELECT * FROM slack_typing_bot.GAME_RESULT where game_id = %s;"
     # db_manager.curs.execute(sql_select, (game_id))
     # rows = db_manager.curs.fetchall()
 
@@ -124,7 +124,7 @@ def sendMessage(slackApi, channel, text):
 
 
 # 채널 가져오기
-def get_channel_list(slackAPi):
+def get_channel_list(slackApi):
 
     return slackApi.channels.list()
 
