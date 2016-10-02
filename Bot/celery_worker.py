@@ -186,7 +186,7 @@ def worker(data):
             trans.commit()
             conn.close()
 
-        sendMessage(data["channel"], "Ready~")
+        sendMessage(slackApi, data["channel"], "Ready~")
         i = 3
         while i != 0:
             sendMessage(slackApi, data["channel"], str(i))
@@ -225,24 +225,26 @@ def worker(data):
         # 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        rows = conn.execute("SELECT * FROM slackbot.game_result INNER JOIN slackbot.game_info "
-                            "INNER JOIN slack_typing_bot.user where channel_id = %s;", channel_id)
+        result = conn.execute("SELECT * FROM GAME_RESULT INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id INNER JOIN USER on GAME_INFO.channel_id = USER.channel_id where GAME_INFO.channel_id = %s order by score desc;", (channel_id))
         trans.commit()
         conn.close()
 
+
+        rows =util.fetch_all_json(result)
         # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
-        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
+#        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reverse=True)
 
         result_string = "Game Result : \n"
         rank = 1
-
         if(len(rows) <= 10):
-            for row in sorted_by_score:
-                result_string = result_string + str(rank) + ". Name : " + row[15] + " " + "SCORE : " + row[3] + "\n"
+            for row in rows:
+                print(row)
+                result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
                 rank = rank + 1
         else:
-            for row in sorted_by_score:
-                result_string = result_string + str(rank) + ". Name : " + row[15] + " " + "SCORE : " + row[3] + "\n"
+            for row in rows:
+                print(row)
+                result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
                 rank = rank + 1
 
                 # 10위 까지만 출력
@@ -276,14 +278,16 @@ def worker(data):
         result_string = result_string + "Name : " + user_name + "\n"
         rank = 1
 
-"""<<<<<<< HEAD
+        """
+<<<<<<< HEAD
         channel_name = ""
         channel_list = get_channel_list(slackApi)
         for i in channel_list: 
             if(data["channel"] == i["id"]):
                 channel_name = i["name"]
                 break
-======="""
+=======
+        """
         if (len(rows) <= 10):
             for row in sorted_by_score:
                 result_string = result_string + str(rank) + ". SCORE : " + row[3] + " "\
@@ -387,4 +391,3 @@ def worker(data):
               "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
               "VALUES (%s, %s, %s, %s, %s, %s, %s);"
         print("abc")"""
-
