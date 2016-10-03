@@ -283,14 +283,14 @@ def worker(data):
         rows = conn.execute(
             "SELECT * FROM GAME_RESULT "
             "WHERE "
-            "user_id = %s;",
+            "user_id = %s order by score desc;",
             (user_id)
         )
         trans.commit()
         conn.close()
 
         # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
-        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
+        #sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
 
         # 출력할 텍스트 생성
         result_string = "Game Result : \n"
@@ -308,12 +308,12 @@ def worker(data):
 =======
         """
         if (len(rows) <= 10):
-            for row in sorted_by_score:
+            for row in rows:
                 result_string = result_string + str(rank) + ". SCORE : " + row[3] + " "\
                                 + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
                 rank = rank + 1
         else:
-            for row in sorted_by_score:
+            for row in rows:
                 result_string = result_string + str(rank) + ". SCORE : " + row[3] + " " \
                                 + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
                 rank = rank + 1
