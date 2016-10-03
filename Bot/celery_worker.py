@@ -225,7 +225,7 @@ def worker(data):
         # 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        result = conn.execute("SELECT * FROM GAME_RESULT INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id INNER JOIN USER on GAME_INFO.channel_id = USER.channel_id where GAME_INFO.channel_id = %s order by score desc;", (channel_id))
+        result = conn.execute("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
         trans.commit()
         conn.close()
 
