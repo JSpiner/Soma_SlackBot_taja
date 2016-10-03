@@ -236,6 +236,7 @@ def worker(data):
         # 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
+<<<<<<< HEAD
         result = conn.execute(
             "SELECT * FROM GAME_RESULT"
             "INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id"
@@ -244,6 +245,9 @@ def worker(data):
             "GAME_INFO.channel_id = %s order by score desc;",
             (channel_id)
         )
+=======
+        result = conn.execute("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
+>>>>>>> fixing_rank_by_twpower
         trans.commit()
         conn.close()
 
