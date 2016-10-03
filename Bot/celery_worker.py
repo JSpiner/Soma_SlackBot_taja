@@ -136,7 +136,7 @@ def get_channel_list(slackApi):
 # 유저 정보 가져오기
 def get_user_info(slackApi, userId):
     return slackApi.users.info({
-        "user":userId
+        "user" : userId
     })
 
 # 팀별 SlackApi 객체 생성
@@ -273,6 +273,7 @@ def worker(data):
 
         # user_name 가져오기
         user_info = get_user_info(slackApi, user_id)
+        print(user_info)
         user_name = user_info['name']
 
         # 내 게임 결과들 가져오기
