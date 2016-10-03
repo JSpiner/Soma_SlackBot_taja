@@ -68,7 +68,7 @@ def game_end(slackApi, data, teamId):
     trans = conn.begin()
     conn.execute(
         "INSERT INTO GAME_INFO "
-        "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"" 
+        "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"
         "VALUES"
         "(%s, %s, %s, %s, %s, %s, %s) ",
         (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num)
