@@ -275,13 +275,14 @@ def worker(data):
         user_info = get_user_info(slackApi, user_id)
         print(user_info)
         user_name = user_info['user']['name']
+        print(user_name)
 
         # 내 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
         rows = conn.execute(
-            "SELECT * FROM game_result"
-            "WHERE"
+            "SELECT * FROM game_result "
+            "WHERE "
             "user_id = %s;",
             (user_id)
         )
