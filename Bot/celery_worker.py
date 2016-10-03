@@ -147,8 +147,8 @@ def init_slackapi(teamId):
 
     conn = db_manager.engine.connect()
     result = util.fetch_all_json(conn.execute(
-            "SELECT team_access_token FROM TEAM"
-            "WHERE `team_id`   = %s"
+            "SELECT team_access_token FROM TEAM "
+            "WHERE `team_id`   = %s "
             "LIMIT 1",
             (teamId)
         )
