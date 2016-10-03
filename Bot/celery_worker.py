@@ -325,7 +325,7 @@ def worker(data):
 
         print(result_string)
 
-        sendMessage(data["channel"], result_string)
+        sendMessage(slackApi, data["channel"], result_string)
 
     else :
         print("else!!")
