@@ -280,7 +280,7 @@ def worker(data):
         # 내 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        rows = conn.execute(
+        result = conn.execute(
             "SELECT * FROM GAME_RESULT "
             "WHERE "
             "user_id = %s order by score desc;",
@@ -289,6 +289,7 @@ def worker(data):
         trans.commit()
         conn.close()
 
+        rows = util.fetch_all_json(result)
         # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
         #sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
 
