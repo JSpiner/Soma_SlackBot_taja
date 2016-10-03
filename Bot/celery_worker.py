@@ -322,6 +322,8 @@ def worker(data):
                 if (rank == 11):
                     break
 
+        print(result_string)
+
         sendMessage(data["channel"], result_string)
 
     else :
