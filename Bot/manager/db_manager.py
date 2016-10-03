@@ -15,7 +15,7 @@ with open('conf.json') as conf_json:
 
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
-engine = create_engine('mysql+pymysql://'+conf["mysql"]["user"]+':'+conf["mysql"]["password"]+'@'+conf["mysql"]["host"]+'/'+conf["mysql"]["database"],pool_size=20, max_overflow=0,echo=True,execution_options={"autocommit": False})
+engine = create_engine('mysql+pymysql://'+conf["mysql"]["user"]+':'+conf["mysql"]["password"]+'@'+conf["mysql"]["host"]+'/'+conf["mysql"]["database"]+"?charset=utf8",pool_size=20, max_overflow=0,echo=True,execution_options={"autocommit": False})
 
 
 #### DB_Connection EX_INSERT ###

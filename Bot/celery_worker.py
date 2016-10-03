@@ -53,7 +53,9 @@ for row in rows:
 def game_end(slackApi, data, teamId):
 
     sendMessage(slackApi, data["channel"], "Game End")
-
+    sendMessage(slackApi, data["channel"], "==순위계산중입니다==")
+    time.sleep(2)
+    
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
     redis_manager.redis_client.set("user_num_" + data["channel"], 0)
@@ -95,6 +97,8 @@ def game_end(slackApi, data, teamId):
     result = conn.execute("select *from GAME_RESULT where game_id = %s order by score desc",(game_id))
     conn.close()
     rows =util.fetch_all_json(result)
+
+    print(rows)
     # print(util.fetch_all_json(result))
 
     # score 기준으로 tuple list 정렬
@@ -103,10 +107,10 @@ def game_end(slackApi, data, teamId):
     # print(data)
     
 
-    result_string = "Game Result : \n"
+    result_string = "Game Result"+str(len(rows))+" : \n"
     rank = 1
     for row in rows:
-        result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + " "
+        result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + "accur : " + str(row["accuracy"]) + " " + "speed : " + str(row["speed"])+" \n"
         rank = rank + 1
 
     sendResult = str(result_string)
@@ -171,7 +175,7 @@ def worker(data):
             redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
 
             # 채널 이름 가져오기
-            channel_list = get_channel_list()
+            channel_list = get_channel_list(slackApi)
             channels = channel_list['channels']
             channel_name = ""
             for channel_info in channels:
@@ -225,7 +229,7 @@ def worker(data):
         # 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        result = conn.execute("SELECT * FROM GAME_RESULT INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id INNER JOIN USER on GAME_INFO.channel_id = USER.channel_id where GAME_INFO.channel_id = %s order by score desc;", (channel_id))
+        result = conn.execute("SELECT * FROM GAME_RESULT INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id INNER JOIN USER on GAME_INFO.team_id = USER.team_id where GAME_INFO.channel_id = %s order by score desc;", (channel_id))
         trans.commit()
         conn.close()
 
@@ -322,7 +326,7 @@ def worker(data):
 
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
         current_time = time.time()
-        elapsed_time = current_time - float(start_time)
+        elapsed_time = (current_time - float(start_time)) * 1000
 
         game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
 
@@ -333,9 +337,16 @@ def worker(data):
 
         # 점수 계산
         speed =  round(util.get_speed(data["text"], elapsed_time), 3)
-        accuracy = round(util.get_accuracy(data["text"], distance), 3)
+        problem_text = redis_manager.redis_client.get("problem_text_" + data["channel"])
+        accur_text = ""
+        if len(data["text"]) < len(problem_text):
+            accur_text = problem_text
+        else:
+            accur_text = data["text"]
+        accuracy = round(util.get_accuracy(accur_text, distance), 3)
         print('distance : ' +str(distance))
         print('speed : ' +str(speed))
+        print('elapsed_time : ' +str(elapsed_time))
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
         
@@ -358,7 +369,7 @@ def worker(data):
         try:
             conn = db_manager.engine.connect()
             trans = conn.begin()
-            conn.execute("insert into USER (team_id,channel_id,user_id,user_name) values(%s,%s,%s,%s)",teamId,data["channel"],data["user"],user_name)
+            conn.execute("insert into USER (team_id,user_id,user_name) values(%s,%s,%s)",teamId,data["user"],user_name)
             trans.commit()
             conn.close()        
         except exc.SQLAlchemyError as e:
