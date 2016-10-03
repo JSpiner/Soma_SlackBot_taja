@@ -281,7 +281,7 @@ def worker(data):
         conn = db_manager.engine.connect()
         trans = conn.begin()
         rows = conn.execute(
-            "SELECT * FROM game_result "
+            "SELECT * FROM GAME_RESULT "
             "WHERE "
             "user_id = %s;",
             (user_id)
