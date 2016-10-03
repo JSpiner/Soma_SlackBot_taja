@@ -272,7 +272,7 @@ def worker(data):
         user_id = data["user"]
 
         # user_name 가져오기
-        user_info = get_user_info(user_id)
+        user_info = get_user_info(slackApi, user_id)
         user_name = user_info['name']
 
         # 내 게임 결과들 가져오기
