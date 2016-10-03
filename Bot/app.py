@@ -52,20 +52,20 @@ def slack_oauth():
     response = json.loads(r.text)
 
     print(response)
-    query = (
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute(
         "INSERT INTO TEAM " 
         "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`)"
         "VALUES"
-        "('{0}', '{1}', '{2}', '{3}')"
-        .format(response['team_id'], 
-                base64.b64encode(bytes(response['team_name'], 'utf-8')).decode("utf-8"), 
-                datetime.date.fromtimestamp(time.time()),
-                response['access_token']
-                )
+        "(%s, %s, %s, %s)",
+        (
+            response['team_id'], 
+            base64.b64encode(bytes(response['team_name'], 'utf-8')).decode("utf-8"), 
+            datetime.date.fromtimestamp(time.time()),
+            response['access_token']
+        )
     )
-    conn = db_manager.engine.connect()
-    trans = conn.begin()
-    conn.execute(query)
     trans.commit()
     print(query)
     return 'auth success' + response['access_token']
@@ -148,7 +148,6 @@ def slack_event():
             # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
 
             # 게임이 플레이중이라면
-            print("status : "+ str(status_channel))
             if status_channel == static.GAME_STATE_PLAYING :
                 print('playing')
                 worker.delay(eventData)

@@ -23,21 +23,12 @@ with open('key.json') as key_json:
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
-"""
-texts = [
-    "무궁화 꽃이 피었습니다.",
-    "이것도 너프해 보시지!",
-    "소프트웨어 마에스트로",
-    "난 너를 사랑해 이 세상은 너 뿐이야"
-]
-"""
 ##load problem text array
 texts = []
-sql_select = """
-    SELECT problem_id, problem_text
-      FROM PROBLEM   
-    """
-result = db_manager.engine.connect().execute(sql_select)
+result = db_manager.engine.connect().execute(
+    "SELECT problem_id, problem_text"
+    "FROM PROBLEM"
+)
 rows = util.fetch_all_json(result)
 
 for row in rows:
@@ -75,7 +66,13 @@ def game_end(slackApi, data, teamId):
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
-    conn.execute("insert into GAME_INFO (game_id,channel_id,team_id,start_time,end_time,problem_id,user_num) values(%s, %s, %s, %s, %s, %s, %s) ",game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num)
+    conn.execute(
+        "INSERT INTO GAME_INFO "
+        "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"" 
+        "VALUES"
+        "(%s, %s, %s, %s, %s, %s, %s) ",
+        (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num)
+    )
     trans.commit()
     conn.close()
 
@@ -94,7 +91,11 @@ def game_end(slackApi, data, teamId):
     # rows = db_manager.curs.fetchall()
 
     conn = db_manager.engine.connect()
-    result = conn.execute("select *from GAME_RESULT where game_id = %s order by score desc",(game_id))
+    result = conn.execute(
+        "SELECT * FROM GAME_RESULT "
+        "WHERE game_id = %s order by score desc",
+        (game_id)
+    )
     conn.close()
     rows =util.fetch_all_json(result)
 
@@ -142,15 +143,16 @@ def get_user_info(slackApi, userId):
 def init_slackapi(teamId):
 
     query = (
-        "SELECT team_access_token FROM TEAM"
-        " WHERE"
-        "       `team_id`   = '{0}'"
-        " LIMIT 1"
-        .format(teamId)
     )
 
     conn = db_manager.engine.connect()
-    result = util.fetch_all_json(conn.execute(query))
+    result = util.fetch_all_json(conn.execute(
+            "SELECT team_access_token FROM TEAM"
+            "WHERE `team_id`   = %s"
+            "LIMIT 1",
+            (teamId)
+        )
+    )
     print(result)
     slackApi = SlackApi(result[0]['team_access_token'])
     return slackApi
@@ -185,8 +187,13 @@ def worker(data):
 
             conn = db_manager.engine.connect()
             trans = conn.begin()
-            conn.execute("insert into channel (team_id, channel_id, channel_name, channel_joined_time) values(%s, %s, %s, %s);"
-                         , teamId, data['channel'], channel_name, time.time())
+            conn.execute(
+                "INSERT INTO CHANNEL"
+                "(team_id, channel_id, channel_name, channel_joined_time)"
+                "VALUES"
+                "(%s, %s, %s, %s);", 
+                (teamId, data['channel'], channel_name, time.time())
+            )
             trans.commit()
             conn.close()
 
@@ -229,7 +236,14 @@ def worker(data):
         # 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        result = conn.execute("SELECT * FROM GAME_RESULT INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id INNER JOIN USER on GAME_INFO.team_id = USER.team_id where GAME_INFO.channel_id = %s order by score desc;", (channel_id))
+        result = conn.execute(
+            "SELECT * FROM GAME_RESULT"
+            "INNER JOIN GAME_INFO on GAME_RESULT.game_id = GAME_INFO.game_id"
+            "INNER JOIN USER on GAME_INFO.team_id = USER.team_id"
+            "WHERE"
+            "GAME_INFO.channel_id = %s order by score desc;",
+            (channel_id)
+        )
         trans.commit()
         conn.close()
 
@@ -253,7 +267,7 @@ def worker(data):
 
                 # 10위 까지만 출력
                 if(rank == 11):
-                    break;
+                    break
 
         sendMessage(slackApi, data["channel"], result_string)
 
@@ -270,7 +284,12 @@ def worker(data):
         # 내 게임 결과들 가져오기
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        rows = conn.execute("SELECT * FROM slack_typing_bot.game_result where user_id = %s;", user_id)
+        rows = conn.execute(
+            "SELECT * FROM game_result"
+            "WHERE"
+            "user_id = %s;",
+            (user_id)
+        )
         trans.commit()
         conn.close()
 
@@ -357,7 +376,13 @@ def worker(data):
         #새로 디비 연결하는부분.
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        conn.execute("insert into GAME_RESULT (game_id,user_id,answer_text,score,speed,accuracy,elapsed_time) values(%s, %s, %s, %s, %s, %s, %s) ",game_id, data["user"], data["text"].encode('utf-8'), speed * accuracy, speed, accuracy, elapsed_time)
+        conn.execute(
+            "INSERT INTO GAME_RESULT "
+            "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
+            "VALUES"
+            "(%s, %s, %s, %s, %s, %s, %s)",
+            (game_id, data["user"], data["text"].encode('utf-8'), speed * accuracy, speed, accuracy, elapsed_time)
+        )
         trans.commit()
         conn.close()
 
@@ -369,7 +394,13 @@ def worker(data):
         try:
             conn = db_manager.engine.connect()
             trans = conn.begin()
-            conn.execute("insert into USER (team_id,user_id,user_name) values(%s,%s,%s)",teamId,data["user"],user_name)
+            conn.execute(
+                "INSERT INTO USER"
+                "(team_id, user_id, user_name)"
+                "VALUES"
+                "(%s, %s, %s)",
+                (teamId,data["user"],user_name)
+            )
             trans.commit()
             conn.close()        
         except exc.SQLAlchemyError as e:
