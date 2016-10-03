@@ -310,13 +310,13 @@ def worker(data):
         """
         if (len(rows) <= 10):
             for row in rows:
-                result_string = result_string + str(rank) + ". SCORE : " + row[3] + " "\
-                                + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
+                result_string = result_string + str(rank) + ". SCORE : " + row["score"] + " "\
+                                + "SPEED : " + row["speed"] + "ACCURACY : " + row["accuracy"] + "\n"
                 rank = rank + 1
         else:
             for row in rows:
-                result_string = result_string + str(rank) + ". SCORE : " + row[3] + " " \
-                                + "SPEED : " + row[4] + "ACCURACY : " + row[5] + "\n"
+                result_string = result_string + str(rank) + ". SCORE : " + row["score"] + " " \
+                                + "SPEED : " + row["speed"] + "ACCURACY : " + row["accuracy"] + "\n"
                 rank = rank + 1
 
                 # 10위 까지만 출력
