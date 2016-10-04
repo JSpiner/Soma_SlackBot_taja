@@ -327,6 +327,7 @@ def worker(data):
     else :
         print("else!!")
 
+
         # 참여 유저수 증가
         if (redis_manager.redis_client.get("user_num_" + data["channel"]) == None):
             redis_manager.redis_client.set("user_num_" + data["channel"], 1)
