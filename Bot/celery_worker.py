@@ -326,6 +326,7 @@ def worker(data):
 
     else :
         print("else!!")
+
         # 참여 유저수 증가
         if (redis_manager.redis_client.get("user_num_" + data["channel"]) == None):
             redis_manager.redis_client.set("user_num_" + data["channel"], 1)
@@ -336,19 +337,12 @@ def worker(data):
         distance = util.get_edit_distance(data["text"],
                                           redis_manager.redis_client.get("problem_text_" + data["channel"]))
 
-        speed = 0
-        accuracy = 0
 
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
         current_time = time.time()
         elapsed_time = (current_time - float(start_time)) * 1000
 
         game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
-
-        # 참여 유저수 증가
-        user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
-        redis_manager.redis_client.set("user_num_" + data["channel"], user_num + 1)
-
 
         # 점수 계산
         speed =  round(util.get_speed(data["text"], elapsed_time), 3)
