@@ -362,6 +362,8 @@ def worker(data):
         else:
             accur_text = data["text"]
         accuracy = round(util.get_accuracy(accur_text, distance), 3)
+        score = util.get_score(speed, accuracy)
+        accuracy = accuracy * 100
         print('distance : ' +str(distance))
         print('speed : ' +str(speed))
         print('elapsed_time : ' +str(elapsed_time))
@@ -380,7 +382,7 @@ def worker(data):
             "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
             "VALUES"
             "(%s, %s, %s, %s, %s, %s, %s)",
-            (game_id, data["user"], data["text"].encode('utf-8'), speed * accuracy, speed, accuracy, elapsed_time)
+            (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
         )
         trans.commit()
         conn.close()
