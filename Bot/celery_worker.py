@@ -60,7 +60,7 @@ def game_end(slackApi, data, teamId):
     # sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \
     #       "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
     #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-    # db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
+    # db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num))
     # db_manager.conn.commit()     
 
     conn = db_manager.engine.connect()
@@ -70,7 +70,7 @@ def game_end(slackApi, data, teamId):
         "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"
         "VALUES"
         "(%s, %s, %s, %s, %s, %s, %s) ",
-        (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num)
+        (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num)
     )
     trans.commit()
     conn.close()
@@ -81,7 +81,7 @@ def game_end(slackApi, data, teamId):
           "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
           "VALUES (%s, %s, %s, %s, %s, %s, %s);"
     db_manager.engine.connect().cursor()
-    db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time(), problem_id , user_num))
+    db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num))
     db_manager.conn.commit()"""
 
     # 게임 결과들 가져오기
@@ -191,7 +191,7 @@ def worker(data):
                 "(team_id, channel_id, channel_name, channel_joined_time)"
                 "VALUES"
                 "(%s, %s, %s, %s);", 
-                (teamId, data['channel'], channel_name, time.time())
+                (teamId, data['channel'], channel_name, time.time()*1000)
             )
             trans.commit()
             conn.close()
@@ -214,7 +214,7 @@ def worker(data):
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
 
         # 시작 시간 설정
-        redis_manager.redis_client.set("start_time_" + data["channel"], time.time())
+        redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000)
 
         # 해당 게임 문자열 설정
         redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
@@ -340,7 +340,7 @@ def worker(data):
 
 
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
-        current_time = time.time()
+        current_time = time.time()*1000
         elapsed_time = (current_time - float(start_time)) * 1000
 
         game_id = redis_manager.redis_client.get("game_id_" + data["channel"])

@@ -62,7 +62,7 @@ def slack_oauth():
         (
             response['team_id'], 
             base64.b64encode(bytes(response['team_name'], 'utf-8')).decode("utf-8"), 
-            datetime.date.fromtimestamp(time.time()),
+            datetime.date.fromtimestamp(time.time()*1000),
             response['access_token']
         )
     )
@@ -86,7 +86,7 @@ def slack_oauth():
     team_info_json = response['team']
     team_info_id = team_info_json['id']
     team_info_name = team_info_json['name']
-    team_info_joined_time = time.time()
+    team_info_joined_time = time.time()*1000
 
     # DB에 team 정보 insert
     conn = db_manager.engine.connect()
