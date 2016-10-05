@@ -1,1 +1,1 @@
-c-sharp SlackBot
+C SlackBot
