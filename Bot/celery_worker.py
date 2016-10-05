@@ -148,6 +148,9 @@ def worker(data):
 
         print('start')
 
+        # 현재 채널 상태 설정
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
+
         # 채널 정보가 DB에 있는지 redis로 확인 후 없으면 DB에 저장
         if(redis_manager.redis_client.get("is_channel_exist_" + data["channel"]) == None):
             redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
