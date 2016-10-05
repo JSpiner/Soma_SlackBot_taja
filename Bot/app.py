@@ -67,36 +67,7 @@ def slack_oauth():
         )
     )
     trans.commit()
-    print(query)
     return 'auth success' + response['access_token']
-    """
-    twpower code
-    access_token = response['access_token']
-    print(access_token)
-
-    # access_token을 받고 받은 정보로 team info를 api로 요청
-    r = requests.post("https://slack.com/api/team.info",
-        data = {
-            'token' : access_token
-        }
-    )
-
-    # 요청 받은 결과를 변수에 할당
-    response = json.loads(r.text)
-    team_info_json = response['team']
-    team_info_id = team_info_json['id']
-    team_info_name = team_info_json['name']
-    team_info_joined_time = time.time()*1000
-
-    # DB에 team 정보 insert
-    conn = db_manager.engine.connect()
-    trans = conn.begin()
-    conn.execute("insert into team (team_id, team_name, team_joined_time) values(%s, %s, %s);", team_info_id,
-                 team_info_name, team_info_joined_time)
-    trans.commit()
-    conn.close()
-
-    return 'auth success'"""
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
@@ -112,24 +83,7 @@ def slack_event():
         response['challenge'] = data['challenge']
         
     elif data['type'] == 'event_callback':
-        #sql = "INSERT into GAME_INFO values(%s,%s,%s,%i,%s,%s,%i)"
 
-        # db_manager.curs.execute(sql, ("gameId","teamId","channel_id",4,"start_tiem","end_time",3))
-
-
-        # if(redis_manager.redis_client.get("hasTeam" + data['team_id'])==None){
-        #     sql = "insert into TEAM values(%s,%s,%s)"
-        #     curs.execute(sql)
-
-        #     # 데이타 Fetch
-        #     rows = curs.fetchall()
-        #     print(rows)  # 전체 rows
-        #     # print(rows[0])  # 첫번째 row: (1, '김정수', 1, '서울')
-        #     # print(rows[1])  # 두번째 row: (2, '강수정', 2, '서울')
-
-        #     # Connection 닫기
-        #     conn.close()    
-        # }
         # worker.delay(data['event'])
         eventData = data['event']
         #eventData에 팀 아이디 추
