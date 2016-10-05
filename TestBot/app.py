@@ -1,11 +1,27 @@
 from slackclient import SlackClient
 from multiprocessing import Process
 import json
-
+import random
+import time
 
 #load josn key file
 with open('key.json', 'r') as f:
     key = json.load(f)
+
+def rand_mix_string(str):
+    type = random.randint(1,7)
+    if type==1:
+        return ''.join(random.sample(str, len(str)))
+    elif type==2:
+        count = random.randint(0, len(str))
+        for i in range(0, count):
+            pos = random.randint(1, len(str)-1 )
+            str = str[:pos] + str[pos+1:]
+    elif type==3:
+        str = str + str
+    elif type==4:
+        str = str + '!'
+    return str
 
 def tester_work(processId, api_token):
     print("process : " + str(processId) + " run with : " + api_token)
@@ -36,20 +52,17 @@ def tester_work(processId, api_token):
                     game_status = 1
                     continue
                 if data['text'] == "Ready~" and game_status == 1:
-                    print(2)
                     game_status = 2
                     game_bot_id = data['bot_id']
                     continue
                 if ('bot_id' in data) is False:
                     continue	
                 if data['bot_id'] == game_bot_id and data['text'] == '1':
-                    print(3)
                     game_status = 3
                     continue
                 if data['bot_id'] == game_bot_id and game_status == 3:
-
-                    print(4)
-                    sc.rtm_send_message(data['channel'], 'hi' + str(processId))
+                    time.sleep(random.randint(1,8))
+                    sc.rtm_send_message(data['channel'], rand_mix_string(data['text']))
                     game_status = 1
 
  
