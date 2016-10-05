@@ -47,7 +47,7 @@ def get_edit_distance(string1, string2):
 
 def get_accuracy (s, distance):
     l = len(split_character(s))
-    return ((l - distance) / l) * 100
+    return ((l - distance) / l)
 
 def get_speed (s, time):
     l = len(split_character(s))
