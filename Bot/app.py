@@ -103,6 +103,8 @@ def slack_event():
 
             # 게임이 플레이중이라면
             if status_channel == static.GAME_STATE_PLAYING :
+                if eventData["text"][0] == ".":
+                    return
                 print('playing')
                 worker.delay(eventData)
 

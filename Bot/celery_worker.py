@@ -204,7 +204,7 @@ def worker(data):
         redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
 
         # 타이머 돌리기, 일단 시간은 문자열 길이/2
-        threading.Timer(len(problem_text) / 2, game_end, [slackApi, data, teamId]).start()
+        threading.Timer(10, game_end, [slackApi, data, teamId]).start()
 
 
     # .점수 : 해당 채널에 score기준으로 TOP 10을 출력
