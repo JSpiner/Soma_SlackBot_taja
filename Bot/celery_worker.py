@@ -59,12 +59,6 @@ def game_end(slackApi, data, teamId):
     time.sleep(2)
 
 
-    # 결과 DB 저장
-    # sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \
-    #       "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
-    #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-    # db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num))
-    # db_manager.conn.commit()     
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
@@ -78,19 +72,6 @@ def game_end(slackApi, data, teamId):
     trans.commit()
     conn.close()
 
-    """
-    twpower code
-    sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \
-          "(`game_id`, `channel_id`, `team_id`, `start_time`, `end_time`, `problem_id`, `user_num`) " \
-          "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-    db_manager.engine.connect().cursor()
-    db_manager.curs.execute(sql_insert, (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num))
-    db_manager.conn.commit()"""
-
-    # 게임 결과들 가져오기
-    # sql_select = "SELECT * FROM slack_typing_bot.GAME_RESULT where game_id = %s;"
-    # db_manager.curs.execute(sql_select, (game_id))
-    # rows = db_manager.curs.fetchall()
 
     conn = db_manager.engine.connect()
     result = conn.execute(
@@ -102,13 +83,6 @@ def game_end(slackApi, data, teamId):
     rows =util.fetch_all_json(result)
 
     print(rows)
-    # print(util.fetch_all_json(result))
-
-    # score 기준으로 tuple list 정렬
-    # sorted_by_score = sorted(rows, key=lambda tup: tup[3])
-    # print('dat=>',str(result))
-    # print(data)
-    
 
     result_string = "Game Result"+str(len(rows))+" : \n"
     rank = 1
@@ -298,16 +272,6 @@ def worker(data):
         result_string = result_string + "Name : " + user_name + "\n"
         rank = 1
 
-        """
-<<<<<<< HEAD
-        channel_name = ""
-        channel_list = get_channel_list(slackApi)
-        for i in channel_list: 
-            if(data["channel"] == i["id"]):
-                channel_name = i["name"]
-                break
-=======
-        """
         if (len(rows) <= 10):
             for row in rows:
                 result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " "\
@@ -401,31 +365,3 @@ def worker(data):
             conn.close()        
         except exc.SQLAlchemyError as e:
             print("[DB] err==>"+str(e))
-
-        # sql = "INSERT INTO `GAME_RESULT` " \
-        #       "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
-        #       "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        # print(sql)
-        # db_manager.curs.execute(sql,
-        #                         (game_id, data["user"], data["text"], speed * accuracy, speed, accuracy, elapsed_time))
-        # db_manager.conn.commit()            
-            
-
-        #twpower
-        """# user_name 가져오기
-        user_info = get_user_info(data['user'])
-        user_name = user_info['name']
-
-        # DB에 user 정보 저장 -> duplicate의 경우에는 team_id를 그대로 저장 -> 변동X
-        conn = db_manager.engine.connect()
-        trans = conn.begin()
-        conn.execute("insert into user (user_id, user_name, team_id) values(%s, %s, %s) ON DUPLICATE KEY UPDATE team_id=%s;"
-                     , data['user'], user_name, teamId, teamId)
-        trans.commit()
-        conn.close()
-
-
-        sql = "INSERT INTO `GAME_RESULT` " \
-              "(`game_id`, `user_id`, `answer_text`, `score`, `speed`, `accuracy`, `elapsed_time`) " \
-              "VALUES (%s, %s, %s, %s, %s, %s, %s);"
-        print("abc")"""
