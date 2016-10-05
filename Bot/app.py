@@ -67,7 +67,6 @@ def slack_oauth():
         )
     )
     trans.commit()
-    print(query)
     return 'auth success' + response['access_token']
     """
     twpower code

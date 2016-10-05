@@ -9,9 +9,11 @@ with open('key.json', 'r') as f:
     key = json.load(f)
 
 def rand_mix_string(str):
+    str = str.replace('*', '')
+    print('origin : ' + str)
     type = random.randint(1,7)
     if type==1:
-        return ''.join(random.sample(str, len(str)))
+        str = ''.join(random.sample(str, len(str)))
     elif type==2:
         count = random.randint(0, len(str))
         for i in range(0, count):
@@ -21,6 +23,7 @@ def rand_mix_string(str):
         str = str + str
     elif type==4:
         str = str + '!'
+    print('change : ' + str)
     return str
 
 def tester_work(processId, api_token):
