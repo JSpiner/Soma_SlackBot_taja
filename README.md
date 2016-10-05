@@ -1,2 +1,2 @@
-python SlackBot
+ruby SlackBot
 
