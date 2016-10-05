@@ -44,9 +44,7 @@ for row in rows:
 def game_end(slackApi, data, teamId):
 
     sendMessage(slackApi, data["channel"], "Game End")
-    sendMessage(slackApi, data["channel"], "==순위계산중입니다==")
-    time.sleep(2)
-
+    
     start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
     game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
     user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
@@ -55,6 +53,11 @@ def game_end(slackApi, data, teamId):
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
     redis_manager.redis_client.set("user_num_" + data["channel"], 0)
+
+
+    sendMessage(slackApi, data["channel"], "==순위계산중입니다==")
+    time.sleep(2)
+
 
     # 결과 DB 저장
     # sql_insert = "INSERT INTO `slack_typing_bot`.`GAME_INFO` " \

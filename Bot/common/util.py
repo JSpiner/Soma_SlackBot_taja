@@ -51,7 +51,7 @@ def get_accuracy (s, distance):
 
 def get_speed (s, time):
     l = len(split_character(s))
-    return l / (time/1000)*60
+    return l / (time/1000)*60*1000
 
 #accur : 0.0 ~ 1.0
 #speed : 0.0 ~ 400(or more)
