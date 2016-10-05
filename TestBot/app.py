@@ -10,6 +10,9 @@ with open('key.json', 'r') as f:
 def tester_work(processId, api_token):
     print("process : " + str(processId) + " run with : " + api_token)
 
+    game_status = 0
+    game_bot_id = ""
+
     sc = SlackClient(api_token)
     if sc.rtm_connect():
         while True:
@@ -25,6 +28,31 @@ def tester_work(processId, api_token):
                 if ('type' in data) is False:
                     continue	
 
+                if ('text' in data) is False:
+                    continue	
+                
+                if data['text'] == ".시작":
+                    print(1)
+                    game_status = 1
+                    continue
+                if data['text'] == "Ready~" and game_status == 1:
+                    print(2)
+                    game_status = 2
+                    game_bot_id = data['bot_id']
+                    continue
+                if ('bot_id' in data) is False:
+                    continue	
+                if data['bot_id'] == game_bot_id and data['text'] == '1':
+                    print(3)
+                    game_status = 3
+                    continue
+                if data['bot_id'] == game_bot_id and game_status == 3:
+
+                    print(4)
+                    sc.rtm_send_message(data['channel'], 'hi' + str(processId))
+                    game_status = 1
+
+ 
     return
 
 testerProcess1 = Process(
