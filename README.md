@@ -1,2 +1,2 @@
-ruby SlackBot
+C SlackBot
 
