@@ -51,7 +51,7 @@ def game_end(slackApi, data, teamId):
     problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
 
     # 현재 상태 변경
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_CALCULATING)
     redis_manager.redis_client.set("user_num_" + data["channel"], 0)
 
 
@@ -93,6 +93,9 @@ def game_end(slackApi, data, teamId):
     sendResult = str(result_string)
     print(data["channel"])
     sendMessage(slackApi, data["channel"],sendResult)
+
+    # 현재 상태 변경
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
 def sendMessage(slackApi, channel, text):
     slackApi.chat.postMessage(
