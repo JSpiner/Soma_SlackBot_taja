@@ -29,27 +29,34 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
-        $.post("http://52.69.191.160:53369/manager/chargeInfo",
+        $.post("http://ssoma.xyz:10000/manager/teamInfo",
         {
             hashKey: "9999"
         },
         function(data){
             // console.log(data);
             
-
+ 
             // str = JSON.stringify(data);
             obj = JSON.parse(data);
             console.log(obj.data);
-            
+            alert(obj.data)
             var trHTML = '';
             
             $.each(obj.data, function (i, item) {
-                
-                trHTML += '<tr><td>' + obj.data[i].name + '</td><td>' + obj.data[i].stuId + '</td>'+'<td>' + '성별' + '</td>'+'<td>' + '생년월일' + '</td>'+'<td>' + '핸드폰번호' + '</td>'+'<td>' + 'RFID' + '</td>' +'<td>' + '학과' + '</td>' + '</tr>' ;
+                //teamId teamName accessToken                
+                trHTML = '<tr><td>' 
+                    + obj.data[i].name + '</td><td>' 
+                    + obj.data[i].stuId + '</td>'+'<td>' 
+                    + '성별' + '</td>'+'<td>' 
+                    + '생년월일' + '</td>'+'<td>' 
+                    + '핸드폰번호' + '</td>'+'<td>' 
+                    + 'RFID' + '</td>' +'<td>' 
+                    + '학과' + '</td>' + '</tr>' ;
+                    $('#example1').append(trHTML);
+                    alert(trHTML);
             });
             console.log(trHTML);
-            
-            $('#example1').append(trHTML);
         });
     });
     </script>

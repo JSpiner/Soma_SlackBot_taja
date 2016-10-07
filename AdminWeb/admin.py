@@ -32,7 +32,17 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
 
 
 
-
+@app.route('/manager/teamInfo', methods=['POST'])
+def manager_team_info():
+    jsonObject = {
+        'data' : [
+            {'team_id': '1',
+            'team_name':'333'},
+            {'team_id': '1',
+            'team_name':'333'}
+        ]
+    }
+    return json.dumps(jsonObject)
 
 @app.route('/', methods=['GET'])
 def redirect_to_index():
