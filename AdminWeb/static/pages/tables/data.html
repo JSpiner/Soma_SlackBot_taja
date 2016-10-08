@@ -29,9 +29,9 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
     $(document).ready(function(){
-        $.post("http://52.69.191.160:53369/manager/chargeInfo",
+        $.post("http://ssoma.xyz:50000/member/get_all_user",
         {
-            hashKey: "9999"
+            // hashKey: "9999"
         },
         function(data){
             // console.log(data);
@@ -45,11 +45,11 @@
             
             $.each(obj.data, function (i, item) {
                 
-                trHTML += '<tr><td>' + obj.data[i].name + '</td><td>' + obj.data[i].stuId + '</td>'+'<td>' + '성별' + '</td>'+'<td>' + '생년월일' + '</td>'+'<td>' + '핸드폰번호' + '</td>'+'<td>' + 'RFID' + '</td>' +'<td>' + '학과' + '</td>' + '</tr>' ;
+                trHTML += '<tr><td>' + i + '</td><td>' + obj.data[i].team_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].user_name + '</td>'+'<td>' + '</tr>' ;
             });
             console.log(trHTML);
             
-            $('#example1').append(trHTML);
+            $('#user_info').append(trHTML);
         });
     });
     </script>
@@ -65,7 +65,7 @@
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
-              <span class="logo-lg"><b>CampusBand</b>Admin</span>
+              <span class="logo-lg"><b>ChatBot</b>Admin</span>
           </a>
 
           <!-- Header Navbar: style can be found in header.less -->
@@ -208,30 +208,20 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <table id="example1" class="table table-bordered table-striped">
+                        <table id="user_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
-                                <th>이름</th>
-                                <th>학번</th>
-                                <th>성별</th>
-                                <th>생년월일</th>
-                                <th>핸드폰번호</th>
-                                <th>RFID</th>
-                                <th>학과</th>                                            
+                                <th>num</th>
+                                <th>temaID</th>
+                                <th>userID</th>
+                                <th>userName</th>
+                                
                             </tr>
                         </thead>
                         <tbody>                                  
-                            <tr>
-                                <td>김용현</td>
-                                <td>201111127</td>
-                                <td>남자</td>
-                                <td>920221</td>
-                                <td>01051700584</td>
-                                <td>-</td>
-                                <td>컴퓨터과학</td>
-                            </tr>
+                            
                         </tbody>
-                        <tfoot>
+             <!--            <tfoot>
                             <tr>
                                 <th>이름</th>
                                 <th>학번</th>
@@ -241,7 +231,7 @@
                                 <th>RFID</th>
                                 <th>학과</th>  
                             </tr>
-                        </tfoot>
+                        </tfoot> -->
                     </table>
                 </div>
                 <!-- /.box-body -->

@@ -4,6 +4,9 @@ import os
 
 from flask import redirect, url_for
 
+
+# from flask_cors import CORS, cross_origin
+
 from flask import Flask
 from flask import request
 # from flask import render_template
@@ -15,6 +18,7 @@ import logging
 logging.basicConfig(filename='log.log',level=logging.DEBUG)
 
 app = Flask(__name__,static_url_path='')
+# CORS(app)
 
 
 
