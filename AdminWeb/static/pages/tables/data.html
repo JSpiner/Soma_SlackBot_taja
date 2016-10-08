@@ -26,31 +26,76 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     
+
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-    $(document).ready(function(){
+
         $.post("http://ssoma.xyz:50000/member/get_all_user",
         {
             // hashKey: "9999"
         },
         function(data){
             // console.log(data);
-            
+             
 
             // str = JSON.stringify(data);
             obj = JSON.parse(data);
             console.log(obj.data);
             
             var trHTML = '';
-            
+            // $("#user_info tbody").empty(); // this will remove all <tr>.
+
             $.each(obj.data, function (i, item) {
-                
-                trHTML += '<tr><td>' + i + '</td><td>' + obj.data[i].team_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].user_name + '</td>'+'<td>' + '</tr>' ;
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].team_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].user_name  + '</tr>' ;
             });
-            console.log(trHTML);
-            
+
+            console.log(trHTML);            
             $('#user_info').append(trHTML);
+
+              $('#user_info').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false
+            });
+
+            // var table = $('#user_info').DataTable({
+            //     "paging": false,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": false,
+            //     "autoWidth": false
+            // // });
+            //  $('#user_info').DataTable({
+            //     "paging": true,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": true,
+            //     "autoWidth": false
+            // }).fnDraw();
+            // $('user_info').dataTable().fnDraw();
+
+            // table.ajax.reload();
+            // $('#user_info').DataTable().ajax.reload();
+
         });
+
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+
     });
     </script>
 </head>
@@ -219,7 +264,13 @@
                             </tr>
                         </thead>
                         <tbody>                                  
-                            
+                             <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                
+                            </tr>
                         </tbody>
              <!--            <tfoot>
                             <tr>
@@ -441,15 +492,16 @@
     <!-- page script -->
     <script>
         $(function () {
-            $("#example1").DataTable();
-            $('#example2').DataTable({
-                "paging": true,
-                "lengthChange": false,
-                "searching": false,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false
-            });
+            console.log('call func')
+            // $("#example1").DataTable();
+            // $('#user_info').DataTable({
+            //     "paging": true,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": true,
+            //     "autoWidth": false
+            // });
         });
     </script>
 </body>
