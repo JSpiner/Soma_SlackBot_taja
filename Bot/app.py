@@ -60,9 +60,9 @@ def slack_oauth():
         "VALUES"
         "(%s, %s, %s, %s)",
         (
-            response['team_id'], 
-            base64.b64encode(bytes(response['team_name'], 'utf-8')).decode("utf-8"), 
-            datetime.date.fromtimestamp(time.time()*1000),
+            response['team_id'],
+            response['team_name'],
+            time.time()*1000,
             response['access_token']
         )
     )
