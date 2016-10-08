@@ -4,6 +4,9 @@ import os
 
 from flask import redirect, url_for
 
+
+# from flask_cors import CORS, cross_origin
+
 from flask import Flask
 from flask import request
 # from flask import render_template
@@ -15,6 +18,7 @@ import logging
 logging.basicConfig(filename='log.log',level=logging.DEBUG)
 
 app = Flask(__name__,static_url_path='')
+# CORS(app)
 
 
 
@@ -23,8 +27,11 @@ app = Flask(__name__,static_url_path='')
 from route import member
 
 member_view = member.Members.as_view('member')
-app.add_url_rule('/member/get_all_user', defaults={'types': 'all_user'},
-                 view_func=member_view, methods=['POST',])
+app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getGameResultIDS', defaults={'types': 'getGameResult'},
+                 view_func=member_view, methods=['GET',])
 
 app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
                  view_func=member_view, methods=['GET',])

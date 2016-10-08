@@ -26,31 +26,53 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     
+
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-    $(document).ready(function(){
-        $.post("http://52.69.191.160:53369/manager/chargeInfo",
+
+        $.get("http://ssoma.xyz:50000/member/getAllUser",
         {
-            hashKey: "9999"
+            // hashKey: "9999"
         },
         function(data){
             // console.log(data);
-            
+             
 
             // str = JSON.stringify(data);
             obj = JSON.parse(data);
             console.log(obj.data);
             
             var trHTML = '';
-            
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
             $.each(obj.data, function (i, item) {
-                
-                trHTML += '<tr><td>' + obj.data[i].name + '</td><td>' + obj.data[i].stuId + '</td>'+'<td>' + '성별' + '</td>'+'<td>' + '생년월일' + '</td>'+'<td>' + '핸드폰번호' + '</td>'+'<td>' + 'RFID' + '</td>' +'<td>' + '학과' + '</td>' + '</tr>' ;
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].team_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].user_name  + '</tr>' ;
             });
-            console.log(trHTML);
-            
-            $('#example1').append(trHTML);
+
+            console.log(trHTML);            
+            $('#tb_user_info').append(trHTML);
+
+              $('#tb_user_info').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false
+            });
         });
+
+    </script>
+    <script type="text/javascript">
+    $(document).ready(function(){
+
+
     });
     </script>
 </head>
@@ -65,7 +87,7 @@
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
-              <span class="logo-lg"><b>CampusBand</b>Admin</span>
+              <span class="logo-lg"><b>ChatBot</b>Admin</span>
           </a>
 
           <!-- Header Navbar: style can be found in header.less -->
@@ -169,7 +191,7 @@
 <li>
  <li>
   <a href="data3.html">
-    <i class="fa fa-exchange"></i> <span>출입 정보</span>
+    <i class="fa fa-exchange"></i> <span>게임 정보</span>
  </a>
  </li>
  <li>
@@ -208,30 +230,27 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <table id="example1" class="table table-bordered table-striped">
+                    
+                        <table id="tb_user_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
-                                <th>이름</th>
-                                <th>학번</th>
-                                <th>성별</th>
-                                <th>생년월일</th>
-                                <th>핸드폰번호</th>
-                                <th>RFID</th>
-                                <th>학과</th>                                            
+                                <th>num</th>
+                                <th>temaID</th>
+                                <th>userID</th>
+                                <th>userName</th>
+                                
                             </tr>
                         </thead>
                         <tbody>                                  
-                            <tr>
-                                <td>김용현</td>
-                                <td>201111127</td>
-                                <td>남자</td>
-                                <td>920221</td>
-                                <td>01051700584</td>
-                                <td>-</td>
-                                <td>컴퓨터과학</td>
+                             <tr>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                <th></th>
+                                
                             </tr>
                         </tbody>
-                        <tfoot>
+             <!--            <tfoot>
                             <tr>
                                 <th>이름</th>
                                 <th>학번</th>
@@ -241,7 +260,7 @@
                                 <th>RFID</th>
                                 <th>학과</th>  
                             </tr>
-                        </tfoot>
+                        </tfoot> -->
                     </table>
                 </div>
                 <!-- /.box-body -->
@@ -451,15 +470,16 @@
     <!-- page script -->
     <script>
         $(function () {
-            $("#example1").DataTable();
-            $('#example2').DataTable({
-                "paging": true,
-                "lengthChange": false,
-                "searching": false,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false
-            });
+            console.log('call func')
+            // $("#example1").DataTable();
+            // $('#tb_user_info').DataTable({
+            //     "paging": true,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": true,
+            //     "autoWidth": false
+            // });
         });
     </script>
 </body>
