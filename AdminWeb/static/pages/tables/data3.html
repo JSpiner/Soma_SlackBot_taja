@@ -28,32 +28,56 @@
 
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
-    $(document).ready(function(){
-        $.post("http://52.69.191.160:53369/manager/chargeInfo",
+    function reqGameResultWihIDS(channelIDD){
+        $.get("http://ssoma.xyz:50000/member/getGameResultIDS",
         {
-            hashKey: "9999"
+            channelID: channelIDD
         },
         function(data){
             // console.log(data);
-            
+             
 
-            // str = JSON.stringify(data);
             obj = JSON.parse(data);
-            console.log(obj.data);
+            // console.log(obj.data);
             
             var trHTML = '';
-            
             $.each(obj.data, function (i, item) {
-                
-                trHTML += '<tr><td>' + obj.data[i].name + '</td><td>' + obj.data[i].stuId + '</td>'+'<td>' + 'rfid' + '</td>'+'<td>' +'출입시각'+ '</td>'  + '</tr>' ;
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].game_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
             });
-            console.log(trHTML);
-            
-            $('#example1').append(trHTML);
-        });
-    });
-    </script>
 
+            // console.log(trHTML);            
+            
+            $('#tb_game_result_withID').append(trHTML);
+
+              $('#tb_game_result_withID').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false
+            });
+        });
+    }
+    //초기 모든 결과를 출력함.    
+    reqGameResultWihIDS("")
+
+        $(document).ready(function(){
+            var btn_channel_search = $('#btn_channel_search');
+            var input_channel = $('#input_channel');
+            btn_channel_search.click(function(){
+                // alert(input_channel.val());
+                reqGameResultWihIDS(input_channel.val())
+            });
+
+        });
+    </script>
 
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
@@ -169,7 +193,7 @@
 <li>
  <li>
   <a href="data3.html">
-    <i class="fa fa-exchange"></i> <span>출입 정보</span>
+    <i class="fa fa-exchange"></i> <span>게임 정보</span>
  </a>
  </li>
  <li>
@@ -208,31 +232,41 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <table id="example1" class="table table-bordered table-striped">
+
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                          <input type="text" name="table_search" class="form-control pull-right" placeholder="channelID" id="input_channel">
+
+                          <div class="input-group-btn">
+                            <button type="submit" class="btn btn-default" id="btn_channel_search"><i class="fa fa-search"></i></button>
+                          </div>
+                        </div>
+
+                        <table id="tb_game_result_withID" class="table table-bordered table-striped">
                            <thead>
                             <tr>
-                                <th>이름</th>
-                                <th>학번</th>
-                                <th>RFID</th>
-                                <th>출입 시각</th>                                            
+                                <th>num</th>
+                                <th>gameID</th>
+                                <th>userID</th>
+                                <th>answerText</th>
+                                <th>score</th>                                            
+                                <th>speed</th>
+                                <th>accuracy</th>
+                                <th>elpsed_time</th>                                            
                             </tr>
                         </thead>
                         <tbody>                                  
                             <tr>
-                                <td>김용현</td>
-                                <td>201111127</td>
-                                <td>-</td>
-                                <td>-</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>                                
                             </tr>
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>이름</th>
-                                <th>학번</th>
-                                <th>RFID</th>
-                                <th>출입 시각</th>
-                            </tr>
-                        </tfoot>
+                       
                     </table>
                 </div>
                 <!-- /.box-body -->
@@ -442,15 +476,15 @@
     <!-- page script -->
     <script>
         $(function () {
-            $("#example1").DataTable();
-            $('#example2').DataTable({
-                "paging": true,
-                "lengthChange": false,
-                "searching": false,
-                "ordering": true,
-                "info": true,
-                "autoWidth": false
-            });
+            // $("#example1").DataTable();
+            // $('#tb_game_result_withID').DataTable({
+            //     "paging": true,
+            //     "lengthChange": false,
+            //     "searching": true,
+            //     "ordering": true,
+            //     "info": true,
+            //     "autoWidth": false
+            // });
         });
     </script>
 </body>
