@@ -63,11 +63,30 @@ class Members(MethodView):
                 rows =util.fetch_all_json(result)                
                 
                 return json.dumps(static.RES_DEFAULT(200,rows),sort_keys=True, indent = 4)
+            
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
+        elif types == "getAllTeam":
+
+            try:
+
+                print("[ADMIN]_GET_ALLUSER")            
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT * FROM TEAM "
+                )
+                conn.close()
+                rows =util.fetch_all_json(result)                
+                
+                return json.dumps(static.RES_DEFAULT(200,rows),sort_keys=True, indent = 4)
 
             except Exception as e:
                 print(str(e))
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
+
     
     def post(self,types):
         print("post")

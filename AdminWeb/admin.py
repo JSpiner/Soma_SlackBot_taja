@@ -30,6 +30,9 @@ member_view = member.Members.as_view('member')
 app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
                  view_func=member_view, methods=['GET',])
 
+app.add_url_rule('/member/getAllTeam', defaults={'types': 'getAllTeam'},
+                 view_func=member_view, methods=['GET',])
+
 app.add_url_rule('/member/getGameResultIDS', defaults={'types': 'getGameResult'},
                  view_func=member_view, methods=['GET',])
 
