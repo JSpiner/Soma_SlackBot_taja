@@ -31,7 +31,7 @@
     <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
 
-        $.post("http://ssoma.xyz:50000/member/get_all_user",
+        $.get("http://ssoma.xyz:50000/member/getAllUser",
         {
             // hashKey: "9999"
         },
@@ -44,8 +44,7 @@
             console.log(obj.data);
             
             var trHTML = '';
-            // $("#user_info tbody").empty(); // this will remove all <tr>.
-
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
             $.each(obj.data, function (i, item) {
                 var strEO
                 if(i%2==0){
@@ -57,9 +56,9 @@
             });
 
             console.log(trHTML);            
-            $('#user_info').append(trHTML);
+            $('#tb_user_info').append(trHTML);
 
-              $('#user_info').DataTable({
+              $('#tb_user_info').DataTable({
                 "paging": true,
                 "lengthChange": false,
                 "searching": true,
@@ -67,28 +66,6 @@
                 "info": true,
                 "autoWidth": false
             });
-
-            // var table = $('#user_info').DataTable({
-            //     "paging": false,
-            //     "lengthChange": false,
-            //     "searching": true,
-            //     "ordering": true,
-            //     "info": false,
-            //     "autoWidth": false
-            // // });
-            //  $('#user_info').DataTable({
-            //     "paging": true,
-            //     "lengthChange": false,
-            //     "searching": true,
-            //     "ordering": true,
-            //     "info": true,
-            //     "autoWidth": false
-            // }).fnDraw();
-            // $('user_info').dataTable().fnDraw();
-
-            // table.ajax.reload();
-            // $('#user_info').DataTable().ajax.reload();
-
         });
 
     </script>
@@ -214,7 +191,7 @@
 <li>
  <li>
   <a href="data3.html">
-    <i class="fa fa-exchange"></i> <span>출입 정보</span>
+    <i class="fa fa-exchange"></i> <span>게임 정보</span>
  </a>
  </li>
  <li>
@@ -253,7 +230,8 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                        <table id="user_info" class="table table-bordered table-striped">
+                    
+                        <table id="tb_user_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
@@ -494,7 +472,7 @@
         $(function () {
             console.log('call func')
             // $("#example1").DataTable();
-            // $('#user_info').DataTable({
+            // $('#tb_user_info').DataTable({
             //     "paging": true,
             //     "lengthChange": false,
             //     "searching": true,
