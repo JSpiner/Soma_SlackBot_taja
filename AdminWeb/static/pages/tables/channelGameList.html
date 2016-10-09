@@ -45,9 +45,9 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.teamId);
+        alert(params.channelId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
+        $.get("http://ssoma.xyz:10000/member/getAllGame?channelId="+params.channelId,
         {
             // hashKey: "9999"
         },
@@ -72,12 +72,15 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td>' 
-                    + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelGameList.html?teamId='+obj.data[i].channel_id+'>' 
-                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
-                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
-                $('#tb_team_info').append(trHTML);
+                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
+                    + obj.data[i].game_id + '</a></td><td>' 
+                    + obj.data[i].team_id + '</td>'+'<td>' 
+                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
+                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
+                    + obj.data[i].start_time + '</a></td>'+'<td>' 
+                    + obj.data[i].end_time + '</a></td>'+'<td>' 
+                    + obj.data[i].user_num + '</td>'+'</tr>';
+                $('#tb_game_info').append(trHTML);
             });
 
             console.log(trHTML);            
@@ -128,16 +131,16 @@
                   <!-- User Account: style can be found in dropdown.less -->
                   <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                      <img src="../../dist/img/avatar.png" class="user-image" alt="User Image">
-                      <span class="hidden-xs">admin</span>
+                      <img src="../../dist/img/taeyeon.png" class="user-image" alt="User Image">
+                      <span class="hidden-xs">TaeYeon Kim</span>
                   </a>
                   <ul class="dropdown-menu">
                       <!-- User image -->
                       <li class="user-header">
-                        <img src="../../dist/img/avatar.png" class="img-circle" alt="User Image">
+                        <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
 
                         <p>
-                          admin
+                          TaeYeon Kim
                       </p>
                   </li>
                   <!-- Menu Body -->
@@ -168,13 +171,14 @@
 
 
 
+
 <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="../../dist/img/avatar.png" class="img-circle" alt="User Image">
+          <img src="../../dist\img/avatar.png" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
           <p>admin</p>
@@ -244,14 +248,17 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_team_info" class="table table-bordered table-striped">
+                        <table id="tb_game_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
+                                <th>game id</th>
                                 <th>team id</th>
-                                <th>channel id</th>
                                 <th>channel name</th>
-                                <th>channel joined time</th>
+                                <th>problem id</th>
+                                <th>start time</th>
+                                <th>end time</th>
+                                <th>user num</th>
                                 
                             </tr>
                         </thead>

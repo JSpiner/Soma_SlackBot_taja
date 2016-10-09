@@ -45,9 +45,8 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.teamId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
+        $.get("http://ssoma.xyz:10000/member/getAllGameResult?gameId="+params.gameId,
         {
             // hashKey: "9999"
         },
@@ -73,11 +72,14 @@
 
                 trHTML = '<tr><td>' 
                     + i + '</td><td>' 
-                    + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelGameList.html?teamId='+obj.data[i].channel_id+'>' 
-                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
-                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
-                $('#tb_team_info').append(trHTML);
+                    + obj.data[i].game_id + '</td><td>' 
+                    + obj.data[i].user_id + '</td>'+'<td>' 
+                    + obj.data[i].answer_text + '</a></td>'+'<td>' 
+                    + obj.data[i].score + '</a></td>'+'<td>' 
+                    + obj.data[i].speed + '</a></td>'+'<td>' 
+                    + obj.data[i].accuracy + '</a></td>'+'<td>' 
+                    + obj.data[i].elapsed_time + '</td>'+'</tr>';
+                $('#tb_game_info').append(trHTML);
             });
 
             console.log(trHTML);            
@@ -128,16 +130,16 @@
                   <!-- User Account: style can be found in dropdown.less -->
                   <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                      <img src="../../dist/img/avatar.png" class="user-image" alt="User Image">
-                      <span class="hidden-xs">admin</span>
+                      <img src="../../dist/img/taeyeon.png" class="user-image" alt="User Image">
+                      <span class="hidden-xs">TaeYeon Kim</span>
                   </a>
                   <ul class="dropdown-menu">
                       <!-- User image -->
                       <li class="user-header">
-                        <img src="../../dist/img/avatar.png" class="img-circle" alt="User Image">
+                        <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
 
                         <p>
-                          admin
+                          TaeYeon Kim
                       </p>
                   </li>
                   <!-- Menu Body -->
@@ -174,47 +176,74 @@
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="../../dist/img/avatar.png" class="img-circle" alt="User Image">
+          <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
-          <p>admin</p>
+          <p>TaeYeon Kim</p>
           <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
         </div>
       </div>
-      <!-- search form -->
-      <form action="#" method="get" class="sidebar-form">
-        <div class="input-group">
-          <input type="text" name="q" class="form-control" placeholder="Search...">
-              <span class="input-group-btn">
-                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
-                </button>
-              </span>
-        </div>
-      </form>
-      <!-- /.search form --> 
-      <!-- sidebar menu: : style can be found in sidebar.less -->
-      <ul class="sidebar-menu">
-        <li class="header">목록</li>        
- 
+  <!-- search form -->
+  <form action="#" method="get" class="sidebar-form">
+    <div class="input-group">
+      <input type="text" name="q" class="form-control" placeholder="Search...">
+      <span class="input-group-btn">
+        <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+        </button>
+      </span>
+    </div>
+  </form>
+ <!-- /.search form -->
+ <!-- sidebar menu: : style can be found in sidebar.less -->
+ <ul class="sidebar-menu">
+    <li class="header">목록</li>     
+    
         <li>
-          <a href="teamList.html"> 
+          <a href="pages/tables/data.html"> 
             <i class="fa fa-users"></i> <span>팀 목록</span>
           </a>
         </li>
         <li>
-          <a href="userList.html">
-            <i class="fa fa-users"></i> <span>유저 목록<span>
+          <a href="pages/tables/data1.html">
+            <i class="fa fa-users"></i> 유저 id 조회<span
             </a>
         </li>
         <li>
-          <a href="gameList.html">
-            <i class="fa fa-users"></i> <span>게임 목록<span>
+          <a href="pages/tables/data2.html">
+            <i class="fa fa-users"></i> 유저 목록 조회<span
             </a>
+        </li>   
+<!--
+    <li>
+      <a href="data.html">
+        <i class="fa fa-users"></i> <span>회원정보</span>
+      </a>
+    </li>
+ <li class="treeview">
+          <a href="#">
+            <i class="fa fa-krw"></i> <span>충전/결제 정보</span>
+            <i class="fa fa-angle-left pull-right"></i>
+          </a>
+          <ul class="treeview-menu">          
+            <li><a href="data2-1.html"><i class="fa fa-circle-o"></i> 전체 정보</a></li>
+            <li><a href="data2-2.html"><i class="fa fa-circle-o"></i> 충전 정보</a></li>
+            <li><a href="data2-3.html"><i class="fa fa-circle-o"></i> 결제 정보</a></li>
+          </ul>
         </li>
-
-    </section>
-  </aside> 
-
+<li>
+ <li>
+  <a href="data3.html">
+    <i class="fa fa-exchange"></i> <span>게임 정보</span>
+ </a>
+ </li>
+ <li>
+  <a href="data4.html">
+    <i class="fa fa-book"></i> <span>도서대출 정보</span>
+ </a>
+ </li>-->
+ </section>
+ <!-- /.sidebar -->
+</aside>
 
 
 
@@ -244,14 +273,17 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_team_info" class="table table-bordered table-striped">
+                        <table id="tb_game_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team id</th>
-                                <th>channel id</th>
-                                <th>channel name</th>
-                                <th>channel joined time</th>
+                                <th>game id</th>
+                                <th>user id</th>
+                                <th>answer text</th>
+                                <th>score</th>
+                                <th>speed</th>
+                                <th>accuracy</th>
+                                <th>elapsed time</th>
                                 
                             </tr>
                         </thead>
