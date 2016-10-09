@@ -30,7 +30,24 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-        $.get("http://ssoma.xyz:10000/member/getAllUser",
+        function getQueryParams(qs) {
+            qs = qs.split('+').join(' ');
+
+            var params = {},
+                tokens,
+                re = /[?&]?([^=]+)=([^&]*)/g;
+
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+            }
+
+            return params;
+        }
+
+        params = getQueryParams(document.location.search);
+        alert(params.channelId);
+
+        $.get("http://ssoma.xyz:10000/member/getAllGame?channelId="+params.channelId,
         {
             // hashKey: "9999"
         },
@@ -39,21 +56,10 @@
             // str = JSON.stringify(data);
             obj = JSON.parse(data);
             console.log(obj.data);
-            alert(obj.data)
             var trHTML = '';
             // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
             $.each(obj.data, function (i, item) {/*
-                //teamId teamName accessToken                
-                trHTML = '<tr><td>' 
-                    + obj.data[i].name + '</td><td>' 
-                    + obj.data[i].stuId + '</td>'+'<td>' 
-                    + '성별' + '</td>'+'<td>' 
-                    + '생년월일' + '</td>'+'<td>' 
-                    + '핸드폰번호' + '</td>'+'<td>' 
-                    + 'RFID' + '</td>' +'<td>' 
-                    + '학과' + '</td>' + '</tr>' ;
-                    $('#example1').append(trHTML);
-                    alert(trHTML);
+                //teamId teamName accessToken           
             });
             console.log(trHTML);*/
                 var strEO
@@ -62,11 +68,22 @@
                 }else{
                     strEO = "odd"
                 }
-                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].team_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].user_name  + '</tr>' ;
+                
+                console.log(obj.data[i]);
+
+                trHTML = '<tr><td>' 
+                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
+                    + obj.data[i].game_id + '</a></td><td>' 
+                    + obj.data[i].team_id + '</td>'+'<td>' 
+                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
+                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
+                    + obj.data[i].start_time + '</a></td>'+'<td>' 
+                    + obj.data[i].end_time + '</a></td>'+'<td>' 
+                    + obj.data[i].user_num + '</td>'+'</tr>';
+                $('#tb_game_info').append(trHTML);
             });
 
             console.log(trHTML);            
-            $('#tb_user_info').append(trHTML);
 
               $('#tb_user_info').DataTable({
                 "paging": true,
@@ -154,80 +171,54 @@
 
 
 
+
 <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
+          <img src="../../dist\img/avatar.png" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
-          <p>TaeYeon Kim</p>
+          <p>admin</p>
           <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
         </div>
       </div>
-  <!-- search form -->
-  <form action="#" method="get" class="sidebar-form">
-    <div class="input-group">
-      <input type="text" name="q" class="form-control" placeholder="Search...">
-      <span class="input-group-btn">
-        <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
-        </button>
-      </span>
-    </div>
-  </form>
- <!-- /.search form -->
- <!-- sidebar menu: : style can be found in sidebar.less -->
- <ul class="sidebar-menu">
-    <li class="header">목록</li>     
-    
+      <!-- search form -->
+      <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search...">
+              <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                </button>
+              </span>
+        </div>
+      </form>
+      <!-- /.search form --> 
+      <!-- sidebar menu: : style can be found in sidebar.less -->
+      <ul class="sidebar-menu">
+        <li class="header">목록</li>        
+ 
         <li>
-          <a href="pages/tables/data.html"> 
+          <a href="teamList.html"> 
             <i class="fa fa-users"></i> <span>팀 목록</span>
           </a>
         </li>
         <li>
-          <a href="pages/tables/data1.html">
-            <i class="fa fa-users"></i> 유저 id 조회<span
+          <a href="userList.html">
+            <i class="fa fa-users"></i> <span>유저 목록<span>
             </a>
         </li>
         <li>
-          <a href="pages/tables/data2.html">
-            <i class="fa fa-users"></i> 유저 목록 조회<span
+          <a href="gameList.html">
+            <i class="fa fa-users"></i> <span>게임 목록<span>
             </a>
-        </li>   
-<!--
-    <li>
-      <a href="data.html">
-        <i class="fa fa-users"></i> <span>회원정보</span>
-      </a>
-    </li>
- <li class="treeview">
-          <a href="#">
-            <i class="fa fa-krw"></i> <span>충전/결제 정보</span>
-            <i class="fa fa-angle-left pull-right"></i>
-          </a>
-          <ul class="treeview-menu">          
-            <li><a href="data2-1.html"><i class="fa fa-circle-o"></i> 전체 정보</a></li>
-            <li><a href="data2-2.html"><i class="fa fa-circle-o"></i> 충전 정보</a></li>
-            <li><a href="data2-3.html"><i class="fa fa-circle-o"></i> 결제 정보</a></li>
-          </ul>
         </li>
-<li>
- <li>
-  <a href="data3.html">
-    <i class="fa fa-exchange"></i> <span>게임 정보</span>
- </a>
- </li>
- <li>
-  <a href="data4.html">
-    <i class="fa fa-book"></i> <span>도서대출 정보</span>
- </a>
- </li>-->
- </section>
- <!-- /.sidebar -->
-</aside>
+
+    </section>
+  </aside> 
+
 
 
 
@@ -257,17 +248,21 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_user_info" class="table table-bordered table-striped">
+                        <table id="tb_game_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>temaID</th>
-                                <th>userID</th>
-                                <th>userName</th>
+                                <th>game id</th>
+                                <th>team id</th>
+                                <th>channel name</th>
+                                <th>problem id</th>
+                                <th>start time</th>
+                                <th>end time</th>
+                                <th>user num</th>
                                 
                             </tr>
                         </thead>
-                        <tbody>                                  
+                            <tbody>                                  
                              <tr>
                                 <th></th>
                                 <th></th>
@@ -276,7 +271,7 @@
                                 
                             </tr>
                         </tbody>
-             <!--            <tfoot>
+                   <!--  <tfoot>
                             <tr>
                                 <th>이름</th>
                                 <th>학번</th>

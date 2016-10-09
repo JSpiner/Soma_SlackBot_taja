@@ -25,67 +25,37 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    
 
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
-        function getQueryParams(qs) {
-            qs = qs.split('+').join(' ');
-
-            var params = {},
-                tokens,
-                re = /[?&]?([^=]+)=([^&]*)/g;
-
-            while (tokens = re.exec(qs)) {
-                params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
-            }
-
-            return params;
-        }
-
-        params = getQueryParams(document.location.search);
-        alert(params.channelId);
-
-        $.get("http://ssoma.xyz:10000/member/getAllGame?channelId="+params.channelId,
+    function reqGameResultWihIDS(channelIDD){
+        $.get("http://ssoma.xyz:10000/member/getGameResultIDS",
         {
-            // hashKey: "9999"
+            channelID: channelIDD
         },
         function(data){
             // console.log(data);
-            // str = JSON.stringify(data);
+             
+
             obj = JSON.parse(data);
-            console.log(obj.data);
+            // console.log(obj.data);
+            
             var trHTML = '';
-            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
-            $.each(obj.data, function (i, item) {/*
-                //teamId teamName accessToken           
-            });
-            console.log(trHTML);*/
+            $.each(obj.data, function (i, item) {
                 var strEO
                 if(i%2==0){
                     strEO = "even"
                 }else{
                     strEO = "odd"
                 }
-                
-                console.log(obj.data[i]);
-
-                trHTML = '<tr><td>' 
-                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
-                    + obj.data[i].game_id + '</a></td><td>' 
-                    + obj.data[i].team_id + '</td>'+'<td>' 
-                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
-                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
-                    + obj.data[i].start_time + '</a></td>'+'<td>' 
-                    + obj.data[i].end_time + '</a></td>'+'<td>' 
-                    + obj.data[i].user_num + '</td>'+'</tr>';
-                $('#tb_game_info').append(trHTML);
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].game_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
             });
 
-            console.log(trHTML);            
+            // console.log(trHTML);            
+            
+            $('#tb_game_result_withID').append(trHTML);
 
-              $('#tb_user_info').DataTable({
+              $('#tb_game_result_withID').DataTable({
                 "paging": true,
                 "lengthChange": false,
                 "searching": true,
@@ -94,17 +64,22 @@
                 "autoWidth": false
             });
         });
+    }
+    //초기 모든 결과를 출력함.    
+    reqGameResultWihIDS("")
 
+        $(document).ready(function(){
+            var btn_channel_search = $('#btn_channel_search');
+            var input_channel = $('#input_channel');
+            btn_channel_search.click(function(){
+                // alert(input_channel.val());
+                reqGameResultWihIDS(input_channel.val())
+            });
+
+        });
     </script>
-    <script type="text/javascript">
-    $(document).ready(function(){
 
-
-    });
-    </script>
 </head>
-
-
 <body class="hold-transition skin-blue sidebar-mini">
     <div class="wrapper">
         <header class="main-header">
@@ -114,7 +89,7 @@
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
-              <span class="logo-lg"><b>ChatBot</b>Admin</span>
+              <span class="logo-lg"><b>CampusBand</b>Admin</span>
           </a>
 
           <!-- Header Navbar: style can be found in header.less -->
@@ -131,16 +106,16 @@
                   <!-- User Account: style can be found in dropdown.less -->
                   <li class="dropdown user user-menu">
                     <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                      <img src="../../dist/img/taeyeon.png" class="user-image" alt="User Image">
-                      <span class="hidden-xs">TaeYeon Kim</span>
+                      <img src="../../dist\img/avatar.png" class="user-image" alt="User Image">
+                      <span class="hidden-xs">admin</span>
                   </a>
                   <ul class="dropdown-menu">
                       <!-- User image -->
                       <li class="user-header">
-                        <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
+                        <img src="../../dist/img/avatar.png" class="img-circle" alt="User Image">
 
                         <p>
-                          TaeYeon Kim
+                          admin
                       </p>
                   </li>
                   <!-- Menu Body -->
@@ -171,80 +146,54 @@
 
 
 
+
+
 <aside class="main-sidebar">
     <!-- sidebar: style can be found in sidebar.less -->
     <section class="sidebar">
       <!-- Sidebar user panel -->
       <div class="user-panel">
         <div class="pull-left image">
-          <img src="../../dist/img/taeyeon.png" class="img-circle" alt="User Image">
+          <img src="../../dist\img/avatar.png" class="img-circle" alt="User Image">
         </div>
         <div class="pull-left info">
-          <p>TaeYeon Kim</p>
+          <p>admin</p>
           <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
         </div>
       </div>
-  <!-- search form -->
-  <form action="#" method="get" class="sidebar-form">
-    <div class="input-group">
-      <input type="text" name="q" class="form-control" placeholder="Search...">
-      <span class="input-group-btn">
-        <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
-        </button>
-      </span>
-    </div>
-  </form>
- <!-- /.search form -->
- <!-- sidebar menu: : style can be found in sidebar.less -->
- <ul class="sidebar-menu">
-    <li class="header">목록</li>     
-    
+      <!-- search form -->
+      <form action="#" method="get" class="sidebar-form">
+        <div class="input-group">
+          <input type="text" name="q" class="form-control" placeholder="Search...">
+              <span class="input-group-btn">
+                <button type="submit" name="search" id="search-btn" class="btn btn-flat"><i class="fa fa-search"></i>
+                </button>
+              </span>
+        </div>
+      </form>
+      <!-- /.search form --> 
+      <!-- sidebar menu: : style can be found in sidebar.less -->
+      <ul class="sidebar-menu">
+        <li class="header">목록</li>        
+ 
         <li>
-          <a href="pages/tables/data.html"> 
+          <a href="teamList.html"> 
             <i class="fa fa-users"></i> <span>팀 목록</span>
           </a>
         </li>
         <li>
-          <a href="pages/tables/data1.html">
-            <i class="fa fa-users"></i> 유저 id 조회<span
+          <a href="userList.html">
+            <i class="fa fa-users"></i> <span>유저 목록<span>
             </a>
         </li>
         <li>
-          <a href="pages/tables/data2.html">
-            <i class="fa fa-users"></i> 유저 목록 조회<span
+          <a href="gameList.html">
+            <i class="fa fa-users"></i> <span>게임 목록<span>
             </a>
-        </li>   
-<!--
-    <li>
-      <a href="data.html">
-        <i class="fa fa-users"></i> <span>회원정보</span>
-      </a>
-    </li>
- <li class="treeview">
-          <a href="#">
-            <i class="fa fa-krw"></i> <span>충전/결제 정보</span>
-            <i class="fa fa-angle-left pull-right"></i>
-          </a>
-          <ul class="treeview-menu">          
-            <li><a href="data2-1.html"><i class="fa fa-circle-o"></i> 전체 정보</a></li>
-            <li><a href="data2-2.html"><i class="fa fa-circle-o"></i> 충전 정보</a></li>
-            <li><a href="data2-3.html"><i class="fa fa-circle-o"></i> 결제 정보</a></li>
-          </ul>
         </li>
-<li>
- <li>
-  <a href="data3.html">
-    <i class="fa fa-exchange"></i> <span>게임 정보</span>
- </a>
- </li>
- <li>
-  <a href="data4.html">
-    <i class="fa fa-book"></i> <span>도서대출 정보</span>
- </a>
- </li>-->
- </section>
- <!-- /.sidebar -->
-</aside>
+
+    </section>
+  </aside> 
 
 
 
@@ -254,7 +203,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            게임 목록
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -273,41 +222,41 @@
                     </div>
                     <!-- /.box-header -->
                     <div class="box-body">
-                    
-                        <table id="tb_game_info" class="table table-bordered table-striped">
-                         <thead>
+
+                        <div class="input-group input-group-sm" style="width: 150px;">
+                          <input type="text" name="table_search" class="form-control pull-right" placeholder="channelID" id="input_channel">
+
+                          <div class="input-group-btn">
+                            <button type="submit" class="btn btn-default" id="btn_channel_search"><i class="fa fa-search"></i></button>
+                          </div>
+                        </div>
+
+                        <table id="tb_game_result_withID" class="table table-bordered table-striped">
+                           <thead>
                             <tr>
                                 <th>num</th>
-                                <th>game id</th>
-                                <th>team id</th>
-                                <th>channel name</th>
-                                <th>problem id</th>
-                                <th>start time</th>
-                                <th>end time</th>
-                                <th>user num</th>
-                                
+                                <th>gameID</th>
+                                <th>userID</th>
+                                <th>answerText</th>
+                                <th>score</th>                                            
+                                <th>speed</th>
+                                <th>accuracy</th>
+                                <th>elpsed_time</th>                                            
                             </tr>
                         </thead>
-                            <tbody>                                  
-                             <tr>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                
+                        <tbody>                                  
+                            <tr>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>                                
                             </tr>
                         </tbody>
-                   <!--  <tfoot>
-                            <tr>
-                                <th>이름</th>
-                                <th>학번</th>
-                                <th>성별</th>
-                                <th>생년월일</th>
-                                <th>핸드폰번호</th>
-                                <th>RFID</th>
-                                <th>학과</th>  
-                            </tr>
-                        </tfoot> -->
+                       
                     </table>
                 </div>
                 <!-- /.box-body -->
@@ -517,9 +466,8 @@
     <!-- page script -->
     <script>
         $(function () {
-            console.log('call func')
             // $("#example1").DataTable();
-            // $('#tb_user_info').DataTable({
+            // $('#tb_game_result_withID').DataTable({
             //     "paging": true,
             //     "lengthChange": false,
             //     "searching": true,

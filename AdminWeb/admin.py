@@ -49,8 +49,6 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
                  view_func=member_view, methods=['GET',])
 
 
-
-
 @app.route('/manager/teamInfo', methods=['POST'])
 def manager_team_info():
     jsonObject = {
