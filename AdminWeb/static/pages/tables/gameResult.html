@@ -45,9 +45,8 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.channelId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllGame?channelId="+params.channelId,
+        $.get("http://ssoma.xyz:10000/member/getAllGameResult?gameId="+params.gameId,
         {
             // hashKey: "9999"
         },
@@ -72,14 +71,14 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
-                    + obj.data[i].game_id + '</a></td><td>' 
-                    + obj.data[i].team_id + '</td>'+'<td>' 
-                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
-                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
-                    + obj.data[i].start_time + '</a></td>'+'<td>' 
-                    + obj.data[i].end_time + '</a></td>'+'<td>' 
-                    + obj.data[i].user_num + '</td>'+'</tr>';
+                    + i + '</td><td>' 
+                    + obj.data[i].game_id + '</td><td>' 
+                    + obj.data[i].user_id + '</td>'+'<td>' 
+                    + obj.data[i].answer_text + '</a></td>'+'<td>' 
+                    + obj.data[i].score + '</a></td>'+'<td>' 
+                    + obj.data[i].speed + '</a></td>'+'<td>' 
+                    + obj.data[i].accuracy + '</a></td>'+'<td>' 
+                    + obj.data[i].elapsed_time + '</td>'+'</tr>';
                 $('#tb_game_info').append(trHTML);
             });
 
@@ -279,12 +278,12 @@
                             <tr>
                                 <th>num</th>
                                 <th>game id</th>
-                                <th>team id</th>
-                                <th>channel name</th>
-                                <th>problem id</th>
-                                <th>start time</th>
-                                <th>end time</th>
-                                <th>user num</th>
+                                <th>user id</th>
+                                <th>answer text</th>
+                                <th>score</th>
+                                <th>speed</th>
+                                <th>accuracy</th>
+                                <th>elapsed time</th>
                                 
                             </tr>
                         </thead>

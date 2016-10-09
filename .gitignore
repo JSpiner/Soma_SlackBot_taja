@@ -9,3 +9,4 @@ __pycache__/
 .idea/Soma_SlackBot_taja.iml
 .idea/modules.xml
 .idea/workspace.xml
+log.log
