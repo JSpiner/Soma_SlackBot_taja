@@ -115,7 +115,7 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALLChannel")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM GAMEINFO where  channel_id=%s",
+                    "SELECT * FROM GAME_INFO where  channel_id=%s",
                     (channel_id)
                 )
                 conn.close()
