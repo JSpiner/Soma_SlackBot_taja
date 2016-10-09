@@ -45,9 +45,8 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.teamId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
+        $.get("http://ssoma.xyz:10000/member/getAllGameResult?gameId="+params.gameId,
         {
             // hashKey: "9999"
         },
@@ -73,11 +72,14 @@
 
                 trHTML = '<tr><td>' 
                     + i + '</td><td>' 
-                    + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/gameList.html?teamId='+obj.data[i].channel_id+'>' 
-                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
-                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
-                $('#tb_team_info').append(trHTML);
+                    + obj.data[i].game_id + '</td><td>' 
+                    + obj.data[i].user_id + '</td>'+'<td>' 
+                    + obj.data[i].answer_text + '</a></td>'+'<td>' 
+                    + obj.data[i].score + '</a></td>'+'<td>' 
+                    + obj.data[i].speed + '</a></td>'+'<td>' 
+                    + obj.data[i].accuracy + '</a></td>'+'<td>' 
+                    + obj.data[i].elapsed_time + '</td>'+'</tr>';
+                $('#tb_game_info').append(trHTML);
             });
 
             console.log(trHTML);            
@@ -271,14 +273,17 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_team_info" class="table table-bordered table-striped">
+                        <table id="tb_game_info" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team id</th>
-                                <th>channel id</th>
-                                <th>channel name</th>
-                                <th>channel joined time</th>
+                                <th>game id</th>
+                                <th>user id</th>
+                                <th>answer text</th>
+                                <th>score</th>
+                                <th>speed</th>
+                                <th>accuracy</th>
+                                <th>elapsed time</th>
                                 
                             </tr>
                         </thead>
