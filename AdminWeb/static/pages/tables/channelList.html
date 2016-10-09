@@ -30,7 +30,24 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-        $.get("http://ssoma.xyz:10000/member/getAllTeam",
+        function getQueryParams(qs) {
+            qs = qs.split('+').join(' ');
+
+            var params = {},
+                tokens,
+                re = /[?&]?([^=]+)=([^&]*)/g;
+
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+            }
+
+            return params;
+        }
+
+        params = getQueryParams(document.location.search);
+        alert(params.teamId);
+
+        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
         {
             // hashKey: "9999"
         },
@@ -56,10 +73,10 @@
 
                 trHTML = '<tr><td>' 
                     + i + '</td><td>' 
-                    + obj.data[i].team_id + '</a></td><td><a href='+'http://ssoma.xyz:10000/pages/tables/channelList.html?teamId='+obj.data[i].team_id+'>' 
-                    + obj.data[i].team_name + '</td>'+'<td>' 
-                    + obj.data[i].team_joined_time + '</td>'+'<td>' 
-                    + obj.data[i].team_access_token + '</td>'+'</tr>';
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelList.html?teamId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
                 $('#tb_team_info').append(trHTML);
             });
 
@@ -259,9 +276,9 @@
                             <tr>
                                 <th>num</th>
                                 <th>team id</th>
-                                <th>team Name</th>
-                                <th>team joined time</th>
-                                <th>team access token</th>
+                                <th>channel id</th>
+                                <th>channel name</th>
+                                <th>channel joined time</th>
                                 
                             </tr>
                         </thead>
