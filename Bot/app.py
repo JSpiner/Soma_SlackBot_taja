@@ -16,6 +16,7 @@ import datetime
 from common import util
 import time
 import base64
+import datetime
 
 # test before running flask
 # tester.run_unit_test()
@@ -25,6 +26,23 @@ app = Flask(__name__)
 #load josn key file
 with open('key.json', 'r') as f:
     key = json.load(f)
+
+# unixtime = time.mktime(datetime.datetime.now().timetuple())
+# datetime.datetime.now()
+# s = str(datetime.datetime.now())
+
+# dataa = time.mktime(datetime.datetime.strptime(s, "%Y-%m-%d %H:%M:%S.%f").timetuple())
+
+# print("unix")
+# print(dataa)
+
+# s = str(datetime.datetime.now())
+
+a = time.strftime('%Y-%m-%d %H:%M:%S.%f', time.localtime(float(1476122474189.996)))
+# a = fla.strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
+
+print(a)
+print(datetime.datetime.now())
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -52,6 +70,8 @@ def slack_oauth():
     response = json.loads(r.text)
 
     print(response)
+    ctime = datetime.datetime.now()
+
     conn = db_manager.engine.connect()
     trans = conn.begin()
     conn.execute(
@@ -62,11 +82,12 @@ def slack_oauth():
         (
             response['team_id'],
             response['team_name'],
-            time.time()*1000,
+            ctime,
             response['access_token']
         )
     )
     trans.commit()
+
     return 'auth success' + response['access_token']
 
 @app.route('/slack/event', methods = ['POST'])
@@ -128,6 +149,6 @@ def slack_event():
 
 
 
-ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+ssl_context = ('last.crt', 'ssoma.key')
 
 app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
