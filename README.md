@@ -1,1 +1,1 @@
-C SlackBot
+SoftwareMaestro 7th SlackBot Project
