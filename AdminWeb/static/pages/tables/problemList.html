@@ -79,8 +79,11 @@
             console.log("reqAllProblem() 수행 전");
             reqAllProblem();
 
-            $("#btn_add_problem").click(function () {
-
+            var btn_add_problem = $("#div_btn_add_prblem_wrapper");             
+            btn_add_problem.click(function () {
+                
+                alert('EVENT');
+                
                 $.post("http://ssoma.xyz:15000/member/newProblem", {
                         problem_text: $('#input_problem').val()
                     },
@@ -239,7 +242,7 @@
                                 <div class="input-group input-group-sm" style="width: 150px;">
                                     <input type="text" name="problem_input" class="form-control pull-right" placeholder="Add Problem" id="input_problem">
 
-                                    <div class="input-group-btn">
+                                    <div class="input-group-btn" id="div_btn_add_prblem_wrapper">
                                         <button type="submit" class="btn btn-default" id="btn_add_problem">추가</button>
                                     </div>
                                 </div>
