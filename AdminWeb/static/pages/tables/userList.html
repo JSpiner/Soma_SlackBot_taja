@@ -28,7 +28,7 @@
 
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
-    function reqGameResultWihIDS(channelIDD){
+    function reqAllUser(){
         $.get("http://ssoma.xyz:15000/member/getAllUser",
         {
             // Nothing to attach
@@ -89,18 +89,10 @@
             });
         });
     }
-    //초기 모든 결과를 출력함.
-    reqGameResultWihIDS("")
 
-        $(document).ready(function(){
-            var btn_channel_search = $('#btn_channel_search');
-            var input_channel = $('#input_channel');
-            btn_channel_search.click(function(){
-                // alert(input_channel.val());
-                reqGameResultWihIDS(input_channel.val())
-            });
-
-        });
+    $(document).ready(function(){
+        reqAllUser();
+    });
     </script>
 
 </head>
