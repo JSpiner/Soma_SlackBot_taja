@@ -159,17 +159,6 @@
             getUserInfoById();
             getUserGameResultById();
         });
-
-        $("#btn_add_problem").submit(function (event) {
-    
-            $.post("http://ssoma.xyz:15000/member/newProblem", {
-                    problem_text : $('#input_problem').val()
-                },
-                function (data, status) {
-                    location.reload(true);
-                });
-
-        });
     </script>
 
 </head>
@@ -320,13 +309,7 @@
                                     </ul>
                                 </div>
 
-                                <div class="input-group input-group-sm" style="width: 150px;">
-                                    <input type="text" name="problem_input" class="form-control pull-right" placeholder="Add Problem" id="input_problem">
 
-                                    <div class="input-group-btn">
-                                        <button type="submit" class="btn btn-default" id="btn_add_problem">추가</button>
-                                    </div>
-                                </div>
 
                                 <table id="tb_user_info_with_game_result" class="table table-bordered table-striped">
                                     <thead>
