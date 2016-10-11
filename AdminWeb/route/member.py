@@ -198,7 +198,16 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALLChannel")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM CHANNEL where  team_id=%s",
+                    "SELECT * ,"
+                    "( "
+                    "    SELECT "
+                    "        MAX(start_time) "
+                    "        FROM GAME_INFO "
+                    "    WHERE "
+                    "        GAME_INFO.channel_id = CHANNEL.channel_id "
+                    ") as recent_play_time "
+                    "FROM CHANNEL  "
+                    "WHERE team_id = %s ",
                     (team_id)
                 )
                 conn.close()
