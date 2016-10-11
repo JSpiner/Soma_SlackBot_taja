@@ -47,7 +47,55 @@
         params = getQueryParams(document.location.search);
         alert(params.teamId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
+        $.get(window.location.origin+"/member/getTeamInfo?teamID="+params.teamId,
+        {
+
+        },
+        function(data){
+
+            // console.log(data);
+            // str = JSON.stringify(data);
+            obj = JSON.parse(data);
+            console.log(obj.data);
+            var trHTML = '';
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
+            $.each(obj.data, function (i, item) {/*
+                //teamId teamName accessToken           
+            });
+            console.log(trHTML);*/
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                
+                console.log(obj.data[i]);
+                
+                trHTML = 
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team name : " +obj.data[i].team_id+"<br/>" +
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team id : " +obj.data[i].team_id+"<br/>" 
+                ;
+
+/*
+                trHTML = '<tr><td>' 
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
+                $('#tb_team_info').append(trHTML);
+            });
+
+            console.log(trHTML);            
+
+        });
+
+        $.get(window.location.origin+"/member/getAllChannel?teamId="+params.teamId,
         {
             // hashKey: "9999"
         },
@@ -74,15 +122,15 @@
                 trHTML = '<tr><td>' 
                     + i + '</td><td>' 
                     + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
                     + obj.data[i].channel_name + '</a></td>'+'<td>' 
                     + obj.data[i].channel_joined_time + '</td>'+'</tr>';
-                $('#tb_team_info').append(trHTML);
+                $('#tb_channel_list').append(trHTML);
             });
 
             console.log(trHTML);            
 
-              $('#tb_user_info').DataTable({
+              $('#tb_channel_list').DataTable({
                 "paging": true,
                 "lengthChange": false,
                 "searching": true,
@@ -224,7 +272,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            팀목록>팀정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -234,6 +282,7 @@
     </section>
     <!-- Main content -->
     <section class="content">
+        <div class="tb_team_info"> /<div>
         <div class="row">
             <div class="col-xs-12">
 
@@ -244,7 +293,7 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_team_info" class="table table-bordered table-striped">
+                        <table id="tb_channel_list" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
