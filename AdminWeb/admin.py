@@ -65,7 +65,7 @@ def newProblem():
 
     data = request.get_data()
     print(data)
-    print(request.form)
+    print(request.form[0]['problem_text'])
     print(request.values)
 
     problem_text = data['problem_text']
