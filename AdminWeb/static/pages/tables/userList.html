@@ -38,7 +38,7 @@
 
                         obj = JSON.parse(data);
                         console.log("요청 결과 : " + obj.data);
-                        
+
                         var trHTML = '';
                         $.each(obj.data, function (i, item) {
                             var strEO
@@ -56,6 +56,9 @@
 
                             var isActive = ""
 
+                            console.log("week_ago_datetime : " + week_ago_datetime.toString());
+                            console.log("user_latest_played_time : " + user_latest_played_time.toString());
+
                             if (user_latest_played_time > week_ago_datetime) {
                                 isActive = "O"
                             }
@@ -68,7 +71,7 @@
                             trHTML += '<tr role="row" class="' + strEO + '">' +
                                     '<td>' + i + '</td>' +
                                     '<td>' + '<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?user_id=' + obj.data[i].user_id + '>' + obj.data[i].user_name + '</td>' +
-                                    '<td>' + '<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?user_id=' + obj.data[i].team_id + '>' + obj.data[i].team_name + '</td>' +
+                                    '<td>' + '<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?team_id=' + obj.data[i].team_id + '>' + obj.data[i].team_name + '</td>' +
                                     '<td>' + isActive + '</td>' +
                                     '<td>' + obj.data[i].latest_time + '</td>' + '</td>' +
                                     '</tr>';
