@@ -75,6 +75,7 @@ def newProblem():
     )
     trans.commit()
     conn.close()
+    return redirect(url_for('static', filename='problemList.html'))
 
 
 @app.route('/manager/teamInfo', methods=['POST'])
