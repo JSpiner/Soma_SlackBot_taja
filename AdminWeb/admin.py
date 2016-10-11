@@ -36,6 +36,9 @@ app.add_url_rule('/member/getAllTeam', defaults={'types': 'getAllTeam'},
 app.add_url_rule('/member/getTeamInfo', defaults={'types': 'getTeamInfo'},
                  view_func=member_view, methods=['GET',])
 
+app.add_url_rule('/member/getChannelInfo', defaults={'types': 'getChannelInfo'},
+                 view_func=member_view, methods=['GET',])
+
 app.add_url_rule('/member/getAllChannel', defaults={'types': 'getAllChannel'},
                  view_func=member_view, methods=['GET',])
 
