@@ -14,6 +14,7 @@ from flask import request
 import json
 import time
 import logging
+import static
 
 logging.basicConfig(filename='log.log',level=logging.DEBUG)
 
@@ -66,6 +67,7 @@ def newProblem():
     data = json.loads(payload)
 
     problem_text = data['problem_text']
+    print(problem_text)
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
@@ -75,7 +77,8 @@ def newProblem():
     )
     trans.commit()
     conn.close()
-    return redirect(url_for('static', filename='problemList.html'))
+
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
 
 
 @app.route('/manager/teamInfo', methods=['POST'])
