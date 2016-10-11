@@ -69,6 +69,19 @@
             });
         });
     }
+        //초기 모든 결과를 출력함.
+    reGameResultWihIDS("")
+
+        $(document).ready(function(){
+            var btn_channel_search = $('#btn_channel_search');
+            var input_channel = $('#input_channel');
+            btn_channel_search.click(function(){
+                // alert(input_channel.val());
+                reqGameResultWihIDS(input_channel.val())
+            });
+
+        });
+
     </script>
 
 </head>
@@ -169,22 +182,22 @@
         <li class="header">목록</li>
 
         <li>
-          <a href="pages/tables/teamList.html">
+          <a href="teamList.html">
             <i class="fa fa-users"></i> <span>팀 목록</span>
           </a>
         </li>
         <li>
-          <a href="pages/tables/userList.html">
+          <a href="userList.html">
             <i class="fa fa-users"></i> <span>유저 목록</span>
             </a>
         </li>
         <li>
-          <a href="pages/tables/problemList.html">
+          <a href="problemList.html">
             <i class="fa fa-users"></i> <span>문제 목록</span>
           </a>
         </li>
         <li>
-          <a href="pages/tables/gameList.html">
+          <a href="gameList.html">
             <i class="fa fa-users"></i> <span>게임 목록</span>
             </a>
         </li>
