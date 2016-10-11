@@ -73,15 +73,10 @@
                 console.log(obj.data[i]);
                 
                 trHTML = 
-                    "team id : " +obj.data[i].team_id+"<br/>" +
-                    "team name : " +obj.data[i].team_name+"<br/>" +
-                    "team access token : " +obj.data[i].team_access_token+"<br/>" +
-                    "team joined time : " +obj.data[i].team_joined_time+"<br/>" +
-                    "team user count : " +obj.data[i].user_num+"<br/>" +
-                    "team recent play time : " +obj.data[i].recent_play_time+"<br/>" +
-                    "team max score : " +obj.data[i].max_score+"<br/>" +
-                    "team avg score : " +obj.data[i].avg_score+"<br/>" +
-                    "team play count : " +obj.data[i].play_num+"<br/>"
+                    "channel id : " +obj.data[i].channel_id+"<br/>" +
+                    "channel name : " +obj.data[i].channel_name+"<br/>" +
+                    "first played time : " +obj.data[i].first_play_time+"<br/>" +
+                    "recent played time : " +obj.data[i].recent_play_time+"<br/>"
                 ;
                 console.log(trHTML);
 
@@ -123,12 +118,12 @@
                 trHTML = '<tr><td>' 
                     + i + '</td><td><a href='+window.location.origin+'/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
                     + obj.data[i].game_id + '</a></td><td>' 
-                    + obj.data[i].team_id + '</td>'+'<td>' 
-                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
-                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
+                    + obj.data[i].problem_text + '</td>'+'<td>' 
                     + obj.data[i].start_time + '</a></td>'+'<td>' 
                     + obj.data[i].end_time + '</a></td>'+'<td>' 
-                    + obj.data[i].user_num + '</td>'+'</tr>';
+                    + obj.data[i].user_num + '</a></td>'+'<td>' 
+                    + obj.data[i].max_score + '</a></td>'+'<td>' 
+                    + obj.data[i].avg_score + '</td>'+'</tr>';
                 $('#tb_game_list').append(trHTML);
             });
 
@@ -277,7 +272,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            팀목록>팀정보>채널정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -304,12 +299,12 @@
                             <tr>
                                 <th>num</th>
                                 <th>game id</th>
-                                <th>team id</th>
-                                <th>channel name</th>
-                                <th>problem id</th>
+                                <th>problem text</th>
                                 <th>start time</th>
                                 <th>end time</th>
                                 <th>user num</th>
+                                <th>max score</th>
+                                <th>avg score</th>
                                 
                             </tr>
                         </thead>
