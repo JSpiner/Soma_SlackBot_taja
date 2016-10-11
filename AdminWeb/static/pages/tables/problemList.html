@@ -78,15 +78,17 @@
         $(document).ready(function () {
             console.log("reqAllProblem() 수행 전");
             reqAllProblem();
-        });
 
-        $("#btn_add_problem").click(function (event) {
+            $("#btn_add_problem").click(function () {
 
-            $.post("http://ssoma.xyz:15000/member/newProblem", {
-                    problem_text: $('#input_problem').val()
-                },
-                function (data, status) {
-                });
+                $.post("http://ssoma.xyz:15000/member/newProblem", {
+                        problem_text: $('#input_problem').val()
+                    },
+                    function (data, status) {
+                        alert("Success");
+                    });
+
+            });
 
         });
     </script>
