@@ -26,6 +26,42 @@
   <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
   <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
   <![endif]-->
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+
+  <script type="text/javascript">
+        $.get("http://ssoma.xyz:10000/dashBoard/getIndicator",
+        {},
+        function(data){
+            console.log(data);
+            obj = JSON.parse(data);
+            inActiveTeams = obj.data["inActiveTeams"]
+            inActiveUsers = obj.data["inActiveUsers"]
+            todayInstall = obj.data["todayInstall"]
+            todayPlay = obj.data["todayPlay"]
+
+            console.log(inActiveTeams)
+            console.log(inActiveUsers)
+            console.log(todayInstall)
+            console.log(todayPlay)
+            
+            $('#txt_todayInstall').text(todayInstall);
+            $('#txt_todayPlay').text(todayPlay);
+            $('#txt_inActiveTeams').text(inActiveTeams);
+            $('#txt_inActiveUsers').text(inActiveUsers);
+
+        });
+    
+        $(document).ready(function(){
+            
+            // var input_channel = $('#input_channel');
+            // btn_channel_search.click(function(){
+            //     // alert(input_channel.val());
+            //     reqGameResultWihIDS(input_channel.val())
+            // });
+
+        });
+    </script>
+
 </head>
 <body class="hold-transition skin-blue sidebar-mini">
 <div class="wrapper">
@@ -159,9 +195,9 @@
           <!-- small box -->
           <div class="small-box bg-aqua">
             <div class="inner">
-              <h3>150</h3>
+              <h3 id="txt_todayInstall">999</h3>
 
-              <p>New Orders</p>
+              <p>오늘 설치 수</p>
             </div>
             <div class="icon">
               <i class="ion ion-bag"></i>
@@ -169,14 +205,15 @@
             <!-- <a href="#" class="small-box-footer">More info <i class="fa fa-arrow-circle-right"></i></a> -->
           </div>
         </div>
+
         <!-- ./col -->
         <div class="col-lg-3 col-xs-6">
           <!-- small box -->
           <div class="small-box bg-green">
             <div class="inner">
-              <h3>53<sup style="font-size: 20px">%</sup></h3>
+              <h3 id = "txt_todayPlay">999<sup style="font-size: 20px">%</sup></h3>
 
-              <p>Bounce Rate</p>
+              <p>오늘 플레이 수</p>
             </div>
             <div class="icon">
               <i class="ion ion-stats-bars"></i>
@@ -189,9 +226,9 @@
           <!-- small box -->
           <div class="small-box bg-yellow">
             <div class="inner">
-              <h3>44</h3>
+              <h3 id = "txt_inActiveTeams">999</h3>
 
-              <p>User Registrations</p>
+              <p>오늘 비활성 팀 수</p>
             </div>
             <div class="icon">
               <i class="ion ion-person-add"></i>
@@ -204,9 +241,9 @@
           <!-- small box -->
           <div class="small-box bg-red">
             <div class="inner">
-              <h3>65</h3>
+              <h3 id = "txt_inActiveUsers">999</h3>
 
-              <p>Unique Visitors</p>
+              <p>오늘 비활성 유저 수</p>
             </div>
             <div class="icon">
               <i class="ion ion-pie-graph"></i>
