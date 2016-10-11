@@ -30,7 +30,24 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-        $.get("http://ssoma.xyz:10000/member/getAllTeam",
+        function getQueryParams(qs) {
+            qs = qs.split('+').join(' ');
+
+            var params = {},
+                tokens,
+                re = /[?&]?([^=]+)=([^&]*)/g;
+
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+            }
+
+            return params;
+        }
+
+        params = getQueryParams(document.location.search);
+        alert(params.teamId);
+
+        $.get("http://ssoma.xyz:10000/member/getAllChannel?teamId="+params.teamId,
         {
             // hashKey: "9999"
         },
@@ -55,13 +72,11 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td><td><a href='+'http://ssoma.xyz:10000/pages/tables/channelList.html?teamId='+obj.data[i].team_id+'>' 
-                    + obj.data[i].team_name + '</td>'+'<td>' 
-                    + obj.data[i].team_joined_time + '</td>'+'<td>' 
-                    + obj.data[i].user_count + '</td>'+'<td>' 
-                    + obj.data[i].recent_play_time + '</td>'+'<td>' 
-                    + obj.data[i].best_score + '</td>'+'<td>' 
-                    + obj.data[i].average_score + '</td>'+'<td>' ;
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
                 $('#tb_team_info').append(trHTML);
             });
 
@@ -203,12 +218,13 @@
 
 
 
+
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            팀 목록
+            회원정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -232,12 +248,10 @@
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team Name</th>
-                                <th>team joined time</th>
-                                <th>user count</th>
-                                <th>recent play time</th>
-                                <th>best score</th>
-                                <th>average score</th>
+                                <th>team id</th>
+                                <th>channel id</th>
+                                <th>channel name</th>
+                                <th>channel joined time</th>
                                 
                             </tr>
                         </thead>
