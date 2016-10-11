@@ -60,7 +60,7 @@
                     var week_ago_datetime = new Date();
                     week_ago_datetime.setDate(week_ago_datetime.getDate() - 7);
 
-                    var splitted_timestamp = obj.data[i].latest_time.split(/[- :.]/);
+                    var splitted_timestamp = obj.data[0].latest_time.split(/[- :.]/);
                     var user_latest_played_time = new Date(Date.UTC(splitted_timestamp[0], splitted_timestamp[1] - 1, splitted_timestamp[2], splitted_timestamp[3], splitted_timestamp[4], splitted_timestamp[5]));
 
                     var isActive = ""
