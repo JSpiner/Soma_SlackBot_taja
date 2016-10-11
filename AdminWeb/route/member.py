@@ -60,7 +60,7 @@ class Members(MethodView):
                         )
                 
                 conn.close()
-                rows =util.fetch_all_json(result)                
+                rows = util.fetch_all_json(result)                
                 
                 return json.dumps(static.RES_DEFAULT(200,rows),sort_keys=True, indent = 4)
             
@@ -75,10 +75,50 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALL team")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM TEAM "
+                    "SELECT *,  ( "
+                    "    SELECT "
+                    "        count(user_id) "
+                    "    FROM USER  "
+                    "    where "
+                    "        USER.team_id = TEAM.team_id " 
+                    ") as user_num, "
+                    "( "
+                    "    SELECT " 
+                    "        count(team_id) "
+                    "        FROM GAME_INFO "
+                    "    where "
+                    "        GAME_INFO.team_id = TEAM.team_id " 
+                    ") as game_num, "
+                    "( "
+                    "    SELECT " 
+                    "        AVG(score) "
+                    "        FROM GAME_RESULT " 
+                    "    INNER JOIN USER  "
+                    "    ON USER.user_id = GAME_RESULT.user_id " 
+                    "    where "
+                    "        USER.team_id = TEAM.team_id " 
+                    ") as avg_score, "
+                    "( "
+                    "    SELECT " 
+                    "        MAX(score) "
+                    "        FROM GAME_RESULT " 
+                    "    INNER JOIN USER  "
+                    "    ON USER.user_id = GAME_RESULT.user_id " 
+                    "    where "
+                    "        USER.team_id = TEAM.team_id " 
+                    ") as max_score, "
+                    "( "
+                    "    SELECT " 
+                    "        MAX(start_time) "
+                    "        FROM GAME_INFO  "
+                    "    where "
+                    "        GAME_INFO.team_id = TEAM.team_id " 
+                    ") as recent_play_time "
+                    "from TEAM ; "
                 )
                 conn.close()
-                rows =util.fetch_all_json(result)                
+                rows =util.fetch_all_json(result)       
+                print(rows)         
                 
                 return json.dumps(static.RES_DEFAULT(200,rows),sort_keys=True, indent = 4)
 
