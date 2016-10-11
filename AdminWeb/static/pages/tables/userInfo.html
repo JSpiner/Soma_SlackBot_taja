@@ -48,7 +48,7 @@
             params = getQueryParams(document.location.search);
             console.log(params.user_id);
 
-            $.get("http://http://ssoma.xyz:15000/member/getSpecificUserInfoById?user_id=" + params.user_id, {
+            $.get("http://ssoma.xyz:15000/member/getSpecificUserInfoById?user_id=" + params.user_id, {
                     // Nothing to Attach
                 },
                 function (data) {
@@ -101,7 +101,7 @@
             params = getQueryParams(document.location.search);
             console.log(params.user_id);
 
-            $.get("http://ssoma.xyz:15000/member/getSpecificUserGameResultByById?user_id=" + params.user_id, {
+            $.get("http://ssoma.xyz:15000/member/getSpecificUserGameResultById?user_id=" + params.user_id, {
                     // Nothing to Attach
                 },
                 function (data) {
