@@ -31,7 +31,10 @@ member_view = member.Members.as_view('member')
 app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
                  view_func=member_view, methods=['GET',])
 
-app.add_url_rule('/member/getSpecificUserById', defaults={'types': 'getSpecificUserById'},
+app.add_url_rule('/member/getSpecificUserInfoById', defaults={'types': 'getSpecificUserInfoById'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getSpecificUserGameResultById', defaults={'types': 'getSpecificUserGameResultById'},
                  view_func=member_view, methods=['GET',])
 
 app.add_url_rule('/member/getAllProblem', defaults={'types': 'getAllProblem'},
