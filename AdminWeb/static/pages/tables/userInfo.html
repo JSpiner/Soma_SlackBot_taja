@@ -85,7 +85,7 @@
                             '<li>' + 'ID : ' + obj.data[i].user_id + '</li>' +
                             '<li>' + 'NAME : ' + obj.data[i].user_name + '</li>' +
                             '<li>' + 'TEAM NAME : ' + obj.data[i].team_name + '</li>' +
-                            '<li>' + 'ACTIVE : ' + obj.data[i].team_name + '</li>' +
+                            '<li>' + 'ACTIVE : ' + isActive + '</li>' +
                             '<li>' + 'LATEST PLAYED TIME  : ' + obj.data[i].latest_time + '</li>';
                     });
 
@@ -140,9 +140,9 @@
 
                     console.log(trHTML);
 
-                    $('#tb_game_info').append(trHTML);
+                    $('#tb_user_info_with_game_result').append(trHTML);
 
-                    $('#tb_user_info').DataTable({
+                    $('#tb_user_info_with_game_result').DataTable({
                         "paging": true,
                         "lengthChange": false,
                         "searching": true,
@@ -317,7 +317,7 @@
                                     </div>
                                 </div>
 
-                                <table id="tb_game_result_withID" class="table table-bordered table-striped">
+                                <table id="tb_user_info_with_game_result" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
                                             <th>num</th>
