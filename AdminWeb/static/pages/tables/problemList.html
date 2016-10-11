@@ -82,8 +82,9 @@
             var btn_add_problem = $("#div_btn_add_prblem_wrapper");             
             btn_add_problem.click(function () {
                                 
-                $.post("http://ssoma.xyz:15000/member/newProblem", {
-                        problem_text: $('#input_problem').val()
+                $.post("http://ssoma.xyz:15000/member/newProblem", 
+                    {
+                        "problem_text" : $('#input_problem').val()+""
                     },
                      
                     function (data, status) {
