@@ -26,7 +26,12 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALLUSER")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM USER "
+                    "SELECT slackbot.USER.user_id, slackbot.USER.user_name, slackbot.TEAM.team_name, slackbot.TEAM.team_id, MAX(slackbot.GAME_INFO.start_time) latest_time "
+                    "FROM slackbot.USER "
+                    "INNER JOIN slackbot.TEAM ON slackbot.USER.team_id = slackbot.TEAM.team_id "
+                    "INNER JOIN slackbot.GAME_RESULT ON slackbot.USER.user_id = slackbot.GAME_RESULT.user_id "
+                    "INNER JOIN slackbot.GAME_INFO ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "GROUP BY user_id;"
                 )
                 conn.close()
                 rows =util.fetch_all_json(result)                
@@ -35,7 +40,6 @@ class Members(MethodView):
 
             except Exception as e:
                 print(str(e))
-                # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
 
         elif types == "getGameResult":

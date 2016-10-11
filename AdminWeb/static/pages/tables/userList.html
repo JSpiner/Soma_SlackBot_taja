@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
@@ -29,9 +29,9 @@
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
     function reqGameResultWihIDS(channelIDD){
-        $.get("http://ssoma.xyz:10000/member/getGameResultIDS",
+        $.get("http://ssoma.xyz:10000/member/getAllUser",
         {
-            channelID: channelIDD
+            // Nothing to attach
         },
         function(data){
             // console.log(data);
@@ -48,7 +48,31 @@
                 }else{
                     strEO = "odd"
                 }
-                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].game_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
+                
+                var week_ago_datetime = new Date();
+                week_ago_datetime.setDate(week_ago_datetime.getDate - 7);
+                
+                var splitted_timestamp = obj.data[i].latest_time.split(/[- :.]/);
+                var user_latest_played_time = new Date(Date.UTC(splitted_timestamp[0], splitted_timestamp[1]-1, splitted_timestamp[2], splitted_timestamp[3], splitted_timestamp[4], splitted_timestamp[5]));
+                
+                var isActive = ""
+                
+                if(user_latest_played_time > week_ago_datetime){
+                    isActive = "O"
+                }
+                
+                else{
+                    isActive= "X"
+                }
+                    
+                
+                trHTML += '<tr role="row" class="'+strEO+'">' + 
+                    '<td>' + i + '</td>' + 
+                    '<td>' +'<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?user_id='+obj.data[i].user_id+'>' + obj.data[i].user_name + '</td>'+
+                    '<td>' +'<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?user_id='+obj.data[i].team_id+'>' + obj.data[i].team_name + '</td>'+
+                    '<td>' + isActive +'</td>' + 
+                    '<td>' + obj.data[i].latest_time + '</td>'+'</td>' + 
+                    '</tr>';
             });
 
             // console.log(trHTML);
