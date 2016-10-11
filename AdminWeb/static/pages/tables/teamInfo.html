@@ -45,9 +45,8 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.teamId);
 
-        $.get(window.location.origin+"/member/getTeamInfo?teamID="+params.teamId,
+        $.get(window.location.origin+"/member/getTeamInfo?teamId="+params.teamId,
         {
 
         },
@@ -74,12 +73,16 @@
                 
                 trHTML = 
                     "team id : " +obj.data[i].team_id+"<br/>" +
-                    "team name : " +obj.data[i].team_id+"<br/>" +
-                    "team id : " +obj.data[i].team_id+"<br/>" +
-                    "team id : " +obj.data[i].team_id+"<br/>" +
-                    "team id : " +obj.data[i].team_id+"<br/>" +
-                    "team id : " +obj.data[i].team_id+"<br/>" 
+                    "team name : " +obj.data[i].team_name+"<br/>" +
+                    "team access token : " +obj.data[i].team_access_token+"<br/>" +
+                    "team joined time : " +obj.data[i].team_joined_time+"<br/>" +
+                    "team user count : " +obj.data[i].user_count+"<br/>" +
+                    "team recent play time : " +obj.data[i].recent_play_time+"<br/>" +
+                    "team max score : " +obj.data[i].max_score+"<br/>" +
+                    "team avg score : " +obj.data[i].avg_score+"<br/>" +
+                    "team play count : " +obj.data[i].play_count+"<br/>"
                 ;
+                console.log(trHTML);
 
 /*
                 trHTML = '<tr><td>' 
@@ -90,8 +93,6 @@
                     + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
                 $('#tb_team_info').append(trHTML);
             });
-
-            console.log(trHTML);            
 
         });
 
@@ -120,11 +121,10 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td>' 
-                    + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
-                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
-                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
+                    + i + '</td><td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>'  
+                    + obj.data[i].channel_name + '</td><td>' 
+                    + obj.data[i].channel_joined_time + '</td><td>'
+                    + obj.data[i].channel_joined_time + '</a></td></tr>';
                 $('#tb_channel_list').append(trHTML);
             });
 
@@ -282,7 +282,8 @@
     </section>
     <!-- Main content -->
     <section class="content">
-        <div class="tb_team_info"> /<div>
+        <div id="tb_team_info"> 
+        </div>
         <div class="row">
             <div class="col-xs-12">
 
@@ -297,10 +298,9 @@
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team id</th>
-                                <th>channel id</th>
                                 <th>channel name</th>
-                                <th>channel joined time</th>
+                                <th>first play time</th>
+                                <th>recent play time</th>
                                 
                             </tr>
                         </thead>

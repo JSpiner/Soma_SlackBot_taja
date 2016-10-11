@@ -70,7 +70,7 @@ class Members(MethodView):
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
         elif types == "getTeamInfo":
             try:
-                teamId = request.args.get('team_id')
+                teamId = request.args.get('teamId')
 
                 print("[ADMIN]getTeamInfo With channelID")    
 
