@@ -3,7 +3,7 @@ import sys
 import os
 
 from flask import redirect, url_for
-
+from manager import  db_manager
 
 # from flask_cors import CORS, cross_origin
 
@@ -27,7 +27,14 @@ app = Flask(__name__,static_url_path='')
 from route import member
 
 member_view = member.Members.as_view('member')
+
 app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getSpecificUserById', defaults={'types': 'getSpecificUserById'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getAllProblem', defaults={'types': 'getAllProblem'},
                  view_func=member_view, methods=['GET',])
 
 app.add_url_rule('/member/getAllTeam', defaults={'types': 'getAllTeam'},
@@ -47,6 +54,24 @@ app.add_url_rule('/member/getGameResultIDS', defaults={'types': 'getGameResult'}
 
 app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
                  view_func=member_view, methods=['GET',])
+
+
+@app.route('/member/newProblem', methods=['POST'])
+def newProblem():
+
+    payload = request.get_data().decode()
+    data = json.loads(payload)
+
+    problem_text = data['problem_text']
+
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute(
+        "INSERT INTO `slackbot`.`PROBLEM` (`problem_text`, `validity`) VALUES (%s, %s);",
+        (problem_text, 1)
+    )
+    trans.commit()
+    conn.close()
 
 
 @app.route('/manager/teamInfo', methods=['POST'])

@@ -149,6 +149,32 @@ class Members(MethodView):
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
 
+        elif types == "getAllProblem":
+
+            try:
+
+                print("Get All Problems")
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT  slackbot.PROBLEM.problem_id, "
+                    "slackbot.PROBLEM.problem_text, "
+                    "AVG(slackbot.GAME_RESULT.accuracy) "
+                    "AVG_OF_ACC, AVG(slackbot.GAME_RESULT.speed) "
+                    "AVG_OF_SPD, validity "
+                    "FROM    slackbot.PROBLEM "
+                    "INNER JOIN slackbot.GAME_INFO ON slackbot.PROBLEM.problem_id = slackbot.GAME_INFO.problem_id "
+                    "INNER JOIN slackbot.GAME_RESULT ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "GROUP By slackbot.PROBLEM.problem_id;"
+                )
+                conn.close()
+                rows = util.fetch_all_json(result)
+
+                return json.dumps(static.RES_DEFAULT(200, rows), sort_keys=True, indent=4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
     
     def post(self,types):
         print("post")
