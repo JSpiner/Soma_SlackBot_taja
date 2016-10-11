@@ -45,9 +45,58 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.channelId);
 
-        $.get("http://ssoma.xyz:10000/member/getAllGame?channelId="+params.channelId,
+
+        $.get(window.location.origin+"/member/getChannelInfo?channelId="+params.channelId,
+        {
+
+        },
+        function(data){
+
+            // console.log(data);
+            // str = JSON.stringify(data);
+            obj = JSON.parse(data);
+            console.log(obj.data);
+            var trHTML = '';
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
+            $.each(obj.data, function (i, item) {/*
+                //teamId teamName accessToken           
+            });
+            console.log(trHTML);*/
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                
+                console.log(obj.data[i]);
+                
+                trHTML = 
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team name : " +obj.data[i].team_name+"<br/>" +
+                    "team access token : " +obj.data[i].team_access_token+"<br/>" +
+                    "team joined time : " +obj.data[i].team_joined_time+"<br/>" +
+                    "team user count : " +obj.data[i].user_num+"<br/>" +
+                    "team recent play time : " +obj.data[i].recent_play_time+"<br/>" +
+                    "team max score : " +obj.data[i].max_score+"<br/>" +
+                    "team avg score : " +obj.data[i].avg_score+"<br/>" +
+                    "team play count : " +obj.data[i].play_num+"<br/>"
+                ;
+                console.log(trHTML);
+
+/*
+                trHTML = '<tr><td>' 
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
+                $('#tb_channel_info').append(trHTML);
+            });
+
+        });
+        $.get(window.location.origin+"/member/getAllGame?channelId="+params.channelId,
         {
             // hashKey: "9999"
         },
@@ -72,7 +121,7 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
+                    + i + '</td><td><a href='+window.location.origin+'/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
                     + obj.data[i].game_id + '</a></td><td>' 
                     + obj.data[i].team_id + '</td>'+'<td>' 
                     + obj.data[i].channel_id + '</a></td>'+'<td>' 
@@ -80,7 +129,7 @@
                     + obj.data[i].start_time + '</a></td>'+'<td>' 
                     + obj.data[i].end_time + '</a></td>'+'<td>' 
                     + obj.data[i].user_num + '</td>'+'</tr>';
-                $('#tb_game_info').append(trHTML);
+                $('#tb_game_list').append(trHTML);
             });
 
             console.log(trHTML);            
@@ -238,6 +287,8 @@
     </section>
     <!-- Main content -->
     <section class="content">
+        <div id="tb_channel_info"> 
+        </div>
         <div class="row">
             <div class="col-xs-12">
 
@@ -248,7 +299,7 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_game_info" class="table table-bordered table-striped">
+                        <table id="tb_game_list" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
