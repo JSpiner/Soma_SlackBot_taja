@@ -63,8 +63,10 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
 @app.route('/member/newProblem', methods=['POST'])
 def newProblem():
 
-    payload = request.get_data().decode()
-    data = json.loads(payload)
+    data = request.get_data()
+    print(data)
+    print(request.form)
+    print(request.values)
 
     problem_text = data['problem_text']
     print(problem_text)
