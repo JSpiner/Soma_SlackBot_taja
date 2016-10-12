@@ -45,7 +45,53 @@
         }
 
         params = getQueryParams(document.location.search);
+        
+        $.get(window.location.origin+"/member/getGameInfo?gameId="+params.gameId,
+        {
 
+        },
+        function(data){
+
+            // console.log(data);
+            // str = JSON.stringify(data);
+            obj = JSON.parse(data);
+            console.log(obj.data);
+            var trHTML = '';
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
+            $.each(obj.data, function (i, item) {/*
+                //teamId teamName accessToken           
+            });
+            console.log(trHTML);*/
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                
+                console.log(obj.data[i]);
+                
+                trHTML = 
+                    "game id : " +obj.data[i].game_id+"<br/>" +
+                    "problem_text : " +obj.data[i].problem_text+"<br/>" +
+                    "start time : " +obj.data[i].start_time+"<br/>" +
+                    "end time : " +obj.data[i].end_time+"<br/>"
+                    "user num : " +obj.data[i].user_num+"<br/>" +
+                    "best score : " +obj.data[i].max_score+"<br/>" +
+                    "avg score : " +obj.data[i].avg_score+"<br/>";
+                console.log(trHTML);
+
+/*
+                trHTML = '<tr><td>' 
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
+                $('#tb_game_info').append(trHTML);
+            });
+
+        });
         $.get(window.location.origin+"/member/getAllGameResult?gameId="+params.gameId,
         {
             // hashKey: "9999"
@@ -262,6 +308,8 @@
     </section>
     <!-- Main content -->
     <section class="content">
+        <div id="tb_game_info"> 
+        </div>
         <div class="row">
             <div class="col-xs-12">
 

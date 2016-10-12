@@ -48,6 +48,9 @@ app.add_url_rule('/member/getAllGameResult', defaults={'types': 'getAllGameResul
 app.add_url_rule('/member/getAllGame', defaults={'types': 'getAllGame'},
                  view_func=member_view, methods=['GET',])
 
+app.add_url_rule('/member/getGameInfo', defaults={'types': 'getGameInfo'},
+                 view_func=member_view, methods=['GET',])
+
 app.add_url_rule('/member/getGameResultIDS', defaults={'types': 'getGameResult'},
                  view_func=member_view, methods=['GET',])
 

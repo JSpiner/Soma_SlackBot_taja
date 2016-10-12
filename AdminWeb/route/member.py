@@ -299,6 +299,53 @@ class Members(MethodView):
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
 
+        elif types == "getGameInfo":
+
+            try:
+                game_id = request.args.get('gameId')
+
+                print("[ADMIN]_GET_ALL Games")            
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT * ,"
+                    "( "
+                    "    SELECT count(user_id)"
+                    "    FROM GAME_RESULT"
+                    "    WHERE"
+                    "        GAME_RESULT.game_id = GAME_INFO.game_id"
+                    ") as user_num, "
+                    "( "
+                    "    SELECT MAX(score)"
+                    "    FROM GAME_RESULT"
+                    "    WHERE"
+                    "        GAME_RESULT.game_id = GAME_INFO.game_id"
+                    ") as max_score, "
+                    "( "
+                    "    SELECT AVG(score)"
+                    "    FROM GAME_RESULT"
+                    "    WHERE"
+                    "        GAME_RESULT.game_id = GAME_INFO.game_id"
+                    ") as avg_score, "
+                    "( "
+                    "    SELECT problem_text"
+                    "    FROM PROBLEM"
+                    "    WHERE"
+                    "        PROBLEM.problem_id = GAME_INFO.problem_id"
+                    ") as problem_text "
+                    "FROM GAME_INFO "
+                    "WHERE   game_id=%s ",
+                    (game_id)
+                )
+                conn.close()
+                rows =util.fetch_all_json(result)                
+                
+                return json.dumps(static.RES_DEFAULT(200,rows),sort_keys=True, indent = 4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
+
     
     def post(self,types):
         print("post")
