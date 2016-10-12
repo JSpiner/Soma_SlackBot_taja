@@ -278,7 +278,15 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALL Games")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM GAME_RESULT where  game_id=%s",
+                    "SELECT * ,"
+                    "( "
+                    "    SELECT user_name"
+                    "    FROM USER"
+                    "    WHERE"
+                    "        USER.user_id = GAME_RESULT.user_id"
+                    ") as user_name "
+                    "FROM GAME_RESULT "
+                    "WHERE   game_id=%s ",
                     (game_id)
                 )
                 conn.close()

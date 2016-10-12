@@ -46,7 +46,7 @@
 
         params = getQueryParams(document.location.search);
 
-        $.get("http://ssoma.xyz:10000/member/getAllGameResult?gameId="+params.gameId,
+        $.get(window.location.origin+"/member/getAllGameResult?gameId="+params.gameId,
         {
             // hashKey: "9999"
         },
@@ -72,19 +72,18 @@
 
                 trHTML = '<tr><td>' 
                     + i + '</td><td>' 
-                    + obj.data[i].game_id + '</td><td>' 
-                    + obj.data[i].user_id + '</td>'+'<td>' 
-                    + obj.data[i].answer_text + '</a></td>'+'<td>' 
-                    + obj.data[i].score + '</a></td>'+'<td>' 
-                    + obj.data[i].speed + '</a></td>'+'<td>' 
-                    + obj.data[i].accuracy + '</a></td>'+'<td>' 
-                    + obj.data[i].elapsed_time + '</td>'+'</tr>';
-                $('#tb_game_info').append(trHTML);
+                    + obj.data[i].user_name + '</td><td>' 
+                    + obj.data[i].answer_text + '</td><td>' 
+                    + obj.data[i].score + '</td><td>' 
+                    + obj.data[i].accuracy + '</td><td>' 
+                    + obj.data[i].speed + '</td><td>' 
+                    + obj.data[i].elapsed_time + '</td></tr>';
+                $('#tb_game_result').append(trHTML);
             });
 
             console.log(trHTML);            
 
-              $('#tb_user_info').DataTable({
+              $('#tb_game_result').DataTable({
                 "paging": true,
                 "lengthChange": false,
                 "searching": true,
@@ -253,7 +252,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            팀목록>팀정보>채널정보>게임정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -273,16 +272,15 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_game_info" class="table table-bordered table-striped">
+                        <table id="tb_game_result" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>game id</th>
-                                <th>user id</th>
+                                <th>user name</th>
                                 <th>answer text</th>
                                 <th>score</th>
-                                <th>speed</th>
                                 <th>accuracy</th>
+                                <th>speed</th>
                                 <th>elapsed time</th>
                                 
                             </tr>
