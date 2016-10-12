@@ -14,6 +14,8 @@ from flask import request
 import json
 import time
 import logging
+from manager import db_manager
+
 
 logging.basicConfig(filename='log.log',level=logging.DEBUG)
 
@@ -25,6 +27,10 @@ app = Flask(__name__,static_url_path='')
 #라우트스 안에 멤버 메소드 콜
 
 from route import member
+from route import dashboard
+from utilz import util
+import datetime
+
 
 member_view = member.Members.as_view('member')
 app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
@@ -57,6 +63,13 @@ app.add_url_rule('/member/getGameResultIDS', defaults={'types': 'getGameResult'}
 app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
                  view_func=member_view, methods=['GET',])
 
+dashboard_view = dashboard.DashBoards.as_view('dashBoard')
+app.add_url_rule('/dashBoard/getIndicator', defaults={'types': 'getIndicator'},
+                 view_func=dashboard_view, methods=['GET',])
+app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph'},
+                 view_func=dashboard_view, methods=['GET',])
+
+
 
 @app.route('/manager/teamInfo', methods=['POST'])
 def manager_team_info():
@@ -72,10 +85,10 @@ def manager_team_info():
 
 @app.route('/', methods=['GET'])
 def redirect_to_index():
-    return redirect(url_for('static', filename='index2.html'))
-
-
+    return redirect(url_for('static', filename='indexx.html'))
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0',port=10001, debug= True)
+
+
 

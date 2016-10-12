@@ -1,4 +1,4 @@
-
+import datetime
 
 def fetch_all_json(result):
   lis = []
@@ -18,3 +18,6 @@ def fetch_all_json(result):
 
       i=i+1
   return lis
+
+def TIME_CURRENT_DATE():    
+  return datetime.datetime.now()
