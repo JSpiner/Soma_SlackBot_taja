@@ -117,4 +117,6 @@ def redirect_to_index():
     return redirect(url_for('static', filename='indexx.html'))
 
 if __name__ == '__main__':
-	app.run(host='0.0.0.0',port=10001, debug= True)
+
+    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+    app.run(host='0.0.0.0',port=10001, debug= True, ssl_context = ssl_context)
