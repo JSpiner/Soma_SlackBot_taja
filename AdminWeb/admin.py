@@ -3,7 +3,7 @@ import sys
 import os
 
 from flask import redirect, url_for
-
+from manager import  db_manager
 
 # from flask_cors import CORS, cross_origin
 
@@ -16,6 +16,7 @@ import time
 import logging
 from manager import db_manager
 
+import static
 
 logging.basicConfig(filename='log.log',level=logging.DEBUG)
 
@@ -33,7 +34,17 @@ import datetime
 
 
 member_view = member.Members.as_view('member')
+
 app.add_url_rule('/member/getAllUser', defaults={'types': 'getAllUser'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getSpecificUserInfoById', defaults={'types': 'getSpecificUserInfoById'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getSpecificUserGameResultById', defaults={'types': 'getSpecificUserGameResultById'},
+                 view_func=member_view, methods=['GET',])
+
+app.add_url_rule('/member/getAllProblem', defaults={'types': 'getAllProblem'},
                  view_func=member_view, methods=['GET',])
 
 app.add_url_rule('/member/getAllTeam', defaults={'types': 'getAllTeam'},
@@ -71,6 +82,24 @@ app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph
 
 
 
+@app.route('/member/newProblem', methods=['POST'])
+def newProblem():
+
+    problem_text = request.form['problem_text']
+    print(problem_text)
+
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    conn.execute(
+        "INSERT INTO `slackbot`.`PROBLEM` (`problem_text`, `validity`) VALUES (%s, %s);",
+        (problem_text, 1)
+    )
+    trans.commit()
+    conn.close()
+
+    return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+
+
 @app.route('/manager/teamInfo', methods=['POST'])
 def manager_team_info():
     jsonObject = {
@@ -89,6 +118,3 @@ def redirect_to_index():
 
 if __name__ == '__main__':
 	app.run(host='0.0.0.0',port=10001, debug= True)
-
-
-
