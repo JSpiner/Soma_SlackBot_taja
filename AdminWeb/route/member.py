@@ -166,8 +166,8 @@ class Members(MethodView):
                     "AVG_OF_ACC, AVG(slackbot.GAME_RESULT.speed) "
                     "AVG_OF_SPD, validity "
                     "FROM    slackbot.PROBLEM "
-                    "INNER JOIN slackbot.GAME_INFO ON slackbot.PROBLEM.problem_id = slackbot.GAME_INFO.problem_id "
-                    "INNER JOIN slackbot.GAME_RESULT ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "LEFT OUTER JOIN slackbot.GAME_INFO ON slackbot.PROBLEM.problem_id = slackbot.GAME_INFO.problem_id "
+                    "LEFT OUTER JOIN slackbot.GAME_RESULT ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
                     "GROUP By slackbot.PROBLEM.problem_id;"
                 )
                 conn.close()
