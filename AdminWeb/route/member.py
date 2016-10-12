@@ -26,7 +26,12 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALLUSER")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM USER "
+                    "SELECT slackbot.USER.user_id, slackbot.USER.user_name, slackbot.TEAM.team_name, slackbot.TEAM.team_id, MAX(slackbot.GAME_INFO.start_time) latest_time "
+                    "FROM slackbot.USER "
+                    "INNER JOIN slackbot.TEAM ON slackbot.USER.team_id = slackbot.TEAM.team_id "
+                    "INNER JOIN slackbot.GAME_RESULT ON slackbot.USER.user_id = slackbot.GAME_RESULT.user_id "
+                    "INNER JOIN slackbot.GAME_INFO ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "GROUP BY user_id;"
                 )
                 conn.close()
                 rows =util.fetch_all_json(result)                
@@ -35,7 +40,6 @@ class Members(MethodView):
 
             except Exception as e:
                 print(str(e))
-                # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
 
         elif types == "getGameResult":
@@ -149,6 +153,92 @@ class Members(MethodView):
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)
 
+        elif types == "getAllProblem":
+
+            try:
+
+                print("Get All Problems")
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT  slackbot.PROBLEM.problem_id, "
+                    "slackbot.PROBLEM.problem_text, "
+                    "AVG(slackbot.GAME_RESULT.accuracy) "
+                    "AVG_OF_ACC, AVG(slackbot.GAME_RESULT.speed) "
+                    "AVG_OF_SPD, validity "
+                    "FROM    slackbot.PROBLEM "
+                    "LEFT OUTER JOIN slackbot.GAME_INFO ON slackbot.PROBLEM.problem_id = slackbot.GAME_INFO.problem_id "
+                    "LEFT OUTER JOIN slackbot.GAME_RESULT ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "GROUP By slackbot.PROBLEM.problem_id;"
+                )
+                conn.close()
+                rows = util.fetch_all_json(result)
+
+                return json.dumps(static.RES_DEFAULT(200, rows), sort_keys=True, indent=4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
+
+        elif types == "getSpecificUserInfoById":
+
+            try:
+                user_id = request.args.get('user_id')
+
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT slackbot.USER.user_id, slackbot.USER.user_name, slackbot.TEAM.team_name, slackbot.TEAM.team_id, MAX(slackbot.GAME_INFO.start_time) latest_time "
+                    "FROM slackbot.USER "
+                    "INNER JOIN slackbot.TEAM ON slackbot.USER.team_id = slackbot.TEAM.team_id "
+                    "INNER JOIN slackbot.GAME_RESULT ON slackbot.USER.user_id = slackbot.GAME_RESULT.user_id "
+                    "INNER JOIN slackbot.GAME_INFO ON slackbot.GAME_INFO.game_id = slackbot.GAME_RESULT.game_id "
+                    "GROUP BY user_id "
+                    "HAVING slackbot.USER.user_id = %s;",
+                    (user_id)
+                )
+                conn.close()
+                rows = util.fetch_all_json(result)
+
+                return json.dumps(static.RES_DEFAULT(200, rows), sort_keys=True, indent=4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
+
+        elif types == "getSpecificUserGameResultById":
+
+            try:
+                user_id = request.args.get('user_id')
+
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "SELECT slackbot.USER.user_id"
+                    ", slackbot.GAME_RESULT.game_id"
+                    ", slackbot.PROBLEM.problem_text"
+                    ", slackbot.GAME_RESULT.answer_text"
+                    ", slackbot.GAME_INFO.start_time"
+                    ", slackbot.GAME_INFO.end_time"
+                    ", slackbot.GAME_RESULT.score"
+                    ", slackbot.GAME_RESULT.accuracy"
+                    ", slackbot.GAME_RESULT.speed"
+                    ", slackbot.GAME_RESULT.elapsed_time "
+                    "FROM slackbot.GAME_RESULT "
+                    "INNER JOIN slackbot.GAME_INFO ON slackbot.GAME_RESULT.game_id = slackbot.GAME_INFO.game_id "
+                    "INNER JOIN slackbot.PROBLEM ON slackbot.GAME_INFO.problem_id = slackbot.PROBLEM.problem_id "
+                    "INNER JOIN slackbot.USER ON slackbot.USER.user_id = slackbot.GAME_RESULT.user_id "
+                    "WHERE slackbot.USER.user_id = %s;",
+                    (user_id)
+                )
+                conn.close()
+                rows = util.fetch_all_json(result)
+
+                return json.dumps(static.RES_DEFAULT(200, rows), sort_keys=True, indent=4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
     
     def post(self,types):
         print("post")
