@@ -16,6 +16,7 @@ import datetime
 from common import util
 import time
 import base64
+import datetime
 
 # test before running flask
 # tester.run_unit_test()
@@ -52,6 +53,8 @@ def slack_oauth():
     response = json.loads(r.text)
 
     print(response)
+    ctime = datetime.datetime.now()
+
     conn = db_manager.engine.connect()
     trans = conn.begin()
     conn.execute(
@@ -62,11 +65,12 @@ def slack_oauth():
         (
             response['team_id'],
             response['team_name'],
-            time.time()*1000,
+            ctime,
             response['access_token']
         )
     )
     trans.commit()
+
     return 'auth success' + response['access_token']
 
 @app.route('/slack/event', methods = ['POST'])

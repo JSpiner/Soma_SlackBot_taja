@@ -7,6 +7,7 @@ from manager import db_manager
 from common import static
 from common import util
 from common.slackapi import SlackApi
+import datetime
 
 
 import requests
@@ -49,6 +50,10 @@ def game_end(slackApi, data, teamId):
     game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
     user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
     problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
+    
+    print(start_time)
+
+    start_time_to_time_tamp = datetime.datetime.utcfromtimestamp(float(start_time)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
 
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_CALCULATING)
@@ -62,12 +67,13 @@ def game_end(slackApi, data, teamId):
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
+    ctime = datetime.datetime.now()
     conn.execute(
         "INSERT INTO GAME_INFO "
         "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"
         "VALUES"
         "(%s, %s, %s, %s, %s, %s, %s) ",
-        (game_id, data["channel"], teamId, start_time, time.time()*1000, problem_id , user_num)
+        (game_id, data["channel"], teamId, start_time_to_time_tamp, ctime, problem_id , user_num)
     )
     trans.commit()
     conn.close()
@@ -157,9 +163,12 @@ def worker(data):
         # 채널 정보가 DB에 있는지 redis로 확인 후 없으면 DB에 저장
         if(redis_manager.redis_client.get("is_channel_exist_" + data["channel"]) == None):
             redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
+    
+            ctime = datetime.datetime.now()
 
             # 채널 이름 가져오기
             channel_list = get_channel_list(slackApi)
+            print(channel_list)
             channels = channel_list['channels']
             channel_name = ""
             for channel_info in channels:
@@ -174,7 +183,7 @@ def worker(data):
                 "(team_id, channel_id, channel_name, channel_joined_time)"
                 "VALUES"
                 "(%s, %s, %s, %s);", 
-                (teamId, data['channel'], channel_name, time.time()*1000)
+                (teamId, data['channel'], channel_name, ctime)
             )
             trans.commit()
             conn.close()
@@ -196,8 +205,10 @@ def worker(data):
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
 
+
+
         # 시작 시간 설정
-        redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000)
+        redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000,)
 
         # 해당 게임 문자열 설정
         redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
@@ -313,8 +324,15 @@ def worker(data):
 
 
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
-        current_time = time.time()*1000
+        current_time = time.time()*1000    
+
+        #unix 시간으로 start_time이저장되기떄문에 계산을위해 unixtime으로반환해줘야된다.
+        # print(float(time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f").timetuple())))
+        # print(current_time)
+
         elapsed_time = (current_time - float(start_time)) * 1000
+
+        print(elapsed_time)
 
         game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
 

@@ -27,8 +27,8 @@
     <![endif]-->
     
 
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
         function getQueryParams(qs) {
             qs = qs.split('+').join(' ');
@@ -45,9 +45,62 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.teamId);
 
-        $.get("http://ssoma.xyz:15000/member/getAllChannel?teamId="+params.teamId,
+       $.get(window.location.origin+"/member/getTeamInfo?teamId="+params.teamId,
+        {
+
+        },
+        function(data){
+
+            // console.log(data);
+            // str = JSON.stringify(data);
+            obj = JSON.parse(data);
+            console.log(obj.data);
+            var trHTML = '';
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
+            $.each(obj.data, function (i, item) {/*
+                //teamId teamName accessToken           
+            });
+            console.log(trHTML);*/
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                
+                console.log(obj.data[i]);
+                
+                trHTML = 
+                    "team id : " +obj.data[i].team_id+"<br/>" +
+                    "team name : " +obj.data[i].team_name+"<br/>" +
+                    "team access token : " +obj.data[i].team_access_token+"<br/>" +
+                    "team joined time : " +obj.data[i].team_joined_time+"<br/>" +
+                    "team user count : " +obj.data[i].user_num+"<br/>" +
+                    "team recent play time : " +obj.data[i].recent_play_time+"<br/>" +
+                    "team max score : " +obj.data[i].max_score+"<br/>" +
+                    "team avg score : " +obj.data[i].avg_score+"<br/>" +
+                    "team play count : " +obj.data[i].play_num+"<br/>"
+                ;
+                console.log(trHTML);
+
+/*
+                trHTML = '<tr><td>' 
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+<<<<<<< HEAD:AdminWeb/static/pages/tables/teamInfo.html
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+=======
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'https://ssoma.xyz:10000/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>'
+>>>>>>> 3fe3f2a4d6879def2b16a8e1c29e69d0b00fe5d5:AdminWeb/static/pages/tables/channelList.html
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
+                $('#tb_team_info').append(trHTML);
+            });
+
+        });
+
+        $.get(window.location.origin+"/member/getAllChannel?teamId="+params.teamId,
         {
             // hashKey: "9999"
         },
@@ -72,17 +125,16 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td>' 
-                    + obj.data[i].team_id + '</td><td>' 
-                    + obj.data[i].channel_id + '</td>'+'<td><a href='+'http://ssoma.xyz:10000/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>'
-                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
-                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';
-                $('#tb_team_info').append(trHTML);
+                    + i + '</td><td><a href='+window.location.origin+'/pages/tables/channelInfo.html?channelId='+obj.data[i].channel_id+'>'  
+                    + obj.data[i].channel_name + '</td><td>' 
+                    + obj.data[i].channel_joined_time + '</td><td>'
+                    + obj.data[i].recent_play_time + '</a></td></tr>';
+                $('#tb_channel_list').append(trHTML);
             });
 
             console.log(trHTML);            
 
-              $('#tb_user_info').DataTable({
+              $('#tb_channel_list').DataTable({
                 "paging": true,
                 "lengthChange": false,
                 "searching": true,
@@ -107,7 +159,7 @@
         <header class="main-header">
 
             <!-- Logo -->
-            <a href="..\..\index2.html" class="logo">
+            <a href="..\..\indexx.html" class="logo">
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
@@ -193,43 +245,44 @@
       </form>
       <!-- /.search form --> 
       <!-- sidebar menu: : style can be found in sidebar.less -->
-      <ul class="sidebar-menu">
-        <li class="header">목록</li>        
- 
-        <li>
-          <a href="./teamList.html">
-            <i class="fa fa-users"></i> <span>팀 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./userList.html">
-            <i class="fa fa-users"></i> <span>유저 목록</span>
-            </a>
-        </li>
-        <li>
-          <a href="./problemList.html">
-            <i class="fa fa-users"></i> <span>문제 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./gameList.html">
-            <i class="fa fa-users"></i> <span>게임 목록</span>
-            </a>
-        </li>
-      </ul>
+      
+            <ul class="sidebar-menu">
+                <li class="header">목록</li>
+
+                <li>
+                    <a href="./teamList.html">
+                        <i class="fa fa-users"></i> <span>팀 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./userList.html">
+                        <i class="fa fa-users"></i> <span>유저 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./problemList.html">
+                        <i class="fa fa-users"></i> <span>문제 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./gameList.html">
+                        <i class="fa fa-users"></i> <span>게임 목록</span>
+                    </a>
+                </li> 
+            </ul>
     </section>
   </aside> 
 
+ 
 
 
-
-
+ 
 <!-- Content Wrapper. Contains page content -->
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            팀목록>팀정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -239,6 +292,8 @@
     </section>
     <!-- Main content -->
     <section class="content">
+        <div id="tb_team_info"> 
+        </div>
         <div class="row">
             <div class="col-xs-12">
 
@@ -249,14 +304,13 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_team_info" class="table table-bordered table-striped">
+                        <table id="tb_channel_list" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team id</th>
-                                <th>channel id</th>
                                 <th>channel name</th>
-                                <th>channel joined time</th>
+                                <th>first play time</th>
+                                <th>recent play time</th> 
                                 
                             </tr>
                         </thead>
@@ -297,7 +351,7 @@
     <div class="pull-right hidden-xs">
         <b>Version</b> 2.3.3
     </div>
-    <strong>Copyright &copy; 2016 <a href="../../index2.html">Campus Friends</a>.</strong> All rights
+    <strong>Copyright &copy; 2016 <a href="../../indexx.html">Campus Friends</a>.</strong> All rights
     reserved.
 </footer>
 <!-- Control Sidebar -->

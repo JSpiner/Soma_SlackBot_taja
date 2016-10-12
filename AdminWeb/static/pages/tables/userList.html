@@ -26,10 +26,10 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
 
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
         function reqAllUser() {
-            $.get("http://ssoma.xyz:15000/member/getAllUser",
+            $.get(window.location.origin+"/member/getAllUser",
                     {
                         // Nothing to attach
                     },
@@ -70,8 +70,8 @@
 
                             trHTML += '<tr role="row" class="' + strEO + '">' +
                                     '<td>' + i + '</td>' +
-                                    '<td>' + '<a href=http://ssoma.xyz:15000/pages/tables/userInfo.html?user_id=' + obj.data[i].user_id + '>' + obj.data[i].user_name + '</td>' +
-                                    '<td>' + '<a href=http://ssoma.xyz:10001/member/getTeamInfo?teamId=' + obj.data[i].team_id + '>' + obj.data[i].team_name + '</td>' +
+                                    '<td><a href=' + window.location.origin + '/pages/tables/userInfo.html?user_id=' + obj.data[i].user_id + '>' + obj.data[i].user_name + '</td>' +
+                                    '<td><a href=' + window.location.origin + '/member/getTeamInfo?teamId=' + obj.data[i].team_id + '>' + obj.data[i].team_name + '</td>' +
                                     '<td>' + isActive + '</td>' +
                                     '<td>' + obj.data[i].latest_time + '</td>' + '</td>' +
                                     '</tr>';
@@ -91,9 +91,10 @@
                         });
                     });
         }
-
+        
+  
         $(document).ready(function () {
-            reqAllUser();
+            reqAllUser(); 
         });
     </script>
 
@@ -103,7 +104,7 @@
     <header class="main-header">
 
         <!-- Logo -->
-        <a href="..\..\index2.html" class="logo">
+        <a href="..\..\indexx.html" class="logo">
             <!-- mini logo for sidebar mini 50x50 pixels -->
             <span class="logo-mini"><b>A</b>LT</span>
             <!-- logo for regular state and mobile devices -->
@@ -186,6 +187,7 @@
             </form>
             <!-- /.search form -->
             <!-- sidebar menu: : style can be found in sidebar.less -->
+            
             <ul class="sidebar-menu">
                 <li class="header">목록</li>
 
@@ -219,7 +221,7 @@
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <h1>
-                게임 목록
+                유저 목록
             </h1>
             <ol class="breadcrumb">
                 <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -281,12 +283,12 @@
         </section>
         <!-- /.content -->
     </div>
-    <!-- /.content-wrapper -->
+    <!-- /.content-wrapper --> 
     <footer class="main-footer">
         <div class="pull-right hidden-xs">
             <b>Version</b> 2.3.3
         </div>
-        <strong>Copyright &copy; 2016 <a href="../../index2.html">Campus Friends</a>.</strong> All rights
+        <strong>Copyright &copy; 2016 <a href="../../indexx.html">Campus Friends</a>.</strong> All rights
         reserved.
     </footer>
     <!-- Control Sidebar -->

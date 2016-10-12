@@ -25,10 +25,10 @@
     <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    
+     
 
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
         function getQueryParams(qs) {
             qs = qs.split('+').join(' ');
@@ -45,9 +45,51 @@
         }
 
         params = getQueryParams(document.location.search);
-        alert(params.channelId);
+        $.get(window.location.origin+"/member/getChannelInfo?channelId="+params.channelId,
+        {
 
-        $.get("http://ssoma.xyz:15000/member/getAllGame?channelId="+params.channelId,
+        },
+        function(data){
+
+            // console.log(data);
+            // str = JSON.stringify(data);
+            obj = JSON.parse(data);
+            console.log(obj.data);
+            var trHTML = '';
+            // $("#tb_user_info tbody").empty(); // this will remove all <tr>.
+            $.each(obj.data, function (i, item) {/*
+                //teamId teamName accessToken           
+            });
+            console.log(trHTML);*/
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                
+                console.log(obj.data[i]);
+                
+                trHTML = 
+                    "channel id : " +obj.data[i].channel_id+"<br/>" +
+                    "channel name : " +obj.data[i].channel_name+"<br/>" +
+                    "first played time : " +obj.data[i].channel_joined_time+"<br/>" +
+                    "recent played time : " +obj.data[i].recent_play_time+"<br/>"
+                ;
+                console.log(trHTML);
+
+/*
+                trHTML = '<tr><td>' 
+                    + i + '</td><td>' 
+                    + obj.data[i].team_id + '</td><td>' 
+                    + obj.data[i].channel_id + '</td>'+'<td><a href='+window.location.origin+'/pages/tables/channelGameList.html?channelId='+obj.data[i].channel_id+'>' 
+                    + obj.data[i].channel_name + '</a></td>'+'<td>' 
+                    + obj.data[i].channel_joined_time + '</td>'+'</tr>';*/
+                $('#tb_channel_info').append(trHTML);
+            });
+
+        });
+        $.get(window.location.origin+"/member/getAllGame?channelId="+params.channelId,
         {
             // hashKey: "9999"
         },
@@ -72,15 +114,15 @@
                 console.log(obj.data[i]);
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td><a href='+'http://ssoma.xyz:10000/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
+                    + i + '</td><td><a href='+window.location.origin+'/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>' 
                     + obj.data[i].game_id + '</a></td><td>' 
-                    + obj.data[i].team_id + '</td>'+'<td>' 
-                    + obj.data[i].channel_id + '</a></td>'+'<td>' 
-                    + obj.data[i].problem_id + '</a></td>'+'<td>' 
+                    + obj.data[i].problem_text + '</td>'+'<td>' 
                     + obj.data[i].start_time + '</a></td>'+'<td>' 
                     + obj.data[i].end_time + '</a></td>'+'<td>' 
-                    + obj.data[i].user_num + '</td>'+'</tr>';
-                $('#tb_game_info').append(trHTML);
+                    + obj.data[i].user_num + '</a></td>'+'<td>' 
+                    + obj.data[i].max_score + '</a></td>'+'<td>' 
+                    + obj.data[i].avg_score + '</td>'+'</tr>';
+                $('#tb_game_list').append(trHTML);
             });
 
             console.log(trHTML);            
@@ -110,7 +152,7 @@
         <header class="main-header">
 
             <!-- Logo -->
-            <a href="..\..\index2.html" class="logo">
+            <a href="..\..\indexx.html" class="logo">
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
@@ -197,29 +239,30 @@
       </form>
       <!-- /.search form --> 
       <!-- sidebar menu: : style can be found in sidebar.less -->
-       <ul class="sidebar-menu">
-        <li class="header">목록</li>
-        <li>
-          <a href="./teamList.html">
-            <i class="fa fa-users"></i> <span>팀 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./userList.html">
-            <i class="fa fa-users"></i> <span>유저 목록</span>
-            </a>
-        </li>
-        <li>
-          <a href="./problemList.html">
-            <i class="fa fa-users"></i> <span>문제 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./gameList.html">
-            <i class="fa fa-users"></i> <span>게임 목록</span>
-            </a>
-        </li>
-      </ul>
+        <ul class="sidebar-menu">
+            <li class="header">목록</li>
+
+            <li>
+                <a href="./teamList.html">
+                    <i class="fa fa-users"></i> <span>팀 목록</span>
+                </a>
+            </li>
+            <li>
+                <a href="./userList.html"> 
+                    <i class="fa fa-users"></i> <span>유저 목록</span>
+                </a>
+            </li>
+            <li>
+                <a href="./problemList.html">
+                    <i class="fa fa-users"></i> <span>문제 목록</span>
+                </a>
+            </li>
+            <li>
+                <a href="./gameList.html">
+                    <i class="fa fa-users"></i> <span>게임 목록</span>
+                </a>
+            </li>
+        </ul>
     </section>
   </aside> 
 
@@ -232,7 +275,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            회원정보
+            팀목록>팀정보>채널정보
         </h1>
         <ol class="breadcrumb">
             <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -242,6 +285,8 @@
     </section>
     <!-- Main content -->
     <section class="content">
+        <div id="tb_channel_info"> 
+        </div>
         <div class="row">
             <div class="col-xs-12">
 
@@ -252,17 +297,17 @@
                     <!-- /.box-header -->
                     <div class="box-body">
                     
-                        <table id="tb_game_info" class="table table-bordered table-striped">
+                        <table id="tb_game_list" class="table table-bordered table-striped">
                          <thead>
                             <tr>
                                 <th>num</th>
                                 <th>game id</th>
-                                <th>team id</th>
-                                <th>channel name</th>
-                                <th>problem id</th>
+                                <th>problem text</th>
                                 <th>start time</th>
                                 <th>end time</th>
                                 <th>user num</th>
+                                <th>max score</th>
+                                <th>avg score</th>
                                 
                             </tr>
                         </thead>
@@ -303,7 +348,7 @@
     <div class="pull-right hidden-xs">
         <b>Version</b> 2.3.3
     </div>
-    <strong>Copyright &copy; 2016 <a href="../../index2.html">Campus Friends</a>.</strong> All rights
+    <strong>Copyright &copy; 2016 <a href="../../indexx.html">Campus Friends</a>.</strong> All rights
     reserved.
 </footer>
 <!-- Control Sidebar -->

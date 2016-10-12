@@ -26,13 +26,13 @@
     <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
     
-
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
-    <!-- <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script> -->
+ 
+    <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script> -->
     <script type="text/javascript">
-        $.get("http://ssoma.xyz:15000/member/getAllTeam",
+        $.get(window.location.origin+"/member/getAllTeam",
         {
-            // hashKey: "9999"
+            // hashKey: "9999" 
         },
         function(data){
             // console.log(data);
@@ -44,7 +44,7 @@
             $.each(obj.data, function (i, item) {/*
                 //teamId teamName accessToken           
             });
-            console.log(trHTML);*/
+            console.log(trHTML);*/ 
                 var strEO
                 if(i%2==0){
                     strEO = "even"
@@ -52,14 +52,16 @@
                     strEO = "odd"
                 }
                 
-                console.log(obj.data[i]);
+                console.log(obj.data[i]); 
 
                 trHTML = '<tr><td>' 
-                    + i + '</td><td>' 
-                    + obj.data[i].team_id + '</a></td><td><a href='+'http://ssoma.xyz:10000/pages/tables/channelList.html?teamId='+obj.data[i].team_id+'>' 
+                    + i + '</td><td><a href='+window.location.origin+'/pages/tables/teamInfo.html?teamId='+obj.data[i].team_id+'>' 
                     + obj.data[i].team_name + '</td>'+'<td>' 
                     + obj.data[i].team_joined_time + '</td>'+'<td>' 
-                    + obj.data[i].team_access_token + '</td>'+'</tr>';
+                    + obj.data[i].user_num + '</td>'+'<td>' 
+                    + obj.data[i].recent_play_time + '</td>'+'<td>' 
+                    + obj.data[i].max_score + '</td>'+'<td>' 
+                    + obj.data[i].avg_score + '</td>'+'<td>' ;
                 $('#tb_team_info').append(trHTML);
             });
 
@@ -72,7 +74,7 @@
                 "ordering": true,
                 "info": true,
                 "autoWidth": false
-            });
+            }); 
         });
 
     </script>
@@ -89,8 +91,8 @@
     <div class="wrapper">
         <header class="main-header">
 
-            <!-- Logo -->
-            <a href="..\..\index2.html" class="logo">
+            <!-- Logo --> 
+            <a href="..\..\indexx.html" class="logo">
               <!-- mini logo for sidebar mini 50x50 pixels -->
               <span class="logo-mini"><b>A</b>LT</span>
               <!-- logo for regular state and mobile devices -->
@@ -176,30 +178,31 @@
       </form>
       <!-- /.search form --> 
       <!-- sidebar menu: : style can be found in sidebar.less -->
-      <ul class="sidebar-menu">
-        <li class="header">목록</li>        
- 
-        <li>
-          <a href="./teamList.html">
-            <i class="fa fa-users"></i> <span>팀 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./userList.html">
-            <i class="fa fa-users"></i> <span>유저 목록</span>
-            </a>
-        </li>
-        <li>
-          <a href="./problemList.html">
-            <i class="fa fa-users"></i> <span>문제 목록</span>
-          </a>
-        </li>
-        <li>
-          <a href="./gameList.html">
-            <i class="fa fa-users"></i> <span>게임 목록</span>
-            </a>
-        </li>
-      </ul>
+     
+            <ul class="sidebar-menu"> 
+                <li class="header">목록</li>
+
+                <li>
+                    <a href="./teamList.html">
+                        <i class="fa fa-users"></i> <span>팀 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./userList.html">
+                        <i class="fa fa-users"></i> <span>유저 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./problemList.html">
+                        <i class="fa fa-users"></i> <span>문제 목록</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="./gameList.html">
+                        <i class="fa fa-users"></i> <span>게임 목록</span>
+                    </a>
+                </li>
+            </ul>
     </section>
   </aside> 
 
@@ -235,10 +238,12 @@
                          <thead>
                             <tr>
                                 <th>num</th>
-                                <th>team id</th>
                                 <th>team Name</th>
                                 <th>team joined time</th>
-                                <th>team access token</th>
+                                <th>user count</th>
+                                <th>recent play time</th>
+                                <th>best score</th>
+                                <th>average score</th>
                                 
                             </tr>
                         </thead>
@@ -279,7 +284,7 @@
     <div class="pull-right hidden-xs">
         <b>Version</b> 2.3.3
     </div>
-    <strong>Copyright &copy; 2016 <a href="../../index2.html">Campus Friends</a>.</strong> All rights
+    <strong>Copyright &copy; 2016 <a href="../../indexx.html">Campus Friends</a>.</strong> All rights
     reserved.
 </footer>
 <!-- Control Sidebar -->

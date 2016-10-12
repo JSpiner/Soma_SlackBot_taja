@@ -10,3 +10,4 @@ __pycache__/
 .idea/modules.xml
 .idea/workspace.xml
 log.log
+AdminWeb/log.log
