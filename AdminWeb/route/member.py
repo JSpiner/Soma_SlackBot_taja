@@ -261,7 +261,25 @@ class Members(MethodView):
                 print("[ADMIN]_GET_ALLChannel")            
                 conn = db_manager.engine.connect()
                 result = conn.execute(
-                    "SELECT * FROM GAME_INFO where  channel_id=%s",
+                    "SELECT * ,"
+                    "( "
+                    "    SELECT problem_text "
+                    "    FROM PROBLEM "
+                    "    WHERE PROBLEM.problem_id = GAME_INFO.problem_id"
+                    ") as problem_text, "
+                    "( "
+                    "    SELECT MAX(score) "
+                    "    FROM GAME_RESULT "
+                    "    WHERE GAME_RESULT.game_id = GAME_INFO.game_id"
+                    ") as max_score, "
+                    "( "
+                    "    SELECT AVG(score) "
+                    "    FROM GAME_RESULT "
+                    "    WHERE GAME_RESULT.game_id = GAME_INFO.game_id"
+                    ") as avg_score "
+                    "FROM GAME_INFO "
+                    "WHERE "
+                    "    channel_id=%s",
                     (channel_id)
                 )
                 conn.close()
