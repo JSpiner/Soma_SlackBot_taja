@@ -63,12 +63,8 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
 @app.route('/member/newProblem', methods=['POST'])
 def newProblem():
 
-    #data = request.get_data()
-    #print(data)
-    #print(request.form[0]['problem_text'])
-    #print(request.values)
 
-    problem_text = request.json['problem_text']
+    problem_text = request.form['problem_text']
     print(problem_text)
 
     conn = db_manager.engine.connect()
