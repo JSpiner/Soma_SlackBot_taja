@@ -57,6 +57,8 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
 dashboard_view = dashboard.DashBoards.as_view('dashBoard')
 app.add_url_rule('/dashBoard/getIndicator', defaults={'types': 'getIndicator'},
                  view_func=dashboard_view, methods=['GET',])
+app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph'},
+                 view_func=dashboard_view, methods=['GET',])
 
 
 

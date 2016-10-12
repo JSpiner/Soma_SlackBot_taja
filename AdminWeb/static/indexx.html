@@ -20,6 +20,10 @@
        folder instead of downloading all of them to reduce the load. -->
   <link rel="stylesheet" href="dist/css/skins/_all-skins.min.css">
 
+
+  <link rel="stylesheet" href="plugins/morris/morris.css">
+
+
   <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
   <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
   <!--[if lt IE 9]>
@@ -29,37 +33,119 @@
   <script type="text/javascript" src="http://code.jquery.com/jquery-1.12.0.min.js"></script>
 
   <script type="text/javascript">
-        $.get("http://ssoma.xyz:10000/dashBoard/getIndicator",
-        {},
-        function(data){
-            console.log(data);
-            obj = JSON.parse(data);
-            inActiveTeams = obj.data["inActiveTeams"]
-            inActiveUsers = obj.data["inActiveUsers"]
-            todayInstall = obj.data["todayInstall"]
-            todayPlay = obj.data["todayPlay"]
+        const BASE_URL = "http://ssoma.xyz:10000"
+        const GET_INDICATOR = "/dashBoard/getIndicator"
+        const GET_ACTIVE_GRAPH = "/dashBoard/getActiveGraph"
+                        
+        //최초실행될떄 뿌려줘야할것들
 
-            console.log(inActiveTeams)
-            console.log(inActiveUsers)
-            console.log(todayInstall)
-            console.log(todayPlay)
-            
-            $('#txt_todayInstall').text(todayInstall);
-            $('#txt_todayPlay').text(todayPlay);
-            $('#txt_inActiveTeams').text(inActiveTeams);
-            $('#txt_inActiveUsers').text(inActiveUsers);
+        function initView(){
+          var whoo = "user";
+          reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+          $.get(BASE_URL+GET_INDICATOR,
+          {},
+          function(data){
+              console.log(data);
+              obj = JSON.parse(data);
+              inActiveTeams = obj.data["inActiveTeams"]
+              inActiveUsers = obj.data["inActiveUsers"]
+              todayInstall = obj.data["todayInstall"]
+              todayPlay = obj.data["todayPlay"]
 
-        });
+              console.log(inActiveTeams)
+              console.log(inActiveUsers)
+              console.log(todayInstall)
+              console.log(todayPlay)
+              
+              $('#txt_todayInstall').text(todayInstall);
+              $('#txt_todayPlay').text(todayPlay);
+              $('#txt_inActiveTeams').text(inActiveTeams);
+              $('#txt_inActiveUsers').text(inActiveUsers);
+
+          });
+
+        }
+        
     
         $(document).ready(function(){
+          //초기 뿌려줄것들.
+            initView()
+            var whoo = "user";
+
+            var btn_active_user = $('#btn_active_user');
+            btn_active_user.click(function(){                
+                whoo ="user"
+            });
+            var btn_active_team = $('#btn_active_team');
+            btn_active_team.click(function(){                
+                whoo ="team"
+            });
             
-            // var input_channel = $('#input_channel');
-            // btn_channel_search.click(function(){
-            //     // alert(input_channel.val());
-            //     reqGameResultWihIDS(input_channel.val())
-            // });
+            var btn_active_day = $('#btn_active_day');
+            var btn_active_month = $('#btn_active_month');
+            var btn_active_year = $('#btn_active_year');
+
+            if(whoo=="user"){
+                  btn_active_day.click(function(){                
+                    reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+                  });
+                  
+                  btn_active_month.click(function(){                
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"month")
+                  });
+                  
+                  btn_active_year.click(function(){                
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"year")
+                  });  
+
+            }else{
+
+                  btn_active_day.click(function(){                
+                    reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+                  });
+                  btn_active_month.click(function(){                
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"month")
+                  });
+                  btn_active_year.click(function(){                
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"year")
+                  });  
+            }          
 
         });
+
+        function reqGet(url,whoo,periodd){
+          $.get(BASE_URL+url,
+          {
+            who : whoo,
+            period : periodd
+          },
+          function(res){
+              console.log(res);
+              obj = JSON.parse(res);
+              if(periodd=="day"){
+                xlabell = 'hour'
+              }else if(periodd=="month"){
+                xlabell = 'day'
+
+              }else if(periodd=="year"){
+                xlabell = 'month'
+              }                      
+
+              var line = new Morris.Line({
+                element: 'line-chart-active',
+                resize: true,
+                data: obj.data,
+                xkey: xlabell,
+                ykeys: ['cnt'],
+                labels: ['users'],
+                lineColors: ['#3c8dbc'],
+                hideHover: 'auto',
+                parseTime: false,
+              });
+
+              // line.setData(obj.data);
+          });
+        }
     </script>
 
 </head>
@@ -253,6 +339,118 @@
         </div>
         <!-- ./col -->
       </div>
+
+
+
+
+
+<div class="row">
+        <div class="col-md-6">
+        <!-- LINE CHART -->
+          <div class="box box-info">
+            <div class="box-header with-border">
+              <h3 class="box-title">플레이 그래프 </h3>
+              
+              <div class="btn-group">
+                        <button type="button" class="btn btn-info" id="btn_active_day">day</button>
+                        <button type="button" class="btn btn-info" id="btn_active_month">month</button>
+                        <button type="button" class="btn btn-info" id="btn_active_year">year</button>
+                </div>
+              
+
+
+              <div class="box-tools pull-right">
+                <div class="btn-group">
+                        <button type="button" class="btn btn-info" id="btn_active_user">user</button>
+                        <button type="button" class="btn btn-info" id="btn_active_team">team</button>
+                </div>
+
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+
+
+              </div>
+
+              
+
+            </div>
+            <div class="box-body chart-responsive">
+              <div class="chart" id="line-chart-active" style="height: 300px;"></div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
+
+          <!-- DONUT CHART -->
+          <div class="box box-danger">
+            <div class="box-header with-border">
+              <h3 class="box-title">Donut Chart</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <div class="box-body chart-responsive">
+              <div class="chart" id="sales-chart" style="height: 300px; position: relative;"></div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
+        </div>
+        <!-- /.col (LEFT) -->
+        <div class="col-md-6">
+          <!-- LINE CHART -->
+          <div class="box box-info">
+            <div class="box-header with-border">
+              <h3 class="box-title">Line Chart    </h3>
+
+              <div class="box-tools pull-right">
+                <div class="btn-group">
+                        <button type="button" class="btn btn-info">user</button>
+                        <button type="button" class="btn btn-info">team</button>                    
+                </div>
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <div class="box-body chart-responsive">
+              <div class="chart" id="line-chart-inActive" style="height: 300px;"></div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
+          <!-- BAR CHART -->
+          <div class="box box-success">
+            <div class="box-header with-border">
+              <h3 class="box-title">Bar Chart</h3>
+
+              <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+              </div>
+            </div>
+            <div class="box-body chart-responsive">
+              <div class="chart" id="bar-chart" style="height: 300px;"></div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+          <!-- /.box -->
+
+        </div>
+        <!-- /.col (RIGHT) -->
+      </div>
+
+
+
+
       </section>
 
     <div style="margin-left:30px">
@@ -488,5 +686,134 @@
 <script src="dist/js/pages/dashboard2.js"></script>
 <!-- AdminLTE for demo purposes -->
 <script src="dist/js/demo.js"></script>
+
+
+<!--!@@@@@@ 이렇게 새롭 게 추가해야만 꼭 그래프가 그려진다!!  -->
+<!-- jQuery 2.2.0 -->
+<script src="plugins/jQuery/jQuery-2.2.0.min.js"></script>
+<!-- Bootstrap 3.3.6 -->
+<script src="bootstrap/js/bootstrap.min.js"></script>
+<!-- Morris.js charts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.1.0/raphael-min.js"></script>
+<script src="plugins/morris/morris.min.js"></script>
+<!-- FastClick -->
+<script src="plugins/fastclick/fastclick.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/app.min.js"></script>
+<!-- AdminLTE for demo purposes -->
+<script src="dist/js/demo.js"></script>
+<!-- page script -->
+
+
+<script>
+  $(function () {
+    "use strict";
+
+    // // AREA CHART
+    // var area = new Morris.Area({
+    //   element: 'revenue-chart',
+    //   resize: true,
+    //   data: [
+    //     {y: '2011 Q1', item1: 1000, item2: 2666,item3:2444},
+    //     {y: '2011 Q2', item1: 2778, item2: 2294,item3:2444},
+    //     {y: '2011 Q3', item1: 4912, item2: 1969,item3:2444},
+    //     {y: '2011 Q4', item1: 3767, item2: 3597,item3:2444},
+    //     {y: '2012 Q1', item1: 6810, item2: 1914,item3:2444},
+    //     {y: '2012 Q2', item1: 5670, item2: 4293,item3:2444},
+    //     {y: '2012 Q3', item1: 4820, item2: 3795,item3:2444},
+    //     {y: '2012 Q4', item1: 15073, item2: 5967,item3:2444},
+    //     {y: '2013 Q1', item1: 10687, item2: 4460,item3:2444},
+    //     {y: '2013 Q2', item1: 8432, item2: 5713,item3:2444}
+    //   ],
+    //   xkey: 'y',
+    //   ykeys: ['item1', 'item2','item3'],
+    //   labels: ['Item 1', 'Item 2','item3'],
+    //   lineColors: ['#a0d0e0', '#3c8dbc','#3c8dbc'],
+    //   hideHover: 'auto'
+    // });
+
+        // LINE CHART
+    // var line = new Morris.Line({
+    //   element: 'line-chart-active',
+    //   resize: true,
+    //   data: [
+    //     {y: '2011 Q1', item1: 2666},
+    //     {y: '2011 Q2', item1: 2778},
+    //     {y: '2011 Q3', item1: 4912},
+    //     {y: '2011 Q4', item1: 3767},
+    //     {y: '2012 Q1', item1: 6810},
+    //     {y: '2012 Q2', item1: 5670},
+    //     {y: '2012 Q3', item1: 4820},
+    //     {y: '2012 Q4', item1: 15073},
+    //     {y: '2013 Q1', item1: 10687},
+    //     {y: '2013 Q2', item1: 8432}
+    //   ],
+    //   xkey: 'y',
+    //   ykeys: ['item1'],
+    //   labels: ['Item 1'],
+    //   lineColors: ['#3c8dbc'],
+    //   hideHover: 'auto'
+    // });
+
+
+    var line2 = new Morris.Line({
+      element: 'line-chart-inActive',
+      resize: true,
+      data: [
+        {hour: '0', cnt: 2666},
+        {hour: '1', cnt: 2778},
+        {hour: '2', cnt: 4912},
+        {hour: '3', cnt: 3767},
+        {hour: '4 Q1', cnt: 6810},
+        {hour: '5 Q2', cnt: 5670},
+        {hour: '6 Q3', cnt: 4820},
+        {hour: '7 Q4', cnt: 15073},
+        {hour: '8 Q1', cnt: 10687},
+        {hour: '9 Q2', cnt: 8432}
+      ],
+      xkey: 'hour',
+      ykeys: ['cnt'],
+      parseTime: false,
+      labels: ['user'],
+      lineColors: ['#3c8dbc'],
+      hideHover: 'auto'
+    });
+
+
+    //DONUT CHART
+    var donut = new Morris.Donut({
+      element: 'sales-chart',
+      resize: true,
+      colors: ["#3c8dbc", "#f56954", "#00a65a"],
+      data: [
+        {label: "Download Sales", value: 12},
+        {label: "In-Store Sales", value: 30},
+        {label: "Mail-Order Sales", value: 20}
+      ],
+      hideHover: 'auto'
+    });
+    //BAR CHART
+    var bar = new Morris.Bar({
+      element: 'bar-chart',
+      resize: true,
+      data: [
+        {y: '2006', a: 100, b: 90},
+        {y: '2007', a: 75, b: 65},
+        {y: '2008', a: 50, b: 40},
+        {y: '2009', a: 75, b: 65},
+        {y: '2010', a: 50, b: 40},
+        {y: '2011', a: 75, b: 65},
+        {y: '2012', a: 100, b: 90}
+      ],
+      barColors: ['#00a65a', '#f56954'],
+      xkey: 'y',
+      ykeys: ['a', 'b'],
+      labels: ['CPU', 'DISK'],
+      hideHover: 'auto'
+    });
+  });
+</script>
+
+
 </body>
 </html>
