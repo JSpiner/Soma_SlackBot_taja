@@ -86,7 +86,7 @@ app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph
 @app.route('/member/newProblem', methods=['POST'])
 def newProblem():
     problem_text = request.form['problem_text']
-    problem_difficulty = request.form['problem_dfficulty']
+    problem_difficulty = request.form['problem_difficulty']
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
