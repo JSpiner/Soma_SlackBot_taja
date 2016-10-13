@@ -43,12 +43,12 @@
             return params;
         }
 
-        function getGameInfoById() {
+        function getProblemInfoById() {
 
             params = getQueryParams(document.location.search);
-            console.log(params.user_id);
+            console.log(params.problem_id);
 
-            $.get(window.location.origin + "/member/getSpecificUserInfoById?user_id=" + params.user_id, {
+            $.get(window.location.origin + "/member/getSpecificProblemInfoById?problem_id=" + params.problem_id, {
                         // Nothing to Attach
                     },
                     function (data) {
@@ -121,7 +121,7 @@
 
 
         $(document).ready(function () {
-            getGameInfoById();
+            getProblemInfoById();
         });
     </script>
 
@@ -249,7 +249,7 @@
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <h1>
-                유저 목록 > 유저 정보
+                문제 목록 > 문제 정보
             </h1>
             <ol class="breadcrumb">
                 <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>

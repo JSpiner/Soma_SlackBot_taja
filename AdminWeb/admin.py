@@ -110,7 +110,7 @@ def editProblem():
     trans = conn.begin()
     conn.execute(
         "UPDATE `slackbot`.`PROBLEM` SET `validity`=%s, `difficulty`=%s WHERE `problem_id`=%s;",
-        (validity, difficulty, problem_difficulty)
+        (validity, difficulty, problem_id)
     )
     trans.commit()
     conn.close()
