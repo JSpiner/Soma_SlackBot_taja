@@ -91,7 +91,7 @@ def newProblem():
     conn = db_manager.engine.connect()
     trans = conn.begin()
     conn.execute(
-        "INSERT INTO `slackbot`.`PROBLEM` (`problem_text`, `validity`, `problem_difficulty`) VALUES (%s, %s, %s);",
+        "INSERT INTO `slackbot`.`PROBLEM` (`problem_text`, `validity`, `difficulty`) VALUES (%s, %s, %s);",
         (problem_text, 1, problem_difficulty)
     )
     trans.commit()
