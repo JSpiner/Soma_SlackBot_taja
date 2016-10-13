@@ -27,8 +27,10 @@ app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 ##load problem text array
 texts = []
 result = db_manager.engine.connect().execute(
-    "SELECT problem_id, problem_text "
-    "FROM PROBLEM"
+    "SELECT problem_id, problem_text, difficulty "
+    "FROM PROBLEM "
+    "WHERE validity = %s",
+    1
 )
 rows = util.fetch_all_json(result)
 

@@ -50,10 +50,11 @@
                         }
                         trHTML += '<tr role="row" class="' + strEO + '">' +
                             '<td>' + i + '</td>' +
-                            '<td>' + obj.data[i].problem_id + '</td>' +
+                            '<td><a href=' + window.location.origin + '/pages/tables/problemInfo.html?problem_id=' + obj.data[i].problem_id + '>' + obj.data[i].problem_id + '</td>' +
                             '<td>' + obj.data[i].problem_text + '</td>' +
                             '<td>' + obj.data[i].AVG_OF_ACC + '</td>' +
-                            '<td>' + obj.data[i].AVG_OF_SPD + '</td>' + '</td>' +
+                            '<td>' + obj.data[i].AVG_OF_SPD + '</td>' +
+                            '<td>' + obj.data[i].difficulty + '</td>' +
                             '<td>' + obj.data[i].validity + '</td>' +
                             '</tr>';
                         console.log(trHTML);
@@ -62,9 +63,9 @@
 
                     // console.log(trHTML);
 
-                    $('#tb_game_result_withID').append(trHTML);
+                    $('#problem_list').append(trHTML);
 
-                    $('#tb_game_result_withID').DataTable({
+                    $('#problem_list').DataTable({
                         "paging": true,
                         "lengthChange": false,
                         "searching": true,
@@ -79,14 +80,21 @@
             console.log("reqAllProblem() 수행 전");
             reqAllProblem();
 
-            var btn_add_problem = $("#div_btn_add_prblem_wrapper");             
+            var btn_add_problem = $("#div_btn_add_prblem_wrapper");
             btn_add_problem.click(function () {
                 
                 var problem_text = $('#input_problem').val();
-                
+                var problem_difficulty = $('#problem_difficulty').val();
+
+                if(problem_text == "" || problem_difficulty == ""
+                        || problem_text == undefined || problem_difficulty == undefined){
+                    alert("내용이 하나가 빠졌습니다!");
+                }
+
                 $.post(window.location.origin+"/member/newProblem", 
                     {
-                        "problem_text" : problem_text
+                        "problem_text" : problem_text,
+                        "problem_difficulty" : problem_difficulty
                     },
                      
                     function (data, status) {
@@ -244,15 +252,16 @@
                             <!-- /.box-header -->
                             <div class="box-body">
 
-                                <div class="input-group input-group-sm" style="width: 150px;">
-                                    <input type="text" name="problem_input" class="form-control pull-right" placeholder="Add Problem" id="input_problem">
+                                <div class="input-group input-group-sm" style="width: 200px;">
+                                    <input type="text" name="problem_input" class="form-control pull-right" placeholder="Add Problem" id="input_problem_text">
+                                    <input type="text" name="problem_input" class="form-control pull-right" placeholder="Add Difficulty" id="input_problem_difficulty">
 
                                     <div class="input-group-btn" id="div_btn_add_prblem_wrapper">
                                         <button type="submit" class="btn btn-default" id="btn_add_problem">추가</button>
                                     </div>
                                 </div>
 
-                                <table id="tb_game_result_withID" class="table table-bordered table-striped">
+                                <table id="problem_list" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
                                             <th>num</th>
@@ -260,11 +269,13 @@
                                             <th>problem_text</th>
                                             <th>정답률</th>
                                             <th>펑균속도</th>
+                                            <th>난이도</th>
                                             <th>활성여부</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
+                                            <td></td>
                                             <td></td>
                                             <td></td>
                                             <td></td>
@@ -483,7 +494,7 @@
     <script>
         $(function () {
             // $("#example1").DataTable();
-            // $('#tb_game_result_withID').DataTable({
+            // $('#problem_list').DataTable({
             //     "paging": true,
             //     "lengthChange": false,
             //     "searching": true,
