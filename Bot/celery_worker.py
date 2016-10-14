@@ -50,7 +50,6 @@ def game_end(slackApi, data, teamId):
     
     start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
     game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
-    user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
     problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
     
     print(start_time)
@@ -59,13 +58,23 @@ def game_end(slackApi, data, teamId):
 
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_CALCULATING)
-    redis_manager.redis_client.set("user_num_" + data["channel"], 0)
-
 
     sendMessage(slackApi, data["channel"], "==순위계산중입니다==")
     time.sleep(2)
 
+    # 참여유저수 query로 가져오기
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    result=conn.execute(
+        "SELECT * FROM slackbot.GAME_RESULT WHERE slackbot.GAME_RESULT.game_id = %s;",
+        (game_id)
+    )
+    trans.commit()
+    conn.close()
 
+    # 가져온 쿼리 결과로 user_num을 계산
+    rows= util.fetch_all_json(result)
+    user_num = len(rows)
 
     conn = db_manager.engine.connect()
     trans = conn.begin()
@@ -313,14 +322,6 @@ def worker(data):
     else :
         print("else!!")
 
-
-        # 참여 유저수 증가
-        if (redis_manager.redis_client.get("user_num_" + data["channel"]) == None):
-            redis_manager.redis_client.set("user_num_" + data["channel"], 1)
-
-        user_num = int(redis_manager.redis_client.get("user_num_" + data["channel"]))
-        redis_manager.redis_client.set("user_num_" + data["channel"], int(user_num) + 1)
-
         distance = util.get_edit_distance(data["text"],
                                           redis_manager.redis_client.get("problem_text_" + data["channel"]))
 
@@ -328,9 +329,6 @@ def worker(data):
         start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
         current_time = time.time()*1000    
 
-        #unix 시간으로 start_time이저장되기떄문에 계산을위해 unixtime으로반환해줘야된다.
-        # print(float(time.mktime(datetime.datetime.strptime(start_time, "%Y-%m-%d %H:%M:%S.%f").timetuple())))
-        # print(current_time)
 
         elapsed_time = (current_time - float(start_time)) * 1000
 
@@ -354,10 +352,7 @@ def worker(data):
         print('elapsed_time : ' +str(elapsed_time))
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
-        
-        # print('channelInfo:'+str(get_channel_info(data["channel"])))
-        #디비 풀로 적용안된부분수정.
-        #오타 수정
+
         
         #새로 디비 연결하는부분.
         conn = db_manager.engine.connect()
