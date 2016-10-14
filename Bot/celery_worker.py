@@ -101,7 +101,7 @@ def game_end(slackApi, data, teamId):
 
     print(rows)
 
-    result_string = "Game Result"+str(len(rows))+" : \n"
+    result_string = "Game Result : "+str(len(rows))+"participants" + " : \n"
     rank = 1
     for row in rows:
         result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + "accur : " + str(row["accuracy"]) + " " + "speed : " + str(row["speed"])+" \n"
@@ -207,7 +207,7 @@ def worker(data):
             i = i - 1
 
         # 문제 선택하기
-        problem_id = int(random.random() * 100 % (len(texts)))
+        problem_id = int(random.random() * 100 % (len(texts))) + 1 # id는 1부터 13까지 있다
         problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
