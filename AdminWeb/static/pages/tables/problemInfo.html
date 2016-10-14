@@ -29,85 +29,99 @@
 
     <script type="text/javascript" src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
     <script type="text/javascript">
-        function reqAllProblem() {
-            $.get(window.location.origin + "/member/getAllProblem", {
-                        // Nothing to attach
+        function getQueryParams(qs) {
+            qs = qs.split('+').join(' ');
+
+            var params = {},
+                    tokens,
+                    re = /[?&]?([^=]+)=([^&]*)/g;
+
+            while (tokens = re.exec(qs)) {
+                params[decodeURIComponent(tokens[1])] = decodeURIComponent(tokens[2]);
+            }
+
+            return params;
+        }
+
+        function getProblemInfoById() {
+
+            params = getQueryParams(document.location.search);
+            console.log(params.problem_id);
+
+            $.get(window.location.origin + "/member/getSpecificProblemInfoById?problem_id=" + params.problem_id, {
+                        // Nothing to Attach
                     },
                     function (data) {
 
+
                         obj = JSON.parse(data);
-                        console.log("요청 결과 : " + obj.data);
+                        console.log(obj.data);
 
 
-                        var trHTML = '';
+                        var liHTML = '';
 
                         $.each(obj.data, function (i, item) {
-                            var strEO
-                            if (i % 2 == 0) {
-                                strEO = "even"
-                            } else {
-                                strEO = "odd"
+
+
+                            console.log(obj.data[i]);
+
+                            liHTML +=
+                                    '<li id="li_problem_id" value=' + obj.data[i].problem_id +'>' + 'ID : ' + obj.data[i].problem_id + '</li>' +
+                                    '<li>' + 'TEXT : ' + obj.data[i].problem_text + '</li>' +
+                                    '<li>' + 'VALIDITY : ' + '<input type="text" name="problem_validity" class="form-control pull-right" placeholder="Validity(1 or 0)" id="input_problem_validity" value="' + obj.data[i].validity + '">' + '</li>' +
+                                    '<li>' + 'DIFFICULTY : ' + '<input type="text" name="problem_difficulty" class="form-control pull-right" placeholder="Difficulty(1 ~ 5)" id="input_problem_difficulty" value="' + obj.data[i].difficulty + '">' + '</li>' +
+                                    '<div><button type="submit" class="btn btn-default" id="btn_edit_problem">수정</button><button type="submit" class="btn btn-default" id="btn_cancel_problem">취소</button>' + '</div>'
+                        });
+
+                        console.log(liHTML);
+
+                        $('#problem_specific_info').append(liHTML);
+
+                        var btn_edit_problem = $("#btn_edit_problem");
+                        btn_edit_problem.click(function () {
+
+                            var validity = parseInt($('#input_problem_validity').val());
+                            var difficulty = parseInt($('#input_problem_difficulty').val());
+                            var problem_id = $('#li_problem_id').val();
+
+                            if (validity == "" || difficulty == ""
+                                    || validity == undefined || difficulty == undefined) {
+                                alert("내용이 하나가 빠졌습니다!");
                             }
-                            trHTML += '<tr role="row" class="' + strEO + '">' +
-                                    '<td>' + i + '</td>' +
-                                    '<td><a href=' + window.location.origin + '/pages/tables/problemInfo.html?problem_id=' + obj.data[i].problem_id + '>' + obj.data[i].problem_id + '</td>' +
-                                    '<td>' + obj.data[i].problem_text + '</td>' +
-                                    '<td>' + obj.data[i].AVG_OF_ACC + '</td>' +
-                                    '<td>' + obj.data[i].AVG_OF_SPD + '</td>' +
-                                    '<td>' + obj.data[i].difficulty + '</td>' +
-                                    '<td>' + obj.data[i].validity + '</td>' +
-                                    '</tr>';
-                            console.log(trHTML);
+
+                            if( (difficulty > 5 || difficulty < 0) || (validity > 1 || validity < 0)){
+                                alert("Wrong Value");
+                            }
+
+                            $.post(window.location.origin + "/member/editProblem",
+                                    {
+                                        "validity": validity,
+                                        "difficulty": difficulty,
+                                        "problem_id" : problem_id
+                                    },
+
+                                    function (data, status) {
+                                        alert("Success");
+                                        location.reload(true);
+                                    },
+                                    "json");
+
+                            alert("Changed");
+                            location.reload();
 
                         });
 
-                        // console.log(trHTML);
-
-                        $('#problem_list').append(trHTML);
-
-                        $('#problem_list').DataTable({
-                            "paging": true,
-                            "lengthChange": false,
-                            "searching": true,
-                            "ordering": true,
-                            "info": true,
-                            "autoWidth": false
+                        var btn_cancel_problem = $("#btn_cancel_problem");
+                        btn_cancel_problem.click(function () {
+                            history.back();
                         });
+
                     });
         }
 
+
         $(document).ready(function () {
-            reqAllProblem();
-
-            var btn_add_problem = $("#div_btn_add_prblem_wrapper");
-            btn_add_problem.click(function () {
-
-                var problem_text = $('#input_problem_text').val();
-                var problem_difficulty = $('#input_problem_difficulty').val();
-
-                if (problem_text == "" || problem_difficulty == ""
-                        || problem_text == undefined || problem_difficulty == undefined) {
-                    alert("내용이 하나가 빠졌습니다!");
-                }
-
-                if ((problem_difficulty > 5 || problem_difficulty < 0)) {
-                    alert("Wrong Value");
-                }
-
-                $.post(window.location.origin + "/member/newProblem",
-                        {
-                            "problem_text": problem_text,
-                            "problem_difficulty": problem_difficulty
-                        },
-
-                        function (data, status) {
-                            alert("Success");
-                            location.reload(true);
-                        },
-                        "json");
-
-            });
-
+            getProblemInfoById();
         });
     </script>
 
@@ -235,7 +249,7 @@
         <!-- Content Header (Page header) -->
         <section class="content-header">
             <h1>
-                문제 목록
+                문제 목록 > 문제 정보
             </h1>
             <ol class="breadcrumb">
                 <li><a href="#"><i class="fa fa-dashboard"></i> Home</a></li>
@@ -255,42 +269,12 @@
                         <!-- /.box-header -->
                         <div class="box-body">
 
-                            <div class="input-group input-group-sm" style="width: 200px;">
-                                <input type="text" name="problem_input" class="form-control pull-right"
-                                       placeholder="Add Problem" id="input_problem_text">
-                                <input type="text" name="problem_input" class="form-control pull-right"
-                                       placeholder="Add Difficulty" id="input_problem_difficulty">
-
-                                <div class="input-group-btn" id="div_btn_add_prblem_wrapper">
-                                    <button type="submit" class="btn btn-default" id="btn_add_problem">추가</button>
-                                </div>
+                            <div>
+                                <ul id="problem_specific_info">
+                                </ul>
                             </div>
 
-                            <table id="problem_list" class="table table-bordered table-striped">
-                                <thead>
-                                <tr>
-                                    <th>num</th>
-                                    <th>problem_id</th>
-                                    <th>problem_text</th>
-                                    <th>정답률</th>
-                                    <th>펑균속도</th>
-                                    <th>난이도</th>
-                                    <th>활성여부</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                </tr>
-                                </tbody>
 
-                            </table>
                         </div>
                         <!-- /.box-body -->
                     </div>
@@ -499,7 +483,7 @@ immediately after the control sidebar -->
 <script>
     $(function () {
         // $("#example1").DataTable();
-        // $('#problem_list').DataTable({
+        // $('#tb_game_result_withID').DataTable({
         //     "paging": true,
         //     "lengthChange": false,
         //     "searching": true,
