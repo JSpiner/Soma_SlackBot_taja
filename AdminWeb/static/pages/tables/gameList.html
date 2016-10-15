@@ -48,7 +48,15 @@
                 }else{
                     strEO = "odd"
                 }
-                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].game_id + '</td>'+'<td>' + obj.data[i].user_id + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' 
+                + i + '</td><td><a href=' + location.origin + '/pages/tables/gameResult.html?gameId='+obj.data[i].game_id+'>'
+                + obj.data[i].game_id + '</a></td><td><a href=' + location.origin + '/pages/tables/userInfo.html?user_id='+obj.data[i].user_id+'>' 
+                + obj.data[i].user_id + '</a></td><td>' 
+                + obj.data[i].answer_text +'</td><td>' 
+                + obj.data[i].score + '</td></td><td>' 
+                + obj.data[i].speed + '</td></td><td>' 
+                + obj.data[i].accuracy + '</td></td><td>' 
+                + obj.data[i].elapsed_time + '</td></tr>' ;
             });
 
             // console.log(trHTML);            
