@@ -80,7 +80,14 @@ dashboard_view = dashboard.DashBoards.as_view('dashBoard')
 app.add_url_rule('/dashBoard/getIndicator', defaults={'types': 'getIndicator'},
                  view_func=dashboard_view, methods=['GET', ])
 app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph'},
+<<<<<<< HEAD
+                 view_func=dashboard_view, methods=['GET',])
+app.add_url_rule('/dashBoard/getTopTwenty', defaults={'types': 'getTopTwenty'},
+                 view_func=dashboard_view, methods=['GET',])
+
+=======
                  view_func=dashboard_view, methods=['GET', ])
+>>>>>>> 1f299f3d603048abcef1d67cd9d0a5efeb00e5d2
 
 
 @app.route('/member/newProblem', methods=['POST'])
@@ -138,4 +145,6 @@ def redirect_to_index():
 
 if __name__ == '__main__':
     ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+
     app.run(host='0.0.0.0', port=10001, debug=True, ssl_context=ssl_context)
+
