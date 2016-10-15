@@ -31,7 +31,7 @@ class DashBoards(MethodView):
                     "select count(*) as todayInstall from TEAM WHERE DATE(TEAM.team_joined_time) = CURDATE()"
                 )
                 todayPlay = conn.execute(
-                    "select count(*) as todayPlay from GAME_INFO WHERE DATE(GAME_INFO.start_time) = CURDATE()"
+                    "select count(*) as todayPlay  from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  WHERE DATE(gi.start_time) = CURDATE() "
                 )
                 inActiveUsers = conn.execute(
                     "select gr.user_id as userId,Max(gi.end_time) as recentTime, Max(gi.end_time)<DATE_SUB(CURDATE() , INTERVAL 7 DAY) as isInActive from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id group by gr.user_id"
@@ -191,6 +191,24 @@ class DashBoards(MethodView):
                         print(str(e))
                         # logging.warning(str(e))
                         return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                                
+                        
+        elif types == "getTopTwenty":
+
+            try:
+                print('gettop')
+                conn = db_manager.engine.connect()
+                result = conn.execute(
+                    "select pb.problem_text,ga.answer_text, ga.score,ga.speed,ga.accuracy,ga.elapsed_time,u.user_name from GAME_RESULT as ga inner join USER as u on u.user_id = ga.user_id  inner join GAME_INFO as gr on gr.game_id = ga.game_id  inner join PROBLEM as pb on gr.problem_id = pb.problem_id order by score desc limit 20"
+                )
+                conn.close()
+                rows = util.fetch_all_json(result)
+                return json.dumps(static.RES_DEFAULT(200, rows), sort_keys=True, indent=4)
+
+            except Exception as e:
+                print(str(e))
+                # logging.warning(str(e))
+                return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
+
         
     def post(self,types):
         print("post")

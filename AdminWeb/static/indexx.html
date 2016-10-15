@@ -36,6 +36,7 @@
         const BASE_URL = window.location.origin
         const GET_INDICATOR = "/dashBoard/getIndicator"
         const GET_ACTIVE_GRAPH = "/dashBoard/getActiveGraph"
+        const GET_TOPTWENTY= "/dashBoard/getTopTwenty"
                         
         //최초실행될떄 뿌려줘야할것들
 
@@ -61,7 +62,6 @@
               $('#txt_todayPlay').text(todayPlay);
               $('#txt_inActiveTeams').text(inActiveTeams);
               $('#txt_inActiveUsers').text(inActiveUsers);
-
           });
 
         }
@@ -70,6 +70,8 @@
         $(document).ready(function(){
           //초기 뿌려줄것들.
             initView()
+
+            reqGetTop(GET_TOPTWENTY)
             var whoo = "user";
 
             var btn_active_user = $('#btn_active_user');
@@ -145,6 +147,54 @@
 
               // line.setData(obj.data);
           });
+        }
+
+        function reqGetTop(url){
+          $.get(BASE_URL+url,
+          {
+          },
+          function(res){
+              console.log(res);
+              obj = JSON.parse(res);
+            // console.log(obj.data);
+            
+            var trHTML = '';
+            $.each(obj.data, function (i, item) {
+                var strEO
+                if(i%2==0){
+                    strEO = "even"
+                }else{
+                    strEO = "odd"
+                }
+                trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].user_name + '</td>'+'<td>' + obj.data[i].problem_text + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
+            });
+
+                // <tr>
+                //   <th>num</th>
+                //   <th>userName</th>
+                //   <th>problemText</th>
+                //   <th>answerText</th>
+                //   <th>score</th>
+                //   <th>speed</th>
+                //   <th>accuracy</th>
+                //   <th>elapsed_time</th>
+                // </tr>
+
+
+            $('#tableTop').append(trHTML);
+
+              $('#tableTop').DataTable({
+                "paging": true,
+                "lengthChange": false,
+                "searching": true,
+                "ordering": true,
+                "info": true,
+                "autoWidth": false
+            });
+
+
+          });          
+
         }
     </script>
 
@@ -389,23 +439,62 @@
           <!-- /.box -->
 
 
-          <!-- DONUT CHART -->
-          <div class="box box-danger">
-            <div class="box-header with-border">
-              <h3 class="box-title">Donut Chart</h3>
 
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+
+
+      <div class="row">
+        <div class="col-xs-12">
+          <div class="box">
+            <div class="box-header">
+              <h3 class="box-title">Top20</h3>
+
+              <div class="box-tools">
+                <div class="input-group input-group-sm" style="width: 150px;">
+                  <input type="text" name="table_search" class="form-control pull-right" placeholder="Search">
+
+                  <div class="input-group-btn">
+                    <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="box-body chart-responsive">
-              <div class="chart" id="sales-chart" style="height: 300px; position: relative;"></div>
+            <!-- /.box-header -->
+            <div class="box-body table-responsive no-padding">
+              <table class="table table-hover" id="tableTop">
+                <tbody>
+                <tr>
+                  <th>num</th>
+                  <th>userName</th>
+                  <th>problemText</th>
+                  <th>answerText</th>
+                  <th>score</th>
+                  <th>speed</th>
+                  <th>accuracy</th>
+                  <th>elapsed_time</th>
+                </tr>
+
+               
+                
+              </tbody>
+                  <tr>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>                                
+                  </tr>
+              </table>
             </div>
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
+        </div>
+      </div>
+
+
 
         </div>
         <!-- /.col (LEFT) -->
@@ -432,23 +521,7 @@
           </div>
           <!-- /.box -->
 
-          <!-- BAR CHART -->
-          <div class="box box-success">
-            <div class="box-header with-border">
-              <h3 class="box-title">Bar Chart</h3>
-
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-              </div>
-            </div>
-            <div class="box-body chart-responsive">
-              <div class="chart" id="bar-chart" style="height: 300px;"></div>
-            </div>
-            <!-- /.box-body -->
-          </div>
-          <!-- /.box -->
+          
 
         </div>
         <!-- /.col (RIGHT) -->

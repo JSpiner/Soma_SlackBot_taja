@@ -79,6 +79,8 @@ app.add_url_rule('/dashBoard/getIndicator', defaults={'types': 'getIndicator'},
                  view_func=dashboard_view, methods=['GET',])
 app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph'},
                  view_func=dashboard_view, methods=['GET',])
+app.add_url_rule('/dashBoard/getTopTwenty', defaults={'types': 'getTopTwenty'},
+                 view_func=dashboard_view, methods=['GET',])
 
 
 
@@ -119,4 +121,4 @@ def redirect_to_index():
 if __name__ == '__main__':
 
     ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
-    app.run(host='0.0.0.0',port=10001, debug= True, ssl_context = ssl_context)
+    app.run(host='0.0.0.0',port=10002, debug= True,ssl_context=ssl_context)

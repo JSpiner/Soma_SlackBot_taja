@@ -436,6 +436,10 @@ class Members(MethodView):
                 print(str(e))
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
+
+
+
+
     
     def post(self,types):
         print("post")
