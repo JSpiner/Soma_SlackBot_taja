@@ -39,7 +39,6 @@
         const GET_TOPTWENTY= "/dashBoard/getTopTwenty"
                         
         //최초실행될떄 뿌려줘야할것들
-
         function initView(){
           var whoo = "user";
           reqGet(GET_ACTIVE_GRAPH,whoo,"day")
@@ -52,7 +51,6 @@
               inActiveUsers = obj.data["inActiveUsers"]
               todayInstall = obj.data["todayInstall"]
               todayPlay = obj.data["todayPlay"]
-
               console.log(inActiveTeams)
               console.log(inActiveUsers)
               console.log(todayInstall)
@@ -63,17 +61,14 @@
               $('#txt_inActiveTeams').text(inActiveTeams);
               $('#txt_inActiveUsers').text(inActiveUsers);
           });
-
         }
         
     
         $(document).ready(function(){
           //초기 뿌려줄것들.
             initView()
-
             reqGetTop(GET_TOPTWENTY)
             var whoo = "user";
-
             var btn_active_user = $('#btn_active_user');
             btn_active_user.click(function(){                
                 whoo ="user"
@@ -86,7 +81,6 @@
             var btn_active_day = $('#btn_active_day');
             var btn_active_month = $('#btn_active_month');
             var btn_active_year = $('#btn_active_year');
-
             if(whoo=="user"){
                   btn_active_day.click(function(){                
                     reqGet(GET_ACTIVE_GRAPH,whoo,"day")
@@ -99,9 +93,7 @@
                   btn_active_year.click(function(){                
                       reqGet(GET_ACTIVE_GRAPH,whoo,"year")
                   });  
-
             }else{
-
                   btn_active_day.click(function(){                
                     reqGet(GET_ACTIVE_GRAPH,whoo,"day")
                   });
@@ -112,9 +104,7 @@
                       reqGet(GET_ACTIVE_GRAPH,whoo,"year")
                   });  
             }          
-
         });
-
         function reqGet(url,whoo,periodd){
           $.get(BASE_URL+url,
           {
@@ -128,11 +118,9 @@
                 xlabell = 'hour'
               }else if(periodd=="month"){
                 xlabell = 'day'
-
               }else if(periodd=="year"){
                 xlabell = 'month'
               }                      
-
               var line = new Morris.Line({
                 element: 'line-chart-active',
                 resize: true,
@@ -144,11 +132,9 @@
                 hideHover: 'auto',
                 parseTime: false,
               });
-
               // line.setData(obj.data);
           });
         }
-
         function reqGetTop(url){
           $.get(BASE_URL+url,
           {
@@ -168,7 +154,6 @@
                 }
                 trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].user_name + '</td>'+'<td>' + obj.data[i].problem_text + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
             });
-
                 // <tr>
                 //   <th>num</th>
                 //   <th>userName</th>
@@ -179,10 +164,7 @@
                 //   <th>accuracy</th>
                 //   <th>elapsed_time</th>
                 // </tr>
-
-
             $('#tableTop').append(trHTML);
-
               $('#tableTop').DataTable({
                 "paging": true,
                 "lengthChange": false,
@@ -191,10 +173,7 @@
                 "info": true,
                 "autoWidth": false
             });
-
-
           });          
-
         }
     </script>
 
@@ -438,11 +417,7 @@
           </div>
           <!-- /.box -->
 
-          <!-- DONUT CHART -->
-          <!--
-          <div class="box box-danger">
-            <div class="box-header with-border">
-              <h3 class="box-title">Donut Chart</h3>
+
 
 
 
@@ -492,7 +467,8 @@
                   </tr>
               </table>
             </div>
-          </div> -->
+            <!-- /.box-body -->
+          </div>
           <!-- /.box -->
         </div>
       </div>
@@ -524,28 +500,7 @@
           </div>
           <!-- /.box -->
 
-<<<<<<< HEAD
           
-=======
-          <!-- BAR CHART -->
-          <!--
-          <div class="box box-success">
-            <div class="box-header with-border">
-              <h3 class="box-title">Bar Chart</h3>
-
-              <div class="box-tools pull-right">
-                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
-                </button>
-                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
-              </div>
-            </div>
-            <div class="box-body chart-responsive">
-              <div class="chart" id="bar-chart" style="height: 300px;"></div>
-            </div>
-          </div>
-          -->
-          <!-- /.box -->
->>>>>>> 1f299f3d603048abcef1d67cd9d0a5efeb00e5d2
 
         </div>
         <!-- /.col (RIGHT) -->
@@ -811,7 +766,6 @@
 <script>
   $(function () {
     "use strict";
-
     // // AREA CHART
     // var area = new Morris.Area({
     //   element: 'revenue-chart',
@@ -834,7 +788,6 @@
     //   lineColors: ['#a0d0e0', '#3c8dbc','#3c8dbc'],
     //   hideHover: 'auto'
     // });
-
         // LINE CHART
     // var line = new Morris.Line({
     //   element: 'line-chart-active',
@@ -857,8 +810,6 @@
     //   lineColors: ['#3c8dbc'],
     //   hideHover: 'auto'
     // });
-
-
     var line2 = new Morris.Line({
       element: 'line-chart-inActive',
       resize: true,
@@ -881,8 +832,6 @@
       lineColors: ['#3c8dbc'],
       hideHover: 'auto'
     });
-
-
     //DONUT CHART
     var donut = new Morris.Donut({
       element: 'sales-chart',
