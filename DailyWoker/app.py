@@ -126,6 +126,7 @@ def updateUserActive():
 
 def job():
 	print("working well!")
+	updateUserActive()
 	# updateUserActive()
 
 
@@ -135,7 +136,6 @@ def job():
 # schedule.every().hour.do(job)
 # 매일 특정 시간에
 schedule.every().day.at("00:00").do(job)
-updateUserActive()
 
 
 
