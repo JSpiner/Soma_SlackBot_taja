@@ -165,7 +165,7 @@ def worker(data):
         trans.commit()
         conn.close()
 
-        print('selet channel result : ' + result)
+        print('selet channel result : ' + str(result))
 
         # DB에 채널 정보가 없다면
         if(result == None or len(result) ==0):
