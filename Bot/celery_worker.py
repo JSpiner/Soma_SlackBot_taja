@@ -199,10 +199,12 @@ def worker(data):
             trans.commit()
             conn.close()
 
+        sendMessage(slackApi, data["channel"], "타자게임을 시작합니다!")
         response = sendMessage(slackApi, data["channel"], "Ready~")
-        print("response : " + response) 
+        print("response : " + str(response)) 
         text_ts = response['ts']
         text_channel = response['channel']
+        time.sleep(1)
         i = 3
         while i != 0:
             slackApi.chat.update(
@@ -221,7 +223,14 @@ def worker(data):
         problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
-        sendMessage(slackApi, data["channel"], "*" + problem_text + "*")
+
+        slackApi.chat.update(
+            {
+                "ts" : text_ts,
+                "channel": text_channel,
+                "text" : "제시어 : *" + problem_text + "*"
+            }
+        )
 
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
@@ -283,7 +292,7 @@ def worker(data):
     elif data["text"] == static.GAME_COMMAND_EXIT:
         # 현재 상태 변경
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
-        sendMessage(data["channel"], "종료되었습니다.")
+        sendMessage(slackApi, data["channel"], "종료되었습니다.")
     # .내점수 : 내 모든 점수를 Direct Message로 출력
     elif data["text"] == static.GAME_COMMAND_MY_RANK:
 
