@@ -25,24 +25,6 @@ with open('key.json') as key_json:
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
-##load problem text array
-texts = []
-result = db_manager.engine.connect().execute(
-    "SELECT problem_id, problem_text, difficulty "
-    "FROM PROBLEM "
-    "WHERE validity = %s",
-    1
-)
-rows = util.fetch_all_json(result)
-
-for row in rows:
-    texts.append(
-        {
-            'problem_text'  : row['problem_text'],
-            'problem_id'    : row['problem_id']
-        }
-    )
-    print(texts)
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, data, teamId):
@@ -175,7 +157,7 @@ def worker(data):
         # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
         conn = db_manager.engine.connect()
         trans = conn.begin()
-        result=conn.execute(
+        result = conn.execute(
             "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
             (data['channel'])
         )
@@ -217,9 +199,14 @@ def worker(data):
             time.sleep(1.0)
             i = i - 1
 
+
+        # 문제들 가져오기
+        texts = util.get_problems(data['channel_id'])
+
         # 문제 선택하기
-        problem_id = int(random.random() * 100 % (len(texts))) + 1 # id는 1부터 13까지 있다
-        problem_text = texts[problem_id]['problem_text']
+        problem_texts_index = int(random.random() * (len(texts)))
+        problem_id = texts[problem_texts_index]['problem_id']
+        problem_text = texts[problem_texts_index]['problem_text']
 
         # 문제내는 부분
         sendMessage(slackApi, data["channel"], "*" + problem_text + "*")

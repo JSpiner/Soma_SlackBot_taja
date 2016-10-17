@@ -3,6 +3,9 @@ import uuid
 import korean
 import threading
 from functools import wraps
+from manager import db_manager
+from common import util
+
 
 # delay
 def delay(delay=0.):
@@ -85,3 +88,29 @@ def fetch_all_json(result):
 
       i=i+1
   return lis
+
+
+def get_problems(channel_id):
+
+    # 우선 문제 Set들을 가져와서 Validity가 1인 문제 하나를 랜던하게 id를 반환
+
+    texts = [];
+
+    result = db_manager.engine.connect().execute(
+        "SELECT problem_id, problem_text, difficulty "
+        "FROM PROBLEM "
+        "WHERE validity = %s",
+        1
+    )
+
+    rows = util.fetch_all_json(result)
+
+    for row in rows:
+        texts.append(
+            {
+                'problem_text': row['problem_text'],
+                'problem_id': row['problem_id']
+            }
+        )
+
+    return texts
