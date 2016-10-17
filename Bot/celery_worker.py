@@ -110,6 +110,7 @@ def game_end(slackApi, data, teamId):
     sendResult = str(result_string)
     print(data["channel"])
     sendMessage(slackApi, data["channel"],sendResult)
+    
 
 
 
@@ -445,6 +446,76 @@ def worker(data):
         conn.close()
 
         user_name = get_user_info(slackApi, data["user"])["user"]["name"]
+
+        try:
+            #이후 채널 랭크 업데이트.
+            conn = db_manager.engine.connect()
+            trans = conn.begin()
+
+            result = conn.execute(
+                "select * , "
+                "( "
+                    "SELECT count(*) "
+                    "FROM ( "
+                        "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                ") as userAllCnt "
+                "from ( "
+                    "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
+                    "FROM ( "
+                        " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                    "INNER JOIN (SELECT @counter:=0) b "
+                ") as rankTB where user_id = %s "
+                ,
+                (data["user"])
+            )
+            trans.commit()
+            conn.close()
+            rows = util.fetch_all_json(result)
+
+            userAll = rows[0]["userAllCnt"]
+            rank = rows[0]["rank"]
+            levelHirechy = rank/userAll * 100
+
+            level = 3
+            #100~91
+            if levelHirechy > 90 :
+                level = 5
+            #90~71
+            elif levelHirechy>70 and levelHirechy<91:   
+                level = 4
+            #70~31    
+            elif levelHirechy>30 and levelHirechy<81:   
+                level = 3  
+            #30~10
+            elif levelHirechy>10 and levelHirechy<31:   
+                level = 2
+            #10~0
+            elif levelHirechy>-1 and levelHirechy<11:   
+                level = 1          
+            
+            try:
+                #이후 채널 랭크 업데이트.
+                conn = db_manager.engine.connect()
+                trans = conn.begin()
+
+                result = conn.execute(
+                    "update USER set user_level = %s where user_id = %s"
+                    ,
+                    (level,data["user"])
+                )
+                trans.commit()
+                conn.close()
+
+            except Exception as e:
+                print(str(e))                          
+
+        except Exception as e:
+            print(str(e))    
+
 
         #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
         #유저를 매번 검색할것인가?
