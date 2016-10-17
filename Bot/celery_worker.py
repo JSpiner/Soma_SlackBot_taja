@@ -111,6 +111,80 @@ def game_end(slackApi, data, teamId):
     print(data["channel"])
     sendMessage(slackApi, data["channel"],sendResult)
 
+
+
+    #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
+    try:
+
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        result = conn.execute(
+            "select  if(count(*)>1,true,false) as setUpChannelLevel "
+            "from GAME_INFO as gi where channel_id = %s "  
+            "order by gi.start_time desc LIMIT 10",
+            (data["channel"])
+        )
+        trans.commit()
+        conn.close()
+        rows =util.fetch_all_json(result)
+        print(rows)
+        # 레벨을 산정한다.
+        if rows[0]['setUpChannelLevel'] == 1:
+            print("true") 
+            try:
+
+                conn = db_manager.engine.connect()
+                trans = conn.begin()
+
+                result = conn.execute(
+                    "select u.user_id,u.user_level from ( "   
+                        "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
+                    ") as recentGameTB "
+                    "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
+                    "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
+                    ,
+                    (data["channel"])
+                )
+                trans.commit()
+                conn.close()
+                rows =util.fetch_all_json(result)
+                print(rows)
+
+                levelSum = 0
+                for row in rows:
+                    levelSum = row["user_level"]
+
+                print(levelSum)
+                
+                #이후 반올림하여 채널랭크를 측정.
+                channelRank = round(levelSum/len(row))
+                try:
+                    #이후 채널 랭크 업데이트.
+                    conn = db_manager.engine.connect()
+                    trans = conn.begin()
+
+                    result = conn.execute(
+                        "update CHANNEL set channel_level = %s where channel_id = %s"
+                        ,
+                        (channelRank,data["channel"])
+                    )
+                    trans.commit()
+                    conn.close()
+
+                except Exception as e:
+                    print(str(e))    
+
+
+            except Exception as e:
+                print(str(e))
+
+        #아무일도일어나지 않는다.
+        else :
+            print("false")
+
+    except Exception as e:
+        print(str(e))    
+
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
@@ -206,8 +280,11 @@ def worker(data):
             time.sleep(1.0)
             i = i - 1
 
+
+            
+
         # 문제 선택하기
-        problem_id = int(random.random() * 100 % (len(texts))) + 1 # id는 1부터 13까지 있다
+        problem_id = int(random.random() * 100 % (len(texts))) # id는 1부터 13까지 있다
         problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
