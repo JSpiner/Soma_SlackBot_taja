@@ -1,3 +1,4 @@
+from datashape.coretypes import Null
 from sqlalchemy import exc
 
 
@@ -171,10 +172,19 @@ def worker(data):
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
 
-        # 채널 정보가 DB에 있는지 redis로 확인 후 없으면 DB에 저장
-        if(redis_manager.redis_client.get("is_channel_exist_" + data["channel"]) == None):
-            redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
-    
+        # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        result=conn.execute(
+            "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
+            (data['channel'])
+        )
+        trans.commit()
+        conn.close()
+
+        # DB에 채널 정보가 없다면
+        if(result == None):
+
             ctime = datetime.datetime.now()
 
             # 채널 이름 가져오기
@@ -193,12 +203,13 @@ def worker(data):
                 "INSERT INTO CHANNEL"
                 "(team_id, channel_id, channel_name, channel_joined_time)"
                 "VALUES"
-                "(%s, %s, %s, %s);", 
+                "(%s, %s, %s, %s);",
                 (teamId, data['channel'], channel_name, ctime)
             )
             trans.commit()
             conn.close()
 
+        # Count Down
         sendMessage(slackApi, data["channel"], "Ready~")
         i = 3
         while i != 0:
