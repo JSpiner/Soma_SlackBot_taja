@@ -115,7 +115,7 @@ def game_end(slackApi, data, teamId):
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
 def sendMessage(slackApi, channel, text):
-    slackApi.chat.postMessage(
+    return slackApi.chat.postMessage(
         {
             'channel'   : channel,
             'text'      : text,
@@ -199,10 +199,20 @@ def worker(data):
             trans.commit()
             conn.close()
 
-        sendMessage(slackApi, data["channel"], "Ready~")
+        response = sendMessage(slackApi, data["channel"], "Ready~")
+        print("response : " + response) 
+        text_ts = response['ts']
+        text_channel = response['channel']
         i = 3
         while i != 0:
-            sendMessage(slackApi, data["channel"], str(i))
+            slackApi.chat.update(
+                {
+                    "ts" : text_ts,
+                    "channel": text_channel,
+                    "text" : str(i)
+                }
+            )
+#            sendMessage(slackApi, data["channel"], str(i))
             time.sleep(1.0)
             i = i - 1
 
@@ -269,7 +279,11 @@ def worker(data):
 
         sendMessage(slackApi, data["channel"], result_string)
 
-
+    # .강제종료 : 내 게임 상태를 강제로 종료
+    elif data["text"] == static.GAME_COMMAND_EXIT:
+        # 현재 상태 변경
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+        sendMessage(data["channel"], "종료되었습니다.")
     # .내점수 : 내 모든 점수를 Direct Message로 출력
     elif data["text"] == static.GAME_COMMAND_MY_RANK:
 
