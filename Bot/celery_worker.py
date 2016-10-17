@@ -202,7 +202,7 @@ def worker(data):
 
 
         # 문제들 가져오기
-        texts = util.get_problems(data['channel'])
+        texts = util.get_problems()
 
         # 문제 선택하기
         problem_texts_index = int(random.random() * (len(texts)))

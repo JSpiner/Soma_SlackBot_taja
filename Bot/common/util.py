@@ -90,7 +90,7 @@ def fetch_all_json(result):
   return lis
 
 
-def get_problems(channel_id):
+def get_problems():
 
     # 우선 문제 Set들을 가져와서 Validity가 1인 문제 하나를 랜던하게 id를 반환
 
