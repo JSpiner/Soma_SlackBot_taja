@@ -120,7 +120,7 @@ def game_end(slackApi, data, teamId):
         conn = db_manager.engine.connect()
         trans = conn.begin()
         result = conn.execute(
-            "select  if(count(*)>1,true,false) as setUpChannelLevel "
+            "select  if(count(*)>10,true,false) as setUpChannelLevel "
             "from GAME_INFO as gi where channel_id = %s "  
             "order by gi.start_time desc LIMIT 10",
             (data["channel"])
@@ -483,19 +483,19 @@ def worker(data):
             level = 3
             #100~91
             if levelHirechy > 90 :
-                level = 5
+                level = 1
             #90~71
             elif levelHirechy>70 and levelHirechy<91:   
-                level = 4
+                level = 2
             #70~31    
             elif levelHirechy>30 and levelHirechy<81:   
                 level = 3  
             #30~10
             elif levelHirechy>10 and levelHirechy<31:   
-                level = 2
+                level = 4
             #10~0
             elif levelHirechy>-1 and levelHirechy<11:   
-                level = 1          
+                level = 5          
             
             try:
                 #이후 채널 랭크 업데이트.
