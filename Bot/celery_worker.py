@@ -26,12 +26,15 @@ app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
 ##load problem text array
 texts = []
-result = db_manager.engine.connect().execute(
+conn = db_manager.engine.connect()
+result = conn.execute(
     "SELECT problem_id, problem_text, difficulty "
     "FROM PROBLEM "
     "WHERE validity = %s",
     1
 )
+conn.close()
+
 rows = util.fetch_all_json(result)
 
 for row in rows:
@@ -227,9 +230,6 @@ def get_user_info(slackApi, userId):
 # 팀별 SlackApi 객체 생성
 def init_slackapi(teamId):
 
-    query = (
-    )
-
     conn = db_manager.engine.connect()
     result = util.fetch_all_json(conn.execute(
             "SELECT team_access_token FROM TEAM "
@@ -238,6 +238,7 @@ def init_slackapi(teamId):
             (teamId)
         )
     )
+    conn.close()
     print(result)
     slackApi = SlackApi(result[0]['team_access_token'])
     return slackApi

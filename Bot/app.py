@@ -70,6 +70,7 @@ def slack_oauth():
         )
     )
     trans.commit()
+    conn.close()
 
     return 'auth success' + response['access_token']
 
