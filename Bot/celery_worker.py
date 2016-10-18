@@ -101,7 +101,7 @@ def game_end(slackApi, data, teamId):
 
     print(rows)
 
-    result_string = "Game Result : "+str(len(rows))+"participants" + " : \n"
+    result_string = ""#Game Result : "+str(len(rows))+"participants" + " : \n"
     rank = 1
     for row in rows:
         result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + "accur : " + str(row["accuracy"]) + " " + "speed : " + str(row["speed"])+" \n"
@@ -109,8 +109,22 @@ def game_end(slackApi, data, teamId):
 
     sendResult = str(result_string)
     print(data["channel"])
-    sendMessage(slackApi, data["channel"],sendResult)
-
+#    sendMessage(slackApi, data["channel"],sendResult)
+    attachments = [
+        {
+            "title":"순위표",
+            "text": sendResult,
+            "mrkdwn_in": ["text", "pretext"],
+            "color": "#764FA5"
+        }   
+    ]
+    slackApi.chat.postMessage(
+        {
+            "channel" : data["channel"],
+            "text" : "게임 결과",
+            "attachments" : json.dumps(attachments)
+        }
+    )
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 

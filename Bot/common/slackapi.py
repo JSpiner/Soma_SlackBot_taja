@@ -453,7 +453,7 @@ class SlackApi:
     # response  = json object
     def api_call(self, method, args = {}):
         method = method.replace('_','')
-        print(SLACK_API_SERVER + method)
+        print(SLACK_API_SERVER + method + " args : " + str(args))
 
         args['token'] = self.token
 
