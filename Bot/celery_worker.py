@@ -101,7 +101,7 @@ def game_end(slackApi, data, teamId):
 
     print(rows)
 
-    result_string = "Game Result : "+str(len(rows))+"participants" + " : \n"
+    result_string = ""#Game Result : "+str(len(rows))+"participants" + " : \n"
     rank = 1
     for row in rows:
         result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + "accur : " + str(row["accuracy"]) + " " + "speed : " + str(row["speed"])+" \n"
@@ -109,7 +109,21 @@ def game_end(slackApi, data, teamId):
 
     sendResult = str(result_string)
     print(data["channel"])
-    sendMessage(slackApi, data["channel"],sendResult)
+    attachments = [
+        {
+            "title":"순위표",
+            "text": sendResult,
+            "mrkdwn_in": ["text", "pretext"],
+            "color": "#764FA5"
+        }   
+    ]
+    slackApi.chat.postMessage(
+        {
+            "channel" : data["channel"],
+            "text" : "게임 결과",
+            "attachments" : json.dumps(attachments)
+        }
+    )
     
 
 
@@ -190,7 +204,7 @@ def game_end(slackApi, data, teamId):
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
 def sendMessage(slackApi, channel, text):
-    slackApi.chat.postMessage(
+    return slackApi.chat.postMessage(
         {
             'channel'   : channel,
             'text'      : text,
@@ -274,10 +288,22 @@ def worker(data):
             trans.commit()
             conn.close()
 
-        sendMessage(slackApi, data["channel"], "Ready~")
+        sendMessage(slackApi, data["channel"], "타자게임을 시작합니다!")
+        response = sendMessage(slackApi, data["channel"], "Ready~")
+        print("response : " + str(response)) 
+        text_ts = response['ts']
+        text_channel = response['channel']
+        time.sleep(1)
         i = 3
         while i != 0:
-            sendMessage(slackApi, data["channel"], str(i))
+            slackApi.chat.update(
+                {
+                    "ts" : text_ts,
+                    "channel": text_channel,
+                    "text" : str(i)
+                }
+            )
+#            sendMessage(slackApi, data["channel"], str(i))
             time.sleep(1.0)
             i = i - 1
 
@@ -289,7 +315,14 @@ def worker(data):
         problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
-        sendMessage(slackApi, data["channel"], "*" + problem_text + "*")
+
+        slackApi.chat.update(
+            {
+                "ts" : text_ts,
+                "channel": text_channel,
+                "text" : "제시어 : *" + problem_text + "*"
+            }
+        )
 
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
@@ -347,7 +380,11 @@ def worker(data):
 
         sendMessage(slackApi, data["channel"], result_string)
 
-
+    # .강제종료 : 내 게임 상태를 강제로 종료
+    elif data["text"] == static.GAME_COMMAND_EXIT:
+        # 현재 상태 변경
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+        sendMessage(slackApi, data["channel"], "종료되었습니다.")
     # .내점수 : 내 모든 점수를 Direct Message로 출력
     elif data["text"] == static.GAME_COMMAND_MY_RANK:
 

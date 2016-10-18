@@ -82,12 +82,12 @@ def slack_event():
     
     
     response = {}
+    response['ok'] = 'True'
 
     if data['type'] == 'url_verification':         
         response['challenge'] = data['challenge']
         
     elif data['type'] == 'event_callback':
-
         # worker.delay(data['event'])
         eventData = data['event']
         #eventData에 팀 아이디 추
@@ -105,10 +105,16 @@ def slack_event():
             # redis_manager.redis_client.set("status_" + eventData["channel"], static.GAME_STATE_IDLE)
             # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
 
+
+            # 강제종료 명령을 최우선으로 처리함
+            if eventData["text"] == static.GAME_COMMAND_EXIT:
+                print('.exit')
+                worker.delay(eventData)
+                return(json.dumps(response))
             # 게임이 플레이중이라면
             if status_channel == static.GAME_STATE_PLAYING :
                 if eventData["text"][0] == ".":
-                    return
+                    return(json.dumps(response))
                 print('playing')
                 worker.delay(eventData)
 
@@ -127,7 +133,7 @@ def slack_event():
                 elif eventData["type"] == "channel_joined":
                     print('others')
                     worker.delay(eventData)
-
+    print( json.dumps(response))
     return json.dumps(response)
 
 
