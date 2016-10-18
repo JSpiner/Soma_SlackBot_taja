@@ -109,7 +109,6 @@ def game_end(slackApi, data, teamId):
 
     sendResult = str(result_string)
     print(data["channel"])
-#    sendMessage(slackApi, data["channel"],sendResult)
     attachments = [
         {
             "title":"순위표",
@@ -125,6 +124,82 @@ def game_end(slackApi, data, teamId):
             "attachments" : json.dumps(attachments)
         }
     )
+    
+
+
+
+    #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
+    try:
+
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        result = conn.execute(
+            "select  if(count(*)>10,true,false) as setUpChannelLevel "
+            "from GAME_INFO as gi where channel_id = %s "  
+            "order by gi.start_time desc LIMIT 10",
+            (data["channel"])
+        )
+        trans.commit()
+        conn.close()
+        rows =util.fetch_all_json(result)
+        print(rows)
+        # 레벨을 산정한다.
+        if rows[0]['setUpChannelLevel'] == 1:
+            print("true") 
+            try:
+
+                conn = db_manager.engine.connect()
+                trans = conn.begin()
+
+                result = conn.execute(
+                    "select u.user_id,u.user_level from ( "   
+                        "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
+                    ") as recentGameTB "
+                    "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
+                    "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
+                    ,
+                    (data["channel"])
+                )
+                trans.commit()
+                conn.close()
+                rows =util.fetch_all_json(result)
+                print(rows)
+
+                levelSum = 0
+                for row in rows:
+                    levelSum = row["user_level"]
+
+                print(levelSum)
+                
+                #이후 반올림하여 채널랭크를 측정.
+                channelRank = round(levelSum/len(row))
+                try:
+                    #이후 채널 랭크 업데이트.
+                    conn = db_manager.engine.connect()
+                    trans = conn.begin()
+
+                    result = conn.execute(
+                        "update CHANNEL set channel_level = %s where channel_id = %s"
+                        ,
+                        (channelRank,data["channel"])
+                    )
+                    trans.commit()
+                    conn.close()
+
+                except Exception as e:
+                    print(str(e))    
+
+
+            except Exception as e:
+                print(str(e))
+
+        #아무일도일어나지 않는다.
+        else :
+            print("false")
+
+    except Exception as e:
+        print(str(e))    
+
     # 현재 상태 변경
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
@@ -232,8 +307,11 @@ def worker(data):
             time.sleep(1.0)
             i = i - 1
 
+
+            
+
         # 문제 선택하기
-        problem_id = int(random.random() * 100 % (len(texts))) + 1 # id는 1부터 13까지 있다
+        problem_id = int(random.random() * 100 % (len(texts))) # id는 1부터 13까지 있다
         problem_text = texts[problem_id]['problem_text']
 
         # 문제내는 부분
@@ -405,6 +483,76 @@ def worker(data):
         conn.close()
 
         user_name = get_user_info(slackApi, data["user"])["user"]["name"]
+
+        try:
+            #이후 채널 랭크 업데이트.
+            conn = db_manager.engine.connect()
+            trans = conn.begin()
+
+            result = conn.execute(
+                "select * , "
+                "( "
+                    "SELECT count(*) "
+                    "FROM ( "
+                        "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                ") as userAllCnt "
+                "from ( "
+                    "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
+                    "FROM ( "
+                        " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                    "INNER JOIN (SELECT @counter:=0) b "
+                ") as rankTB where user_id = %s "
+                ,
+                (data["user"])
+            )
+            trans.commit()
+            conn.close()
+            rows = util.fetch_all_json(result)
+
+            userAll = rows[0]["userAllCnt"]
+            rank = rows[0]["rank"]
+            levelHirechy = rank/userAll * 100
+
+            level = 3
+            #100~91
+            if levelHirechy > 90 :
+                level = 1
+            #90~71
+            elif levelHirechy>70 and levelHirechy<91:   
+                level = 2
+            #70~31    
+            elif levelHirechy>30 and levelHirechy<81:   
+                level = 3  
+            #30~10
+            elif levelHirechy>10 and levelHirechy<31:   
+                level = 4
+            #10~0
+            elif levelHirechy>-1 and levelHirechy<11:   
+                level = 5          
+            
+            try:
+                #이후 채널 랭크 업데이트.
+                conn = db_manager.engine.connect()
+                trans = conn.begin()
+
+                result = conn.execute(
+                    "update USER set user_level = %s where user_id = %s"
+                    ,
+                    (level,data["user"])
+                )
+                trans.commit()
+                conn.close()
+
+            except Exception as e:
+                print(str(e))                          
+
+        except Exception as e:
+            print(str(e))    
+
 
         #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
         #유저를 매번 검색할것인가?
