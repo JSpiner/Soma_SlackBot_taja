@@ -17,11 +17,16 @@ from common import util
 import time
 import base64
 import datetime
+import logging
 
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
+
+logging.basicConfig(
+    filename = './applog.log'
+)
 
 #load josn key file
 with open('key.json', 'r') as f:
@@ -70,6 +75,7 @@ def slack_oauth():
         )
     )
     trans.commit()
+    conn.close()
 
     return 'auth success' + response['access_token']
 
@@ -78,9 +84,9 @@ def slack_event():
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
-    print(data)
+#    print(data)
     
-    
+    logger.debug(data)
     response = {}
     response['ok'] = 'True'
 
@@ -93,13 +99,7 @@ def slack_event():
         #eventData에 팀 아이디 추
         eventData["team_id"] = data['team_id']
 
-        if 'subtype' in data['event']:
-            subtype = eventData['subtype']
-        else:
-            subtype = None
-
-        # print(eventData)
-        if eventData['type'] == "message" and subtype == None or subtype != 'bot_message' :
+        if eventData['type'] == "message" and 'subtype' not in data['event'] and 'text' in data['event'] :
 
             status_channel = redis_manager.redis_client.get("status_" + eventData["channel"])
             # redis_manager.redis_client.set("status_" + eventData["channel"], static.GAME_STATE_IDLE)
