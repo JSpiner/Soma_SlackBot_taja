@@ -1,3 +1,5 @@
+from celery.bin.celery import result
+from datashape.coretypes import Null
 from sqlalchemy import exc
 
 
@@ -25,29 +27,6 @@ with open('key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
-
-##load problem text array
-texts = []
-##conn = db_manager.session.connection()
-result = db_manager.query(
-    "SELECT problem_id, problem_text, difficulty "
-    "FROM PROBLEM "
-    "WHERE validity = %s",
-    ('1',)
-    
-)
-##conn.close()
-
-rows = util.fetch_all_json(result)
-
-for row in rows:
-    texts.append(
-        {
-            'problem_text'  : row['problem_text'],
-            'problem_id'    : row['problem_id']
-        }
-    )
-    print(texts)
 
 @worker_init.connect
 def init_worker(**kwargs):
@@ -278,10 +257,19 @@ def worker(data):
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
 
-        # 채널 정보가 DB에 있는지 redis로 확인 후 없으면 DB에 저장
-        if(redis_manager.redis_client.get("is_channel_exist_" + data["channel"]) == None):
-            redis_manager.redis_client.set("is_channel_exist_" + data["channel"], 1)
-    
+        # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        result = conn.execute(
+            "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
+            (data['channel'])
+        )
+        trans.commit()
+        conn.close()
+
+        # DB에 채널 정보가 없다면
+        if(result.fetchone() is None):
+
             ctime = datetime.datetime.now()
 
             # 채널 이름 가져오기
@@ -300,7 +288,7 @@ def worker(data):
                 "INSERT INTO CHANNEL"
                 "(team_id, channel_id, channel_name, channel_joined_time)"
                 "VALUES"
-                "(%s, %s, %s, %s);", 
+                "(%s, %s, %s, %s);",
                 (teamId, data['channel'], channel_name, ctime)
             )
             #db_manager.session.commit()
@@ -312,6 +300,7 @@ def worker(data):
         text_ts = response['ts']
         text_channel = response['channel']
         time.sleep(1)
+        
         i = 3
         while i != 0:
             slackApi.chat.update(
@@ -326,11 +315,13 @@ def worker(data):
             i = i - 1
 
 
-            
+        # 문제들 가져오기
+        texts = util.get_problems()
 
         # 문제 선택하기
-        problem_id = int(random.random() * 100 % (len(texts))) # id는 1부터 13까지 있다
-        problem_text = texts[problem_id]['problem_text']
+        problem_texts_index = int(random.random() * (len(texts)))
+        problem_id = texts[problem_texts_index]['problem_id']
+        problem_text = texts[problem_texts_index]['problem_text']
 
         # 문제내는 부분
 
