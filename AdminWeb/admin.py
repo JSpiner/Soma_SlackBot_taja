@@ -79,15 +79,18 @@ app.add_url_rule('/member/getTest', defaults={'types': 'getTest'},
 dashboard_view = dashboard.DashBoards.as_view('dashBoard')
 app.add_url_rule('/dashBoard/getIndicator', defaults={'types': 'getIndicator'},
                  view_func=dashboard_view, methods=['GET', ])
+
+app.add_url_rule('/dashBoard/getInActiveGraph', defaults={'types': 'getInActiveGraph'},
+                 view_func=dashboard_view, methods=['GET', ])
+
 app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph'},
-# <<<<<<< HEAD
                  view_func=dashboard_view, methods=['GET',])
+
 app.add_url_rule('/dashBoard/getTopTwenty', defaults={'types': 'getTopTwenty'},
                  view_func=dashboard_view, methods=['GET',])
 
-# =======
-#                  view_func=dashboard_view, methods=['GET', ])
-# >>>>>>> 1f299f3d603048abcef1d67cd9d0a5efeb00e5d2
+
+
 
 
 @app.route('/member/newProblem', methods=['POST'])
