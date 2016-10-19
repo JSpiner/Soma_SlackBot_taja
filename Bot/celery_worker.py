@@ -182,6 +182,45 @@ def sendMessage(slackApi, channel, text):
         }
     )
 
+def get_rand_game(channel):
+    result = db_manager.query(
+        "SELECT * "  
+        "FROM CHANNEL_PROBLEM "
+        "WHERE CHANNEL_PROBLEM.problem_cnt = ( "
+        "SELECT MIN(CHANNEL_PROBLEM.problem_cnt) "
+        "FROM CHANNEL_PROBLEM "
+        "WHERE CHANNEL_PROBLEM.channel_id = %s "
+        "LIMIT 1 "
+        ") "
+        "AND CHANNEL_PROBLEM.channel_id = %s "
+        "order by RAND() "
+        "LIMIT 1",
+        (channel, channel)
+    )
+
+    rows = util.fetch_all_json(result)
+    if len(rows) == 0:
+
+        result = db_manager.query(
+            "SELECT * "  
+            "FROM PROBLEM "
+            "order by RAND() "
+            "LIMIT 1",
+            ()
+        )
+        rows = util.fetch_all_json(result)
+        return rows[0]["problem_id"]
+
+    else:
+        db_manager.query(
+            "UPDATE CHANNEL_PROBLEM "
+            "SET `problem_cnt` = `problem_cnt` + 1 "
+            "WHERE "
+            "channel_id = %s and "
+            "problem_id = %s ",
+            (channel, rows[0]["problem_id"])
+        )
+        return rows[0]["problem_id"]
 
 # 채널 가져오기
 def get_channel_list(slackApi):
@@ -256,15 +295,48 @@ def worker(data):
 
             #conn = db_manager.session.connection()
             #trans = conn.begin()
-            db_manager.query(
-                "INSERT INTO CHANNEL"
-                "(team_id, channel_id, channel_name, channel_joined_time)"
-                "VALUES"
-                "(%s, %s, %s, %s);",
-                (teamId, data['channel'], channel_name, ctime)
-            )
-            #db_manager.session.commit()
-            #conn.close()
+
+            try:
+                db_manager.query(
+                    "INSERT INTO CHANNEL"
+                    "(team_id, channel_id, channel_name, channel_joined_time)"
+                    "VALUES"
+                    "(%s, %s, %s, %s);",
+                    (teamId, data['channel'], channel_name, ctime)
+                )
+                
+                result = db_manager.query(
+                    "select * from CHANNEL_PROBLEM where channel_id = %s ",
+                    (data['channel'],)
+                )
+
+                rows = util.fetch_all_json(result)
+                print(rows)
+
+                result = db_manager.query2(
+                    "select * from PROBLEM"    
+                )
+
+                rows = util.fetch_all_json(result)
+
+                arrQueryString=[]
+                arrQueryString.append('INSERT INTO CHANNEL_PROBLEM (channel_id,problem_id) values ')
+
+                for row in rows:
+                    arrQueryString.append('("'+ data['channel']+ '","'+ str(row['problem_id'])+ '")')
+                    arrQueryString.append(',')
+                    
+                arrQueryString.pop()
+                lastQuery = "".join(arrQueryString)
+
+                print(lastQuery)
+                
+                result = db_manager.query2(
+                    lastQuery    
+                )
+            except Exception as e:
+                print('error : '+str(e))
+
 
         sendMessage(slackApi, data["channel"], "타자게임을 시작합니다!")
         response = sendMessage(slackApi, data["channel"], "Ready~")
@@ -291,9 +363,8 @@ def worker(data):
         texts = util.get_problems()
 
         # 문제 선택하기
-        problem_texts_index = int(random.random() * (len(texts)))
-        problem_id = texts[problem_texts_index]['problem_id']
-        problem_text = texts[problem_texts_index]['problem_text']
+        problem_id = get_rand_game(data['channel']) #texts[problem_texts_index]['problem_id']
+        problem_text = texts[problem_id]
 
         # 문제내는 부분
 

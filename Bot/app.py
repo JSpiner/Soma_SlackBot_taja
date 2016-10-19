@@ -32,7 +32,8 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands")
+        +"&scope=client")
+#        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands+client+rtm:stream")
 
 
     html = "<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
@@ -89,6 +90,7 @@ def slack_game_start():
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
+    return 'hello'
     payload = request.get_data().decode()
     data = json.loads(payload) 
 

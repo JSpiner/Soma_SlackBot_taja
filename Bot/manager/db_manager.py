@@ -50,3 +50,9 @@ def query(queryString, params):
     result = session.execute(queryString)
 #    session.commit()
     return result
+
+def query2(queryString):
+    print("query : " + queryString)
+    result = session.execute(queryString)
+#    session.commit()
+    return result
