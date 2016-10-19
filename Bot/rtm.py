@@ -1,7 +1,7 @@
 from slackclient import SlackClient
 
 from celery_worker import worker
-import common.test as tester
+import Common.test as tester
 from flask import Flask
 from flask import Response
 from flask import request
@@ -9,11 +9,11 @@ import requests
 import json
 import time
 import sqlalchemy
-from manager import redis_manager
-from manager import db_manager
-from common import static
+from Common.manager import redis_manager
+from Common.manager import db_manager
+from Common import static
 import datetime
-from common import util
+from Common import util
 import time
 import base64
 import datetime
