@@ -86,7 +86,7 @@ def slack_game_start():
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
-    subprocess.call('./rtm.py', 128 , data['team_id'])
+    subprocess.call(['python3','./rtm.py', 'xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10'], 128)
 
     worker.delay(data)
     return 'hello'
