@@ -6,6 +6,7 @@ from manager import redis_manager
 from manager import db_manager
 from common import static
 from common import util
+from celery.signals import worker_init
 from common.slackapi import SlackApi
 import datetime
 
@@ -45,6 +46,10 @@ for row in rows:
         }
     )
     print(texts)
+
+@worker_init.connect
+def init_worker(**kwargs):
+    print('init worker')
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, data, teamId):
