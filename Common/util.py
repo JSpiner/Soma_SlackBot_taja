@@ -94,7 +94,7 @@ def get_problems():
 
     # 우선 문제 Set들을 가져와서 Validity가 1인 문제 하나를 랜던하게 id를 반환
 
-    texts = [];
+    texts = {}
 
     result = db_manager.engine.connect().execute(
         "SELECT problem_id, problem_text, difficulty "
@@ -106,11 +106,6 @@ def get_problems():
     rows = util.fetch_all_json(result)
 
     for row in rows:
-        texts.append(
-            {
-                'problem_text': row['problem_text'],
-                'problem_id': row['problem_id']
-            }
-        )
+        texts[row['problem_id']] = row['problem_text']
 
     return texts
