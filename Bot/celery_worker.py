@@ -119,9 +119,9 @@ def game_end(slackApi, data, teamId):
     rank = 1
     for row in rows:
         result_string = result_string +(
-            str(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "* " 
-            "종합점수 : " + str(row["score"]) + "점 " +
-            "정확도 : " + str(row["accuracy"]) + "% " + 
+            str(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t" 
+            "종합점수 : " + str(row["score"]) + "점\t" +
+            "정확도 : " + str(row["accuracy"]) + "%\t" + 
             "타속 : " + str(row["speed"])+"타 \n"
         )
         rank = rank + 1
