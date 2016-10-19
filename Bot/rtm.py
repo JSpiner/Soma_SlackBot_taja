@@ -22,7 +22,7 @@ import sys
 
 print('Number of arguments : ' + str(int(len(sys.argv))))
 print('Argument List : ' + str(sys.argv))
-token = sys.argv[0]
+token = sys.argv[1]
 
 
 with open('key.json', 'r') as f:
