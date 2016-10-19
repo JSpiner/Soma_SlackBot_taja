@@ -17,16 +17,11 @@ from common import util
 import time
 import base64
 import datetime
-import logging
 
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
-
-logging.basicConfig(
-    filename = './applog.log'
-)
 
 #load josn key file
 with open('key.json', 'r') as f:
@@ -37,11 +32,11 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot")
+        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands")
 
 
     html = "<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
-
+    print('home')
     return html
 
 @app.route('/slack/oauth', methods = ['GET'])
@@ -79,14 +74,27 @@ def slack_oauth():
 
     return 'auth success' + response['access_token']
 
+@app.route('/slack/start', methods = ['POST'])
+def slack_game_start():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = ".시작"
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+    return 'hello'
+
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
-#    print(data)
+    print(data)
     
-    logger.debug(data)
+    
     response = {}
     response['ok'] = 'True'
 
@@ -140,4 +148,4 @@ def slack_event():
 
 ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
 
-app.run(host='0.0.0.0', debug='True', port = 20000, ssl_context = ssl_context)
+app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
