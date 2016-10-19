@@ -1,5 +1,4 @@
 from celery.bin.celery import result
-from datashape.coretypes import Null
 from sqlalchemy import exc
 
 
@@ -572,20 +571,30 @@ def worker(data):
             print(str(e))    
 
 
-        #@@@@@@@@@@@@@@@ fix me @@@@@@@@@@@@@@@@
-        #유저를 매번 검색할것인가?
-        #임시로 데이터를 긁어서넣는다.
         try:
             #conn = db_manager.session.connection()
             #trans = conn.begin()
-            db_manager.query(
-                "INSERT INTO USER"
-                "(team_id, user_id, user_name)"
-                "VALUES"
-                "(%s, %s, %s)",
-                (teamId,data["user"],user_name)
+            result = db_manager.query(
+                "SELECT user_id "
+                "FROM USER "
+                "WHERE "
+                "user_id = %s "
+                "LIMIT 1"
+                ,
+                (data["user"],)
             )
-            #db_manager.session.commit()
-            #conn.close()        
+            rows = util.fetch_all_json(result)
+
+            if len(rows) == 0:
+
+                db_manager.query(
+                    "INSERT INTO USER "
+                    "(team_id, user_id, user_name) "
+                    "VALUES "
+                    "(%s, %s, %s) ",
+                    (teamId,data["user"],user_name)
+                )
+                #db_manager.session.commit()
+                #conn.close()        
         except exc.SQLAlchemyError as e:
             print("[DB] err==>"+str(e))
