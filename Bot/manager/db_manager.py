@@ -7,6 +7,14 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 import json 
+import logging
+
+logging.basicConfig(
+    filename = './dblog.log'
+)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
+
+
 with open('conf.json') as conf_json:
     conf = json.load(conf_json)
  

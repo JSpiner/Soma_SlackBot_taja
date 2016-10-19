@@ -468,7 +468,7 @@ def worker(data):
         )
 
         rows = util.fetch_all_json(result)
-        if len(rows) != -1:
+        if len(rows) == 0:
             
             #새로 디비 연결하는부분.
             #conn = db_manager.session.connection()
