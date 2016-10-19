@@ -19,12 +19,13 @@ engine = create_engine(
     max_overflow = 10,
     echo = True,
     echo_pool = True,
-    execution_options = {"autocommit": False}
+    execution_options = {"autocommit": True}
 )
  
-session = scoped_session(sessionmaker(autocommit=False,
+session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
+#session.begin()
 
 def query(queryString, params):
     print("query : " + queryString)
@@ -39,6 +40,5 @@ def query(queryString, params):
 
     queryString = queryString % params
     result = session.execute(queryString)
-    session.commit()
+#    session.commit()
     return result
-

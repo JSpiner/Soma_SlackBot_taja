@@ -1,7 +1,5 @@
 from celery.bin.celery import result
 from sqlalchemy import exc
-
-
 from celery import Celery
 from manager import redis_manager
 from manager import db_manager
@@ -11,8 +9,6 @@ from celery.signals import worker_init
 from celery.signals import worker_shutdown
 from common.slackapi import SlackApi
 import datetime
-
-
 import requests
 import json
 import time
@@ -128,68 +124,45 @@ def game_end(slackApi, data, teamId):
     #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
     try:
 
-        #conn = db_manager.session.connection()
-        #trans = conn.begin()
         result = db_manager.query(
             "select  if(count(*)>10,true,false) as setUpChannelLevel "
             "from GAME_INFO as gi where channel_id = %s "  
             "order by gi.start_time desc LIMIT 10",
             (data["channel"],)
         )
-        #db_manager.session.commit()
-        #conn.close()
         rows =util.fetch_all_json(result)
         print(rows)
         # 레벨을 산정한다.
         if rows[0]['setUpChannelLevel'] == 1:
             print("true") 
-            try:
 
-                #conn = db_manager.session.connection()
-                #trans = conn.begin()
+            result = db_manager.query(
+                "select u.user_id,u.user_level from ( "   
+                    "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
+                ") as recentGameTB "
+                "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
+                "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
+                ,
+                (data["channel"],)
+            )
+            rows =util.fetch_all_json(result)
+            print(rows)
 
-                result = db_manager.query(
-                    "select u.user_id,u.user_level from ( "   
-                        "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
-                    ") as recentGameTB "
-                    "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
-                    "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
-                    ,
-                    (data["channel"],)
-                )
-                #db_manager.session.commit()
-                #conn.close()
-                rows =util.fetch_all_json(result)
-                print(rows)
+            levelSum = 0
+            for row in rows:
+                levelSum = row["user_level"]
 
-                levelSum = 0
-                for row in rows:
-                    levelSum = row["user_level"]
+            print(levelSum)
+            
+            #이후 반올림하여 채널랭크를 측정.
+            channelRank = round(levelSum/len(row))
+                #이후 채널 랭크 업데이트.
 
-                print(levelSum)
-                
-                #이후 반올림하여 채널랭크를 측정.
-                channelRank = round(levelSum/len(row))
-                try:
-                    #이후 채널 랭크 업데이트.
-                    #conn = db_manager.session.connection()
-                    #trans = conn.begin()
-
-                    result = db_manager.query(
-                        "update CHANNEL set channel_level = %s where channel_id = %s"
-                        ,
-                        (channelRank,data["channel"])
-                    )
-                    #db_manager.session.commit()
-                    #conn.close()
-
-                except Exception as e:
-                    print(str(e))    
-
-
-            except Exception as e:
-                print(str(e))
-
+            result = db_manager.query(
+                "update CHANNEL set channel_level = %s where channel_id = %s"
+                ,
+                (channelRank,data["channel"])
+            )
         #아무일도일어나지 않는다.
         else :
             print("false")
@@ -485,73 +458,83 @@ def worker(data):
         print('accur : ' +str(accuracy))
         print('text : ' + str(data["text"]))
 
-        
-        #새로 디비 연결하는부분.
-        #conn = db_manager.session.connection()
-        #trans = conn.begin()
-        db_manager.query(
-            "INSERT INTO GAME_RESULT "
-            "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
-            "VALUES"
-            "(%s, %s, %s, %s, %s, %s, %s)",
-            (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
+        result = db_manager.query(
+            "SELECT game_id "
+            "FROM GAME_RESULT "
+            "WHERE "
+            "game_id = %s and user_id = %s "
+            "LIMIT 1",
+            (game_id, data["user"])
         )
-        #db_manager.session.commit()
-        #conn.close()
 
-        user_name = get_user_info(slackApi, data["user"])["user"]["name"]
-
-        try:
-            #이후 채널 랭크 업데이트.
+        rows = util.fetch_all_json(result)
+        if len(rows) != -1:
+            
+            #새로 디비 연결하는부분.
             #conn = db_manager.session.connection()
             #trans = conn.begin()
-
-            result = db_manager.query(
-                "select * , "
-                "( "
-                    "SELECT count(*) "
-                    "FROM ( "
-                        "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                    ") "
-                    "userScoreTB "
-                ") as userAllCnt "
-                "from ( "
-                    "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
-                    "FROM ( "
-                        " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                    ") "
-                    "userScoreTB "
-                    "INNER JOIN (SELECT @counter:=0) b "
-                ") as rankTB where user_id = %s "
-                ,
-                (data["user"],)
+            db_manager.query(
+                "INSERT INTO GAME_RESULT "
+                "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
+                "VALUES"
+                "(%s, %s, %s, %s, %s, %s, %s)",
+                (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
             )
             #db_manager.session.commit()
             #conn.close()
-            rows = util.fetch_all_json(result)
 
-            userAll = rows[0]["userAllCnt"]
-            rank = rows[0]["rank"]
-            levelHirechy = rank/userAll * 100
+            user_name = get_user_info(slackApi, data["user"])["user"]["name"]
 
-            level = 3
-            #100~91
-            if levelHirechy > 90 :
-                level = 1
-            #90~71
-            elif levelHirechy>70 and levelHirechy<91:   
-                level = 2
-            #70~31    
-            elif levelHirechy>30 and levelHirechy<81:   
-                level = 3  
-            #30~10
-            elif levelHirechy>10 and levelHirechy<31:   
-                level = 4
-            #10~0
-            elif levelHirechy>-1 and levelHirechy<11:   
-                level = 5          
-            
             try:
+                #이후 채널 랭크 업데이트.
+                #conn = db_manager.session.connection()
+                #trans = conn.begin()
+
+                result = db_manager.query(
+                    "select * , "
+                    "( "
+                        "SELECT count(*) "
+                        "FROM ( "
+                            "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                        ") "
+                        "userScoreTB "
+                    ") as userAllCnt "
+                    "from ( "
+                        "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
+                        "FROM ( "
+                            " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                        ") "
+                        "userScoreTB "
+                        "INNER JOIN (SELECT @counter:=0) b "
+                    ") as rankTB where user_id = %s "
+                    ,
+                    (data["user"],)
+                )
+                #db_manager.session.commit()
+                #conn.close()
+                rows = util.fetch_all_json(result)
+
+                userAll = rows[0]["userAllCnt"]
+                rank = rows[0]["rank"]
+                levelHirechy = rank/userAll * 100
+
+                level = 3
+                #100~91
+                if levelHirechy > 90 :
+                    level = 1
+                #90~71
+                elif levelHirechy>70 and levelHirechy<91:   
+                    level = 2
+                #70~31    
+                elif levelHirechy>30 and levelHirechy<81:   
+                    level = 3  
+                #30~10
+                elif levelHirechy>10 and levelHirechy<31:   
+                    level = 4
+                #10~0
+                elif levelHirechy>-1 and levelHirechy<11:   
+                    level = 5          
+            
                 #이후 채널 랭크 업데이트.
                 #conn = db_manager.session.connection()
                 #trans = conn.begin()
@@ -565,36 +548,33 @@ def worker(data):
                 #conn.close()
 
             except Exception as e:
-                print(str(e))                          
-
-        except Exception as e:
-            print(str(e))    
+                print(str(e))    
 
 
-        try:
-            #conn = db_manager.session.connection()
-            #trans = conn.begin()
-            result = db_manager.query(
-                "SELECT user_id "
-                "FROM USER "
-                "WHERE "
-                "user_id = %s "
-                "LIMIT 1"
-                ,
-                (data["user"],)
-            )
-            rows = util.fetch_all_json(result)
-
-            if len(rows) == 0:
-
-                db_manager.query(
-                    "INSERT INTO USER "
-                    "(team_id, user_id, user_name) "
-                    "VALUES "
-                    "(%s, %s, %s) ",
-                    (teamId,data["user"],user_name)
+            try:
+                #conn = db_manager.session.connection()
+                #trans = conn.begin()
+                result = db_manager.query(
+                    "SELECT user_id "
+                    "FROM USER "
+                    "WHERE "
+                    "user_id = %s "
+                    "LIMIT 1"
+                    ,
+                    (data["user"],)
                 )
-                #db_manager.session.commit()
-                #conn.close()        
-        except exc.SQLAlchemyError as e:
-            print("[DB] err==>"+str(e))
+                rows = util.fetch_all_json(result)
+
+                if len(rows) == 0:
+
+                    db_manager.query(
+                        "INSERT INTO USER "
+                        "(team_id, user_id, user_name) "
+                        "VALUES "
+                        "(%s, %s, %s) ",
+                        (teamId,data["user"],user_name)
+                    )
+                    #db_manager.session.commit()
+                    #conn.close()        
+            except exc.SQLAlchemyError as e:
+                print("[DB] err==>"+str(e))
