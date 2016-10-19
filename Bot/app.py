@@ -17,6 +17,7 @@ from common import util
 import time
 import base64
 import datetime
+import subprocess
 
 # test before running flask
 # tester.run_unit_test()
@@ -84,6 +85,8 @@ def slack_game_start():
     data['channel'] = request.form.get('channel_id')
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
+
+    subprocess.call('./rtm.py', data['team_id'])
 
     worker.delay(data)
     return 'hello'

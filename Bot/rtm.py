@@ -17,9 +17,12 @@ from common import util
 import time
 import base64
 import datetime
+import sys
 
 
-token = "xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10"
+print('Number of arguments : ' + str(int(len(sys.argv))))
+print('Argument List : ' + str(sys.argv))
+token = sys.argv[0]
 
 
 with open('key.json', 'r') as f:
