@@ -7,6 +7,7 @@ from manager import db_manager
 from common import static
 from common import util
 from celery.signals import worker_init
+from celery.signals import worker_shutdown
 from common.slackapi import SlackApi
 import datetime
 
@@ -27,7 +28,7 @@ app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
 ##load problem text array
 texts = []
-conn = db_manager.engine.connect()
+conn = db_manager.session.connection()
 result = conn.execute(
     "SELECT problem_id, problem_text, difficulty "
     "FROM PROBLEM "
@@ -51,6 +52,10 @@ for row in rows:
 def init_worker(**kwargs):
     print('init worker')
 
+@worker_shutdown.connect
+def shutdown_worker(**kwargs):
+    print('shutdown')
+
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, data, teamId):
 
@@ -71,7 +76,7 @@ def game_end(slackApi, data, teamId):
     time.sleep(2)
 
     # 참여유저수 query로 가져오기
-    conn = db_manager.engine.connect()
+    conn = db_manager.session.connection()
     trans = conn.begin()
     result=conn.execute(
         "SELECT * FROM slackbot.GAME_RESULT WHERE slackbot.GAME_RESULT.game_id = %s;",
@@ -84,7 +89,7 @@ def game_end(slackApi, data, teamId):
     rows= util.fetch_all_json(result)
     user_num = len(rows)
 
-    conn = db_manager.engine.connect()
+    conn = db_manager.session.connection()
     trans = conn.begin()
     ctime = datetime.datetime.now()
     conn.execute(
@@ -98,21 +103,26 @@ def game_end(slackApi, data, teamId):
     conn.close()
 
 
-    conn = db_manager.engine.connect()
+    conn = db_manager.session.connection()
     result = conn.execute(
         "SELECT * FROM GAME_RESULT "
         "WHERE game_id = %s order by score desc",
         (game_id)
-    )
+    ) 
     conn.close()
     rows =util.fetch_all_json(result)
 
     print(rows)
-
+ 
     result_string = ""#Game Result : "+str(len(rows))+"participants" + " : \n"
     rank = 1
     for row in rows:
-        result_string = result_string + str(rank) + " ID : " + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + " " + "SCORE : " + str(row["score"]) + "accur : " + str(row["accuracy"]) + " " + "speed : " + str(row["speed"])+" \n"
+        result_string = result_string +(
+            str(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "* " 
+            "종합점수 : " + str(row["score"]) + "점 " +
+            "정확도 : " + str(row["accuracy"]) + "% " + 
+            "타속 : " + str(row["speed"])+"타 \n"
+        )
         rank = rank + 1
 
     sendResult = str(result_string)
@@ -139,7 +149,7 @@ def game_end(slackApi, data, teamId):
     #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
     try:
 
-        conn = db_manager.engine.connect()
+        conn = db_manager.session.connection()
         trans = conn.begin()
         result = conn.execute(
             "select  if(count(*)>10,true,false) as setUpChannelLevel "
@@ -156,7 +166,7 @@ def game_end(slackApi, data, teamId):
             print("true") 
             try:
 
-                conn = db_manager.engine.connect()
+                conn = db_manager.session.connection()
                 trans = conn.begin()
 
                 result = conn.execute(
@@ -183,7 +193,7 @@ def game_end(slackApi, data, teamId):
                 channelRank = round(levelSum/len(row))
                 try:
                     #이후 채널 랭크 업데이트.
-                    conn = db_manager.engine.connect()
+                    conn = db_manager.session.connection()
                     trans = conn.begin()
 
                     result = conn.execute(
@@ -235,7 +245,7 @@ def get_user_info(slackApi, userId):
 # 팀별 SlackApi 객체 생성
 def init_slackapi(teamId):
 
-    conn = db_manager.engine.connect()
+    conn = db_manager.session.connection()
     result = util.fetch_all_json(conn.execute(
             "SELECT team_access_token FROM TEAM "
             "WHERE `team_id`   = %s "
@@ -282,7 +292,7 @@ def worker(data):
                 if(channel_info['id'] == data['channel']):
                     channel_name = channel_info['name']
 
-            conn = db_manager.engine.connect()
+            conn = db_manager.session.connection()
             trans = conn.begin()
             conn.execute(
                 "INSERT INTO CHANNEL"
@@ -355,7 +365,7 @@ def worker(data):
         channel_id = data["channel"]
 
         # 게임 결과들 가져오기
-        conn = db_manager.engine.connect()
+        conn = db_manager.session.connection()
         trans = conn.begin()
 
         result = conn.execute("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
@@ -401,7 +411,7 @@ def worker(data):
         user_name = user_info['user']['name']
 
         # 내 게임 결과들 가져오기
-        conn = db_manager.engine.connect()
+        conn = db_manager.session.connection()
         trans = conn.begin()
         result = conn.execute(
             "SELECT * FROM GAME_RESULT "
@@ -476,7 +486,7 @@ def worker(data):
 
         
         #새로 디비 연결하는부분.
-        conn = db_manager.engine.connect()
+        conn = db_manager.session.connection()
         trans = conn.begin()
         conn.execute(
             "INSERT INTO GAME_RESULT "
@@ -492,7 +502,7 @@ def worker(data):
 
         try:
             #이후 채널 랭크 업데이트.
-            conn = db_manager.engine.connect()
+            conn = db_manager.session.connection()
             trans = conn.begin()
 
             result = conn.execute(
@@ -542,7 +552,7 @@ def worker(data):
             
             try:
                 #이후 채널 랭크 업데이트.
-                conn = db_manager.engine.connect()
+                conn = db_manager.session.connection()
                 trans = conn.begin()
 
                 result = conn.execute(
@@ -564,7 +574,7 @@ def worker(data):
         #유저를 매번 검색할것인가?
         #임시로 데이터를 긁어서넣는다.
         try:
-            conn = db_manager.engine.connect()
+            conn = db_manager.session.connection()
             trans = conn.begin()
             conn.execute(
                 "INSERT INTO USER"
