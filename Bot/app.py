@@ -18,6 +18,8 @@ import time
 import base64
 import datetime
 import subprocess
+from multiprocessing import Process, Queue
+from slackclient import SlackClient
 
 # test before running flask
 # tester.run_unit_test()
@@ -86,10 +88,71 @@ def slack_game_start():
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
-    subprocess.call(['python3','./rtm.py', 'xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10'], 128)
+    #subprocess.call(['python3','./rtm.py', 'xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10'], 128)
+    p= Process(target=make_rtm_process, args=('xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10',))
+    p.start()
 
     worker.delay(data)
     return 'hello'
+
+def make_rtm_process(token):
+
+    with open('key.json', 'r') as f:
+        key = json.load(f)
+
+    sc = SlackClient(token)
+    if sc.rtm_connect():
+        print("connected!")
+
+        while True:
+            response = sc.rtm_read()
+
+            if len(response) == 0:
+                continue
+
+            # response는 배열로, 여러개가 담겨올수 있음
+            for data in response:
+                print(data)
+
+                try:
+                    if data['type'] == "message":
+
+                        data['team_id'] = data['team']
+                        status_channel = redis_manager.redis_client.get("status_" + data["channel"])
+                        # redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+                        # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
+
+                        # 강제종료 명령을 최우선으로 처리함
+                        if data["text"] == static.GAME_COMMAND_EXIT:
+                            print('.exit')
+                            worker.delay(data)
+                            continue
+                        # 게임이 플레이중이라면
+                        if status_channel == static.GAME_STATE_PLAYING:
+                            if data["text"][0] == ".":
+                                continue
+                            print('playing')
+                            worker.delay(data)
+
+                        # 게임 플레이중이 아니라면
+                        elif status_channel == static.GAME_STATE_IDLE or status_channel == None:
+                            print('commend')
+                            if data["text"] == static.GAME_COMMAND_START:
+                                print('.start')
+                                worker.delay(data)
+                            elif data["text"] == static.GAME_COMMAND_RANK:
+                                print('.rank')
+                                worker.delay(data)
+                            elif data["text"] == static.GAME_COMMAND_MY_RANK:
+                                print('.myrank')
+                                worker.delay(data)
+                            elif data["type"] == "channel_joined":
+                                print('others')
+                                worker.delay(data)
+                except Exception as e:
+                    print('error ' + str(e))
+    else:
+        print("connection fail")
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
