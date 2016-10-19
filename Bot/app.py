@@ -35,7 +35,7 @@ def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=client")
+        +"&scope=client+bot")
 #        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands+client+rtm:stream")
 
 
