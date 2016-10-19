@@ -33,7 +33,7 @@ result = db_manager.query(
     "SELECT problem_id, problem_text, difficulty "
     "FROM PROBLEM "
     "WHERE validity = %s",
-    ('1')
+    ('1',)
     
 )
 ##conn.close()
@@ -81,7 +81,7 @@ def game_end(slackApi, data, teamId):
     #trans = conn.begin()
     result=db_manager.query(
         "SELECT * FROM slackbot.GAME_RESULT WHERE slackbot.GAME_RESULT.game_id = %s;",
-        (game_id)
+        (game_id,)
     )
     #db_manager.session.commit()
     #conn.close()
@@ -108,7 +108,7 @@ def game_end(slackApi, data, teamId):
     result = db_manager.query(
         "SELECT * FROM GAME_RESULT "
         "WHERE game_id = %s order by score desc",
-        (game_id)
+        (game_id,)
     ) 
     #conn.close()
     rows =util.fetch_all_json(result)
@@ -156,7 +156,7 @@ def game_end(slackApi, data, teamId):
             "select  if(count(*)>10,true,false) as setUpChannelLevel "
             "from GAME_INFO as gi where channel_id = %s "  
             "order by gi.start_time desc LIMIT 10",
-            (data["channel"])
+            (data["channel"],)
         )
         #db_manager.session.commit()
         #conn.close()
@@ -177,7 +177,7 @@ def game_end(slackApi, data, teamId):
                     "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
                     "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
                     ,
-                    (data["channel"])
+                    (data["channel"],)
                 )
                 #db_manager.session.commit()
                 #conn.close()
@@ -370,7 +370,16 @@ def worker(data):
         #conn = db_manager.session.connection()
         #trans = conn.begin()
 
-        result = db_manager.query("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
+        result = db_manager.query(
+            "SELECT * from GAME_RESULT "
+            "RESULT inner join GAME_INFO INFO "
+            "on INFO.game_id = RESULT.game_id "
+            "inner join USER U " 
+            "on U.user_id = RESULT.user_id "
+            "where INFO.channel_id = %s " 
+            "order by score desc;",
+            (channel_id,)
+        )
         #db_manager.session.commit()
         #conn.close()
 
@@ -419,7 +428,7 @@ def worker(data):
             "SELECT * FROM GAME_RESULT "
             "WHERE "
             "user_id = %s order by score desc;",
-            (user_id)
+            (user_id,)
         )
         #db_manager.session.commit()
         #conn.close()
@@ -525,7 +534,7 @@ def worker(data):
                     "INNER JOIN (SELECT @counter:=0) b "
                 ") as rankTB where user_id = %s "
                 ,
-                (data["user"])
+                (data["user"],)
             )
             #db_manager.session.commit()
             #conn.close()

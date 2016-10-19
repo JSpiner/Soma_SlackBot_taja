@@ -21,15 +21,19 @@ engine = create_engine(
     echo_pool = True,
     execution_options = {"autocommit": False}
 )
-
+ 
 session = scoped_session(sessionmaker(autocommit=False,
                                          autoflush=False,
                                          bind=engine))
 
 def query(queryString, params):
+    print("query : " + queryString)
+    print("params : " + str(params))
     params = list(params)
     for idx, arg in enumerate(params):
         print(arg)
+        if isinstance(arg, bytes):
+            arg = arg.decode('utf-8')
         params[idx] = "'"+str(arg)+"'"
     params = tuple(params)
 
