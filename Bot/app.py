@@ -88,8 +88,20 @@ def slack_game_start():
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
-    #subprocess.call(['python3','./rtm.py', 'xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10'], 128)
-    p= Process(target=make_rtm_process, args=('xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10',))
+    # 팀 정보를 불러온다.
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    result = conn.execute(
+        "SELECT * FROM slackbot.TEAM WHERE slackbot.TEAM.team_id = %s",
+        (data['team_id'])
+    )
+    trans.commit()
+    conn.close()
+
+    rows = util.fetch_all_json(result)
+
+    #subprocess.call(['python3','./rtm.py', rows[0]['team_access_token]'], 128)
+    p= Process(target=make_rtm_process, args=(rows[0]['team_access_token'],))
     p.start()
 
     worker.delay(data)
