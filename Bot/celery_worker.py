@@ -28,14 +28,15 @@ app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
 ##load problem text array
 texts = []
-conn = db_manager.session.connection()
-result = conn.execute(
+##conn = db_manager.session.connection()
+result = db_manager.query(
     "SELECT problem_id, problem_text, difficulty "
     "FROM PROBLEM "
     "WHERE validity = %s",
-    1
+    ('1')
+    
 )
-conn.close()
+##conn.close()
 
 rows = util.fetch_all_json(result)
 
@@ -76,40 +77,40 @@ def game_end(slackApi, data, teamId):
     time.sleep(2)
 
     # 참여유저수 query로 가져오기
-    conn = db_manager.session.connection()
-    trans = conn.begin()
-    result=conn.execute(
+    #conn = db_manager.session.connection()
+    #trans = conn.begin()
+    result=db_manager.query(
         "SELECT * FROM slackbot.GAME_RESULT WHERE slackbot.GAME_RESULT.game_id = %s;",
         (game_id)
     )
-    trans.commit()
-    conn.close()
+    #db_manager.session.commit()
+    #conn.close()
 
     # 가져온 쿼리 결과로 user_num을 계산
     rows= util.fetch_all_json(result)
     user_num = len(rows)
 
-    conn = db_manager.session.connection()
-    trans = conn.begin()
+    #conn = db_manager.session.connection()
+    #trans = conn.begin()
     ctime = datetime.datetime.now()
-    conn.execute(
+    db_manager.query(
         "INSERT INTO GAME_INFO "
         "(game_id, channel_id, team_id, start_time, end_time, problem_id, user_num)"
         "VALUES"
         "(%s, %s, %s, %s, %s, %s, %s) ",
         (game_id, data["channel"], teamId, start_time_to_time_tamp, ctime, problem_id , user_num)
     )
-    trans.commit()
-    conn.close()
+    #db_manager.session.commit()
+    #conn.close()
 
 
-    conn = db_manager.session.connection()
-    result = conn.execute(
+    #conn = db_manager.session.connection()
+    result = db_manager.query(
         "SELECT * FROM GAME_RESULT "
         "WHERE game_id = %s order by score desc",
         (game_id)
     ) 
-    conn.close()
+    #conn.close()
     rows =util.fetch_all_json(result)
 
     print(rows)
@@ -149,16 +150,16 @@ def game_end(slackApi, data, teamId):
     #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
     try:
 
-        conn = db_manager.session.connection()
-        trans = conn.begin()
-        result = conn.execute(
+        #conn = db_manager.session.connection()
+        #trans = conn.begin()
+        result = db_manager.query(
             "select  if(count(*)>10,true,false) as setUpChannelLevel "
             "from GAME_INFO as gi where channel_id = %s "  
             "order by gi.start_time desc LIMIT 10",
             (data["channel"])
         )
-        trans.commit()
-        conn.close()
+        #db_manager.session.commit()
+        #conn.close()
         rows =util.fetch_all_json(result)
         print(rows)
         # 레벨을 산정한다.
@@ -166,10 +167,10 @@ def game_end(slackApi, data, teamId):
             print("true") 
             try:
 
-                conn = db_manager.session.connection()
-                trans = conn.begin()
+                #conn = db_manager.session.connection()
+                #trans = conn.begin()
 
-                result = conn.execute(
+                result = db_manager.query(
                     "select u.user_id,u.user_level from ( "   
                         "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
                     ") as recentGameTB "
@@ -178,8 +179,8 @@ def game_end(slackApi, data, teamId):
                     ,
                     (data["channel"])
                 )
-                trans.commit()
-                conn.close()
+                #db_manager.session.commit()
+                #conn.close()
                 rows =util.fetch_all_json(result)
                 print(rows)
 
@@ -193,16 +194,16 @@ def game_end(slackApi, data, teamId):
                 channelRank = round(levelSum/len(row))
                 try:
                     #이후 채널 랭크 업데이트.
-                    conn = db_manager.session.connection()
-                    trans = conn.begin()
+                    #conn = db_manager.session.connection()
+                    #trans = conn.begin()
 
-                    result = conn.execute(
+                    result = db_manager.query(
                         "update CHANNEL set channel_level = %s where channel_id = %s"
                         ,
                         (channelRank,data["channel"])
                     )
-                    trans.commit()
-                    conn.close()
+                    #db_manager.session.commit()
+                    #conn.close()
 
                 except Exception as e:
                     print(str(e))    
@@ -245,15 +246,16 @@ def get_user_info(slackApi, userId):
 # 팀별 SlackApi 객체 생성
 def init_slackapi(teamId):
 
-    conn = db_manager.session.connection()
-    result = util.fetch_all_json(conn.execute(
+#    #conn = db_manager.session.connection()
+    result = util.fetch_all_json(db_manager.query(
             "SELECT team_access_token FROM TEAM "
-            "WHERE `team_id`   = %s "
-            "LIMIT 1",
-            (teamId)
+            "WHERE `team_id`   =  %s " 
+            "LIMIT 1"
+            ,
+            (teamId,)
         )
     )
-    conn.close()
+#    #conn.close()
     print(result)
     slackApi = SlackApi(result[0]['team_access_token'])
     return slackApi
@@ -292,17 +294,17 @@ def worker(data):
                 if(channel_info['id'] == data['channel']):
                     channel_name = channel_info['name']
 
-            conn = db_manager.session.connection()
-            trans = conn.begin()
-            conn.execute(
+            #conn = db_manager.session.connection()
+            #trans = conn.begin()
+            db_manager.query(
                 "INSERT INTO CHANNEL"
                 "(team_id, channel_id, channel_name, channel_joined_time)"
                 "VALUES"
                 "(%s, %s, %s, %s);", 
                 (teamId, data['channel'], channel_name, ctime)
             )
-            trans.commit()
-            conn.close()
+            #db_manager.session.commit()
+            #conn.close()
 
         sendMessage(slackApi, data["channel"], "타자게임을 시작합니다!")
         response = sendMessage(slackApi, data["channel"], "Ready~")
@@ -365,12 +367,12 @@ def worker(data):
         channel_id = data["channel"]
 
         # 게임 결과들 가져오기
-        conn = db_manager.session.connection()
-        trans = conn.begin()
+        #conn = db_manager.session.connection()
+        #trans = conn.begin()
 
-        result = conn.execute("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
-        trans.commit()
-        conn.close()
+        result = db_manager.query("select * from GAME_RESULT RESULT inner join GAME_INFO INFO on INFO.game_id = RESULT.game_id inner join USER U on U.user_id = RESULT.user_id where INFO.channel_id = %s order by score desc;", (channel_id))
+        #db_manager.session.commit()
+        #conn.close()
 
 
         rows =util.fetch_all_json(result)
@@ -411,16 +413,16 @@ def worker(data):
         user_name = user_info['user']['name']
 
         # 내 게임 결과들 가져오기
-        conn = db_manager.session.connection()
-        trans = conn.begin()
-        result = conn.execute(
+        #conn = db_manager.session.connection()
+        #trans = conn.begin()
+        result = db_manager.query(
             "SELECT * FROM GAME_RESULT "
             "WHERE "
             "user_id = %s order by score desc;",
             (user_id)
         )
-        trans.commit()
-        conn.close()
+        #db_manager.session.commit()
+        #conn.close()
 
         rows = util.fetch_all_json(result)
         # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
@@ -486,26 +488,26 @@ def worker(data):
 
         
         #새로 디비 연결하는부분.
-        conn = db_manager.session.connection()
-        trans = conn.begin()
-        conn.execute(
+        #conn = db_manager.session.connection()
+        #trans = conn.begin()
+        db_manager.query(
             "INSERT INTO GAME_RESULT "
             "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
             "VALUES"
             "(%s, %s, %s, %s, %s, %s, %s)",
             (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
         )
-        trans.commit()
-        conn.close()
+        #db_manager.session.commit()
+        #conn.close()
 
         user_name = get_user_info(slackApi, data["user"])["user"]["name"]
 
         try:
             #이후 채널 랭크 업데이트.
-            conn = db_manager.session.connection()
-            trans = conn.begin()
+            #conn = db_manager.session.connection()
+            #trans = conn.begin()
 
-            result = conn.execute(
+            result = db_manager.query(
                 "select * , "
                 "( "
                     "SELECT count(*) "
@@ -525,8 +527,8 @@ def worker(data):
                 ,
                 (data["user"])
             )
-            trans.commit()
-            conn.close()
+            #db_manager.session.commit()
+            #conn.close()
             rows = util.fetch_all_json(result)
 
             userAll = rows[0]["userAllCnt"]
@@ -552,16 +554,16 @@ def worker(data):
             
             try:
                 #이후 채널 랭크 업데이트.
-                conn = db_manager.session.connection()
-                trans = conn.begin()
+                #conn = db_manager.session.connection()
+                #trans = conn.begin()
 
-                result = conn.execute(
+                result = db_manager.query(
                     "update USER set user_level = %s where user_id = %s"
                     ,
                     (level,data["user"])
                 )
-                trans.commit()
-                conn.close()
+                #db_manager.session.commit()
+                #conn.close()
 
             except Exception as e:
                 print(str(e))                          
@@ -574,16 +576,16 @@ def worker(data):
         #유저를 매번 검색할것인가?
         #임시로 데이터를 긁어서넣는다.
         try:
-            conn = db_manager.session.connection()
-            trans = conn.begin()
-            conn.execute(
+            #conn = db_manager.session.connection()
+            #trans = conn.begin()
+            db_manager.query(
                 "INSERT INTO USER"
                 "(team_id, user_id, user_name)"
                 "VALUES"
                 "(%s, %s, %s)",
                 (teamId,data["user"],user_name)
             )
-            trans.commit()
-            conn.close()        
+            #db_manager.session.commit()
+            #conn.close()        
         except exc.SQLAlchemyError as e:
             print("[DB] err==>"+str(e))
