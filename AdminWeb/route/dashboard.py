@@ -209,6 +209,105 @@ class DashBoards(MethodView):
                 # logging.warning(str(e))
                 return json.dumps(static.RES_DEFAULT(400, "err"), sort_keys=True, indent=4)
 
+        elif types == "getInActiveGraph":            
+            who =  request.args.get('who')           
+            period = request.args.get('period')
+            print('getInactive')
+
+            if who == "user":
+
+                if period == "month":
+                    try:
+                        print("[DashBoard]_GET_InActiveUserMonth")
+
+                        conn = db_manager.engine.connect()
+                        getActiveUserMonth = conn.execute(
+                            "select day(date) as day ,count(*) as cnt from USER_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active = 0  group by day(date) "
+                        )
+                        conn.close()
+                        row_getActiveUserMonth = util.fetch_all_json(getActiveUserMonth)                
+                                        
+                        return json.dumps(static.RES_DEFAULT(200,row_getActiveUserMonth),sort_keys=True, indent = 4)
+                    except Exception as e:
+                        print(str(e))
+                        # logging.warning(str(e))
+                        return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                
+
+                elif period == "year":
+                    try:
+                        print("[DashBoard]_GET_InActiveUserYear")
+
+                        conn = db_manager.engine.connect()
+                        getActiveUserYear = conn.execute(
+                            "select month(date) as month ,count(*) as cnt from USER_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year)  group by month(date) "
+                        )
+                        conn.close()
+                        row_getActiveUserYear = util.fetch_all_json(getActiveUserYear)                
+                                        
+                        return json.dumps(static.RES_DEFAULT(200,row_getActiveUserYear),sort_keys=True, indent = 4)
+
+                    except Exception as e:
+                        print(str(e))
+                        # logging.warning(str(e))
+                        return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                
+
+            # team일떄는 후에 구현한다.
+            # elif who=="team":
+                
+                # if period == "day":                
+                #     try:
+                #         print("[DashBoard]_GET_InActiveTeamDay")
+                #         conn = db_manager.engine.connect()
+                #         getActiveTeamDay = conn.execute(
+                #             "select hour(gi.end_time)as hour ,count(*) as cnt from GAME_INFO as gi where gi.end_time > curdate() group by hour(gi.end_time)"
+                #         )
+                #         conn.close()
+                #         row_getActiveteamDay = util.fetch_all_json(getActiveTeamDay)                
+                                            
+                #         return json.dumps(static.RES_DEFAULT(200,row_getActiveteamDay),sort_keys=True, indent = 4)
+
+                #     except Exception as e:
+                #         print(str(e))
+                #         # logging.warning(str(e))
+                #         return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                
+
+
+                # elif period == "month":
+
+                #     try:
+                #         print("[DashBoard]_GET_InActiveTeamMonth")
+
+                #         conn = db_manager.engine.connect()
+                #         getActiveTeamMonth = conn.execute(
+                #             "select day(gi.end_time)as day,count(*) as cnt from GAME_INFO as gi where gi.end_time > date_sub(now(),INTERVAL 1 month)  group by day(gi.end_time)"
+                #         )
+                #         conn.close()
+                #         row_getActiveTeamMonth = util.fetch_all_json(getActiveTeamMonth)                
+                                        
+                #         return json.dumps(static.RES_DEFAULT(200,row_getActiveTeamMonth),sort_keys=True, indent = 4)
+                #     except Exception as e:
+                #         print(str(e))
+                #         # logging.warning(str(e))
+                #         return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                
+
+                # elif period == "year":
+                #     try:
+                #         print("[DashBoard]_GET_InActiveTeamYear")
+
+                #         conn = db_manager.engine.connect()
+                #         getActiveTeamYear = conn.execute(
+                #             "select month(gi.end_time)as month,count(*) as cnt from GAME_INFO as gi where gi.end_time > date_sub(now(),INTERVAL 1 year)  group by month(gi.end_time)"
+                #         )
+                #         conn.close()
+                #         row_getActiveTeamYear = util.fetch_all_json(getActiveTeamYear)                
+                                        
+                #         return json.dumps(static.RES_DEFAULT(200,row_getActiveTeamYear),sort_keys=True, indent = 4)
+
+                #     except Exception as e:
+                #         print(str(e))
+                #         # logging.warning(str(e))
+                #         return json.dumps(static.RES_DEFAULT(400,"err"),sort_keys=True, indent = 4)                                
+
         
     def post(self,types):
         print("post")

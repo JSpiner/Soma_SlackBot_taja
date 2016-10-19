@@ -37,7 +37,8 @@
         const GET_INDICATOR = "/dashBoard/getIndicator"
         const GET_ACTIVE_GRAPH = "/dashBoard/getActiveGraph"
         const GET_TOPTWENTY= "/dashBoard/getTopTwenty"
-                        
+        const GET_INACTIVE_GRAPH = "/dashBoard/getInActiveGraph"
+                          
         //최초실행될떄 뿌려줘야할것들
         function initView(){
           var whoo = "user";
@@ -68,6 +69,7 @@
           //초기 뿌려줄것들.
             initView()
             reqGetTop(GET_TOPTWENTY)
+
             var whoo = "user";
             var btn_active_user = $('#btn_active_user');
             btn_active_user.click(function(){                
@@ -83,29 +85,74 @@
             var btn_active_year = $('#btn_active_year');
             if(whoo=="user"){
                   btn_active_day.click(function(){                
-                    reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+                    reqGet(GET_ACTIVE_GRAPH,whoo,"day","line-chart-active")
                   });
                   
                   btn_active_month.click(function(){                
-                      reqGet(GET_ACTIVE_GRAPH,whoo,"month")
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"month","line-chart-active")
                   });
                   
                   btn_active_year.click(function(){                
-                      reqGet(GET_ACTIVE_GRAPH,whoo,"year")
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"year","line-chart-active")
                   });  
             }else{
                   btn_active_day.click(function(){                
-                    reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+                    reqGet(GET_ACTIVE_GRAPH,whoo,"day","line-chart-active")
                   });
                   btn_active_month.click(function(){                
-                      reqGet(GET_ACTIVE_GRAPH,whoo,"month")
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"month","line-chart-active")
                   });
                   btn_active_year.click(function(){                
-                      reqGet(GET_ACTIVE_GRAPH,whoo,"year")
+                      reqGet(GET_ACTIVE_GRAPH,whoo,"year","line-chart-active")
                   });  
-            }          
+            }
+
+
+
+
+            var whoo = "user";
+            var btn_inActive_user = $('#btn_inActive_user');
+            btn_inActive_user.click(function(){                
+                whoo ="user"
+            });
+            //팀은 잠시 미뤄둔다.
+            // var btn_active_team = $('#btn_active_team');
+            // btn_active_team.click(function(){                
+            //     whoo ="team"
+            // });
+            
+            var btn_inActive_day = $('#btn_inActive_day');
+            var btn_inActive_month = $('#btn_inActive_month');
+            var btn_inActive_year = $('#btn_inActive_year');
+            if(whoo=="user"){                  
+                  
+                  btn_inActive_month.click(function(){                
+                      reqGet(GET_INACTIVE_GRAPH,whoo,"month","line-chart-inActive")
+                  });
+                  
+                  btn_inActive_year.click(function(){                
+                      reqGet(GET_INACTIVE_GRAPH,whoo,"year","line-chart-inActive")
+                  });
+
+            //팀일떄는 잠시미뤄둔다.  
+            }else{
+                  // btn_active_day.click(function(){                
+                  //   reqGet(GET_ACTIVE_GRAPH,whoo,"day")
+                  // });
+                  // btn_active_month.click(function(){                
+                  //     reqGet(GET_ACTIVE_GRAPH,whoo,"month")
+                  // });
+                  // btn_active_year.click(function(){                
+                  //     reqGet(GET_ACTIVE_GRAPH,whoo,"year")
+                  // });  
+            }
+
+
+
+
+
         });
-        function reqGet(url,whoo,periodd){
+        function reqGet(url,whoo,periodd,graphName){
           $.get(BASE_URL+url,
           {
             who : whoo,
@@ -122,7 +169,7 @@
                 xlabell = 'month'
               }                      
               var line = new Morris.Line({
-                element: 'line-chart-active',
+                element: graphName,
                 resize: true,
                 data: obj.data,
                 xkey: xlabell,
@@ -135,6 +182,8 @@
               // line.setData(obj.data);
           });
         }
+
+        
         function reqGetTop(url){
           $.get(BASE_URL+url,
           {
@@ -165,6 +214,7 @@
                 //   <th>elapsed_time</th>
                 // </tr>
             $('#tableTop').append(trHTML);
+
               $('#tableTop').DataTable({
                 "paging": true,
                 "lengthChange": false,
@@ -478,20 +528,35 @@
         </div>
         <!-- /.col (LEFT) -->
         <div class="col-md-6">
-          <!-- LINE CHART -->
+         
+
+                 <!-- LINE CHART -->
           <div class="box box-info">
             <div class="box-header with-border">
-              <h3 class="box-title">Line Chart    </h3>
+              <h3 class="box-title">비활성 그래프 </h3>
+              
+              <div class="btn-group">                        
+                        <button type="button" class="btn btn-info" id="btn_inActive_month">month</button>
+                        <button type="button" class="btn btn-info" id="btn_inActive_year">year</button>
+                </div>
+              
+
 
               <div class="box-tools pull-right">
                 <div class="btn-group">
-                        <button type="button" class="btn btn-info">user</button>
-                        <button type="button" class="btn btn-info">team</button>                    
+                        <button type="button" class="btn btn-info" id="btn_inActive_user">user</button>
+                        <!-- <button type="button" class="btn btn-info" id="btn_active_team">team</button> -->
                 </div>
+
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
                 </button>
                 <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+
+
               </div>
+
+              
+
             </div>
             <div class="box-body chart-responsive">
               <div class="chart" id="line-chart-inActive" style="height: 300px;"></div>
@@ -499,6 +564,9 @@
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
+
+
+
 
           
 
@@ -810,28 +878,28 @@
     //   lineColors: ['#3c8dbc'],
     //   hideHover: 'auto'
     // });
-    var line2 = new Morris.Line({
-      element: 'line-chart-inActive',
-      resize: true,
-      data: [
-        {hour: '0', cnt: 2666},
-        {hour: '1', cnt: 2778},
-        {hour: '2', cnt: 4912},
-        {hour: '3', cnt: 3767},
-        {hour: '4 Q1', cnt: 6810},
-        {hour: '5 Q2', cnt: 5670},
-        {hour: '6 Q3', cnt: 4820},
-        {hour: '7 Q4', cnt: 15073},
-        {hour: '8 Q1', cnt: 10687},
-        {hour: '9 Q2', cnt: 8432}
-      ],
-      xkey: 'hour',
-      ykeys: ['cnt'],
-      parseTime: false,
-      labels: ['user'],
-      lineColors: ['#3c8dbc'],
-      hideHover: 'auto'
-    });
+    // var line2 = new Morris.Line({
+    //   element: 'line-chart-inActive',
+    //   resize: true,
+    //   data: [
+    //     {hour: '0', cnt: 2666},
+    //     {hour: '1', cnt: 2778},
+    //     {hour: '2', cnt: 4912},
+    //     {hour: '3', cnt: 3767},
+    //     {hour: '4 Q1', cnt: 6810},
+    //     {hour: '5 Q2', cnt: 5670},
+    //     {hour: '6 Q3', cnt: 4820},
+    //     {hour: '7 Q4', cnt: 15073},
+    //     {hour: '8 Q1', cnt: 10687},
+    //     {hour: '9 Q2', cnt: 8432}
+    //   ],
+    //   xkey: 'hour',
+    //   ykeys: ['cnt'],
+    //   parseTime: false,
+    //   labels: ['user'],
+    //   lineColors: ['#3c8dbc'],
+    //   hideHover: 'auto'
+    // });
     //DONUT CHART
     var donut = new Morris.Donut({
       element: 'sales-chart',
