@@ -1,16 +1,17 @@
+import sys 
+sys.path.append("../")
+
 from flask.views import MethodView
-
-
 
 import json
 import time
 from flask import request
-from manager import db_manager
+from Common.manager import db_manager
 
 # from DBS import DBPool
 # from utilz import util
-from utilz import static
-from utilz import util
+from Common import static
+from Common import util
 import logging
 
 # logging.basicConfig(filename='log.log',level=logging.DEBUG)

@@ -26,7 +26,7 @@ import datetime
 app = Flask(__name__)
 
 #load josn key file
-with open('key.json', 'r') as f:
+with open('../key.json', 'r') as f:
     key = json.load(f)
 
 @app.route('/', methods=['GET', 'POST'])

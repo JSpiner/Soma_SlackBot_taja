@@ -15,7 +15,7 @@ logging.basicConfig(
 logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
 
 
-with open('conf.json') as conf_json:
+with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
  
 

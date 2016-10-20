@@ -1,5 +1,8 @@
-
 # #-*- coding: utf-8 -*-
+import datetime
+
+import time
+
 # static variables
 
 GAME_COMMAND_START      = ".시작"
@@ -17,3 +20,13 @@ GAME_STATE_IDLE = "0"
 GAME_STATE_STARTING = "1"
 GAME_STATE_PLAYING = "2"
 GAME_STATE_CALCULATING = "3"
+
+# current_milli_time = lambda: int(round(time.time() * 1000))
+TIME_CURRENT = lambda: int(round(time.time() * 1000))
+
+# defaultError = lambda err: {'error' : err}
+
+# ERR_DEFAULT = lambda err: { 'code': 400, 'data' : err} 
+
+RES_DEFAULT = lambda code,data: {'code' : code,'data' : data}
+# defaultResponse = lambda code,data: {'code' : code,'data' : data}

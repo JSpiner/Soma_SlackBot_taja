@@ -1,11 +1,12 @@
 # #-*- coding: utf-8 -*-
+import sys 
+sys.path.append("../")
+
 import uuid
 import korean
 import threading
 from functools import wraps
-from manager import db_manager
-from common import util
-
+from Common.manager import db_manager
 
 # delay
 def delay(delay=0.):

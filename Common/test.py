@@ -1,5 +1,9 @@
+
+import sys 
+sys.path.append("../")
+
 import unittest
-import common.util as util
+import Common.util as util
 
 
 class moduletest_get_edit_dinstace(unittest.TestCase):

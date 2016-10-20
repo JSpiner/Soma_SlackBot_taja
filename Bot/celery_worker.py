@@ -19,10 +19,10 @@ import time
 import random
 import threading
 
-with open('conf.json') as conf_json:
+with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
 
-with open('key.json') as key_json:
+with open('../key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
