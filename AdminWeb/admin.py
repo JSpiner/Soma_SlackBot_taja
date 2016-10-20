@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+
+import sys 
+sys.path.append("../")
+
 import sys
 import os
 
 from flask import redirect, url_for
-from manager import db_manager
+from Common.manager import db_manager
 
 # from flask_cors import CORS, cross_origin
 
@@ -14,8 +18,6 @@ from flask import request
 import json
 import time
 import logging
-from manager import db_manager
-
 import static
 
 logging.basicConfig(filename='log.log', level=logging.DEBUG)
@@ -29,7 +31,7 @@ app = Flask(__name__, static_url_path='')
 
 from route import member
 from route import dashboard
-from utilz import util
+from Common import util
 import datetime
 
 member_view = member.Members.as_view('member')

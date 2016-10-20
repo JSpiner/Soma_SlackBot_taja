@@ -1,13 +1,17 @@
+#-*- coding: utf-8 -*-
+import sys 
+sys.path.append("../")
+
 from celery.bin.celery import result
 from sqlalchemy import exc
 from celery import Celery
-from manager import redis_manager
-from manager import db_manager
-from common import static
-from common import util
+from Common.manager import redis_manager
+from Common.manager import db_manager
+from Common import static
+from Common import util
 from celery.signals import worker_init
 from celery.signals import worker_shutdown
-from common.slackapi import SlackApi
+from Common.slackapi import SlackApi
 import datetime
 import requests
 import json
@@ -15,10 +19,10 @@ import time
 import random
 import threading
 
-with open('conf.json') as conf_json:
+with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
 
-with open('key.json') as key_json:
+with open('../key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
