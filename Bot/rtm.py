@@ -19,11 +19,8 @@ import base64
 import datetime
 
 
-token = "xoxp-88038310081-88033183125-89518703763-35beb62005f4447df3d9e30397cb7c10"
+token = "xoxp-88038310081-88033183125-93943890310-71c45f184e49825ad3e7f918f9a7d099"
 
-
-with open('key.json', 'r') as f:
-    key = json.load(f)
     
 sc = SlackClient(token)
 if sc.rtm_connect():
