@@ -1,13 +1,6 @@
 key.json
 conf.json
-*.key
-*.crt
-*.pyc
 __pycache__/
-.idea/misc.xml
-.idea/vcs.xml
-.idea/Soma_SlackBot_taja.iml
-.idea/modules.xml
-.idea/workspace.xml
-log.log
-AdminWeb/log.log
+*.pyc 
+*.log 
+.DS_Store  
