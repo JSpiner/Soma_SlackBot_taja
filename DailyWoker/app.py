@@ -34,6 +34,90 @@ def fetch_all_json(result):
 
 	        i=i+1
     return lis   
+def updateTeamActive():
+	try:
+		conn = engine.connect()
+
+		trans = conn.begin()
+		result = conn.execute(
+			"select sub.team_id,sub.gameTotal!=sub.inActiveGameTotal as curActive,td.date,td.active as preActive "
+			"from( "
+			"select gi.team_id as team_id,( "
+	    	"select count(*) from GAME_INFO where team_id in( "
+	        "select team_id from GAME_INFO where team_id =gi.team_id "
+	     	") "
+			") AS gameTotal,count(*) as inActiveGameTotal "
+			"from GAME_INFO as gi where gi.end_time < DATE_SUB(CURDATE(), INTERVAL 7 DAY)   group by gi.team_id "
+			") as sub inner join TEAM_DAILY_ACTIVE as td  on td.team_id = sub.team_id where sub.gameTotal!=sub.inActiveGameTotal != td.active"
+		)
+		rows= fetch_all_json(result)
+		# print(rows)
+		if len(rows)==0:
+			trans.commit()
+			conn.close() 
+
+		#row가 존재한다면 예전과 달리 변화가 있을경우이다.
+		# 그렇다면 팀을 업데이트 해줘야한다.
+		else :	
+		  
+			arrQueryString=[]
+
+			arrQueryString.append('update TEAM set TEAM.isActive = 0 where ')
+			#update 할값이 0 인것들을 모아서 업데이트 해준다.
+			for row in rows:
+				if row["curActive"] == '0':
+					arrQueryString.append('TEAM.team_id = "'+ row['team_id']+ '"')
+					arrQueryString.append(' or ')
+
+			arrQueryString.pop()
+			lastQuery = "".join(arrQueryString)		
+			print(lastQuery)
+			#qury 가 0 이아닐경우에만 실행하도록한다.
+			#qury 가 존재하지않을경우  exception이 발생하기떄문이다.
+			if len(lastQuery)!=0:
+				result = conn.execute(
+					lastQuery
+				)
+			
+			#isAcive = 1 으로 세팅해준다.
+			# 즉 활성팀을 설정해준다.
+			arrQueryString=[]
+			arrQueryString.append('update TEAM set TEAM.isActive = 1 where ')
+
+			for row in rows:
+				if row["curActive"] == '1':
+					arrQueryString.append('TEAM.team_id = "'+ row['team_id']+ '"')
+					arrQueryString.append(' or ')
+
+			arrQueryString.pop()
+			lastQuery = "".join(arrQueryString)		
+			if len(lastQuery)!=0:		
+				result = conn.execute(
+					lastQuery
+				)
+			# 그리고 TeamDailyActive에 추가한다.
+			arrQueryString=[]
+			arrQueryString.append('insert into TEAM_DAILY_ACTIVE (date,team_id,active) values ')
+			for row in rows:
+				arrQueryString.append('(curdate(),"'+ row['team_id']+ '","'+ row['curActive']+ '")')
+				arrQueryString.append(',')
+
+			arrQueryString.pop()
+			lastQuery = "".join(arrQueryString)
+			print(lastQuery)
+
+			conn.execute(
+				lastQuery
+			)
+			trans.commit()
+			conn.close() 	
+
+
+
+	except Exception as e:
+		print(str(e))
+
+
 
 def updateUserActive():
 	print('udate')
@@ -63,19 +147,34 @@ def updateUserActive():
 			lastQuery
 		)
 
+		# user daily Active에 추가하기.
+		result = conn.execute(
+			"select  *from( "
+			"select * , 1 as isActive from (select MAX(gi.end_time) as recentTime,u.user_id from USER as u inner join GAME_RESULT as gr on u.user_id = gr.user_id inner join GAME_INFO as gi on gi.game_id = gr.game_id group by u.user_id) as rt where rt.recentTime > DATE_SUB(CURDATE() , INTERVAL 7 DAY) "
+			")as inActiveUsers inner join ( "
+			"select ud.date,ud.user_id,ud.active from( "
+			"select MAX(ud.date) as currentDate,ud.user_id  from USER_DAILY_ACTIVE as ud group by ud.user_id "
+			") as tt inner join USER_DAILY_ACTIVE as ud on tt.currentDate =ud.date "
+			") as ud  on inActiveUsers.user_id = ud.user_id where inActiveUsers.isActive != ud.active "
+		)
+
+		rows = fetch_all_json(result)
+
 		arrQueryString=[]
 		arrQueryString.append('insert into USER_DAILY_ACTIVE (date,user_id,active) values ')
-		for row in rows:
-			arrQueryString.append('(curdate(),"'+ row['user_id']+ '",1)')
-			arrQueryString.append(',')
+		if len(rows)!=0:
+			for row in rows:
+				arrQueryString.append('(curdate(),"'+ row['user_id']+ '",1)')
+				arrQueryString.append(',')
 
-		arrQueryString.pop()
-		lastQuery = "".join(arrQueryString)
-		print(lastQuery)
+			arrQueryString.pop()
+			lastQuery = "".join(arrQueryString)
+			print(lastQuery)
 
-		conn.execute(
-			lastQuery
-		)
+			conn.execute(
+				lastQuery
+			)
+
 		trans.commit()
 		conn.close() 
 	except Exception as e:
@@ -109,19 +208,34 @@ def updateUserActive():
 				lastQuery
 			)
 
+			# user daily Active에 추가하기.
+			# 1>0으로
+			result = conn.execute(
+				"select  inActiveUsers.user_id,inActiveUsers.isActive as curActive,ud.active as preActive from( "
+				"select  * , 0 as isActive from (select MAX(gi.end_time) as recentTime,u.user_id from USER as u inner join GAME_RESULT as gr on u.user_id = gr.user_id inner join GAME_INFO as gi on gi.game_id = gr.game_id group by u.user_id) as rt where rt.recentTime < DATE_SUB(CURDATE() , INTERVAL 7 DAY) "
+				")as inActiveUsers inner join ( "
+				"select ud.date,ud.user_id,ud.active from( "
+				"select MAX(ud.date) as currentDate,ud.user_id  from USER_DAILY_ACTIVE as ud group by ud.user_id "
+				") as tt inner join USER_DAILY_ACTIVE as ud on tt.currentDate =ud.date "
+				") as ud  on inActiveUsers.user_id = ud.user_id where inActiveUsers.isActive != ud.active "
+			)
+
+			rows = fetch_all_json(result)			
+
 			arrQueryString=[]
 			arrQueryString.append('insert into USER_DAILY_ACTIVE (date,user_id,active) values ')
-			for row in rows:
-				arrQueryString.append('(curdate(),"'+ row['user_id']+ '",0)')
-				arrQueryString.append(',')
+			if len(rows)!=0:
+				for row in rows:
+					arrQueryString.append('(curdate(),"'+ row['user_id']+ '",0)')
+					arrQueryString.append(',')
 
-			arrQueryString.pop()
-			lastQuery = "".join(arrQueryString)
-			print(lastQuery)
+				arrQueryString.pop()
+				lastQuery = "".join(arrQueryString)
+				print(lastQuery)
 
-			conn.execute(
-				lastQuery
-			)
+				conn.execute(
+					lastQuery
+				)
 			trans.commit()
 			conn.close() 
 	except Exception as e:
@@ -129,10 +243,12 @@ def updateUserActive():
 
 
 def job():
-	print("working well!")
 	updateUserActive()
+	updateTeamActive()
 	# updateUserActive()
 
+#목표: team_daily_acive에 active변화가 있는 데이터들만을 골라 넣어준다.
+#(단, 매 팀이 시작될때 디폴트 값의 데이터가 해당 테이블에 존재해야한다는 조건이있다.)
 
 # 10분마다 
 # schedule.every(10).minutes.do(job)
