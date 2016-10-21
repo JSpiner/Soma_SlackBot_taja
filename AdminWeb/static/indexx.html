@@ -116,10 +116,10 @@
                 whoo ="user"
             });
             //팀은 잠시 미뤄둔다.
-            // var btn_active_team = $('#btn_active_team');
-            // btn_active_team.click(function(){                
-            //     whoo ="team"
-            // });
+            var btn_inActive_team = $('#btn_inActive_team');
+            btn_inActive_team.click(function(){                
+                whoo ="team"
+            });
             
             var btn_inActive_day = $('#btn_inActive_day');
             var btn_inActive_month = $('#btn_inActive_month');
@@ -136,15 +136,13 @@
 
             //팀일떄는 잠시미뤄둔다.  
             }else{
-                  // btn_active_day.click(function(){                
-                  //   reqGet(GET_ACTIVE_GRAPH,whoo,"day")
-                  // });
-                  // btn_active_month.click(function(){                
-                  //     reqGet(GET_ACTIVE_GRAPH,whoo,"month")
-                  // });
-                  // btn_active_year.click(function(){                
-                  //     reqGet(GET_ACTIVE_GRAPH,whoo,"year")
-                  // });  
+                  btn_inActive_month.click(function(){                
+                      reqGet(GET_INACTIVE_GRAPH,whoo,"month","line-chart-inActive")
+                  });
+                  
+                  btn_inActive_year.click(function(){                
+                      reqGet(GET_INACTIVE_GRAPH,whoo,"year","line-chart-inActive")
+                  });
             }
 
 
@@ -545,7 +543,7 @@
               <div class="box-tools pull-right">
                 <div class="btn-group">
                         <button type="button" class="btn btn-info" id="btn_inActive_user">user</button>
-                        <!-- <button type="button" class="btn btn-info" id="btn_active_team">team</button> -->
+                        <button type="button" class="btn btn-info" id="btn_inActive_team">team</button>
                 </div>
 
                 <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
