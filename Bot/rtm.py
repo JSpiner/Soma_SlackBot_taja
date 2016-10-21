@@ -2,9 +2,6 @@ from slackclient import SlackClient
 
 from celery_worker import worker
 import Common.test as tester
-from flask import Flask
-from flask import Response
-from flask import request
 import requests
 import json
 import time
@@ -17,61 +14,50 @@ from Common import util
 import time
 import base64
 import datetime
- 
 
-token = "xoxb-91817198689-IxlRCJKsV7HFukNJLVhICkyC"
+def open_new_socket(teamId):
+    result = db_manager.query(
+        "SELECT team_bot_access_token "
+        "FROM TEAM "
+        "WHERE "
+        "team_id = %s "
+        "LIMIT 1",
+        (teamId, )
+    )
+    bot_token = util.fetch_all_json(result)[0]['team_bot_access_token']
+    _connect(teamId, bot_token)
 
-    
-sc = SlackClient(token)
-if sc.rtm_connect(): 
-    print("connected!")
+def _connect(teamId, bot_token):
+    sc = SlackClient(token)
+    if sc.rtm_connect():
+        print("connected! : " + teamId)
 
-    while True:
-        response = sc.rtm_read()
+        while True:
+            response = sc.rtm_read()
 
-        if len(response) == 0:  
-            continue
+            if len(response) == 0:  
+                continue
 
-        # response는 배열로, 여러개가 담겨올수 있음
-        for data in response:
-            print(data)
-            
-            try:
-                if data['type'] == "message":
+            # response는 배열로, 여러개가 담겨올수 있음
+            for data in response:
+                print(data)
 
-                    data['team_id'] = data['team']
-                    status_channel = redis_manager.redis_client.get("status_" + data["channel"])
-                    # redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
-                    # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
+                try:
+                    if data['type'] == "message":
 
-                    # 강제종료 명령을 최우선으로 처리함
-                    if data["text"] == static.GAME_COMMAND_EXIT:
-                        print('.exit')
-                        worker.delay(data)
-                        continue
-                    # 게임이 플레이중이라면
-                    if status_channel == static.GAME_STATE_PLAYING :
-                        if data["text"][0] == ".":
-                            continue
-                        print('playing')
-                        worker.delay(data)
-
-                    # 게임 플레이중이 아니라면
-                    elif status_channel == static.GAME_STATE_IDLE or status_channel == None :
-                        print('commend')
-                        if data["text"] == static.GAME_COMMAND_START:
-                            print('.start')
+                        data['team_id'] = data['team']
+                        status_channel = redis_manager.redis_client.get("status_" + data["channel"])
+                        
+                        # 게임이 플레이중이라면
+                        if status_channel == static.GAME_STATE_PLAYING :
+                            print('playing')
                             worker.delay(data)
-                        elif data["text"] == static.GAME_COMMAND_RANK:
-                            print('.rank')
-                            worker.delay(data)
-                        elif data["text"] == static.GAME_COMMAND_MY_RANK:
-                            print('.myrank')
-                            worker.delay(data)
-                        elif data["type"] == "channel_joined":
-                            print('others')
-                            worker.delay(data)
-            except Exception as e:
-                print('error ' + str(e))
-else:
-    print("connection fail")
+
+                except Exception as e:
+                    print('error ' + str(e))
+    else:
+        print("connection failed!")
+        time.sleep(1)
+        _connect(teamId, bot_token)
+
+    return 0
