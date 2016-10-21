@@ -11,11 +11,16 @@ from Common.manager import db_manager
 from Common import static
 import datetime
 from Common import util
+from Common.static import *
 import time
 import base64
 import datetime
 
 def open_new_socket(teamId):
+
+    redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTING)
+    redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
+
     result = db_manager.query(
         "SELECT team_bot_access_token "
         "FROM TEAM "
@@ -31,6 +36,9 @@ def _connect(teamId, bot_token):
     sc = SlackClient(token)
     if sc.rtm_connect():
         print("connected! : " + teamId)
+   
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTED)
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
 
         while True:
             response = sc.rtm_read()
@@ -57,7 +65,10 @@ def _connect(teamId, bot_token):
                     print('error ' + str(e))
     else:
         print("connection failed!")
-        time.sleep(1)
+        
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_RECONNECTING)
+        
+        time.sleep(3)
         _connect(teamId, bot_token)
 
     return 0

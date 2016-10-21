@@ -16,10 +16,19 @@ GAME_COMMAND_EXIT       = ".강제종료"
 # 3 = 게임 종료 후 순위 계산 할 때
 
 
-GAME_STATE_IDLE = "0"
-GAME_STATE_STARTING = "1"
-GAME_STATE_PLAYING = "2"
-GAME_STATE_CALCULATING = "3"
+GAME_STATE_IDLE         = "0"
+GAME_STATE_STARTING     = "1"
+GAME_STATE_PLAYING      = "2"
+GAME_STATE_CALCULATING  = "3"
+
+# rtm socket status
+SOCKET_STATUS_IDLE          = "0"
+SOCKET_STATUS_CONNECTING    = "1"
+SOCKET_STATUS_CONNECTED     = "2"
+SOCKET_STATUS_RECONNECTING  = "3"
+
+# socket expire time
+SOCKET_EXPIRE_TIME = 60 * 60 
 
 # current_milli_time = lambda: int(round(time.time() * 1000))
 TIME_CURRENT = lambda: int(round(time.time() * 1000))
