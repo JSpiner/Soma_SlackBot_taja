@@ -17,13 +17,13 @@ from Common import util
 import time
 import base64
 import datetime
+ 
 
-
-token = "xoxp-88038310081-88033183125-93943890310-71c45f184e49825ad3e7f918f9a7d099"
+token = "xoxb-91817198689-IxlRCJKsV7HFukNJLVhICkyC"
 
     
 sc = SlackClient(token)
-if sc.rtm_connect():
+if sc.rtm_connect(): 
     print("connected!")
 
     while True:
