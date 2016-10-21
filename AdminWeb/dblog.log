@@ -137,3 +137,154 @@ INFO:sqlalchemy.engine.base.Engine:COMMIT
 INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from USER_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year)  group by month(date) 
 INFO:sqlalchemy.engine.base.Engine:{}
 INFO:sqlalchemy.engine.base.Engine:COMMIT
+WARNING:werkzeug: * Debugger is active!
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:show collation where `Charset` = 'utf8' and `Collation` = 'utf8_bin'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test plain returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test unicode returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test collated returns' AS CHAR CHARACTER SET utf8) COLLATE utf8_bin AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:select pb.problem_text,ga.answer_text, ga.score,ga.speed,ga.accuracy,ga.elapsed_time,u.user_name from GAME_RESULT as ga inner join USER as u on u.user_id = ga.user_id  inner join GAME_INFO as gr on gr.game_id = ga.game_id  inner join PROBLEM as pb on gr.problem_id = pb.problem_id order by score desc limit 20
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select hour(gi.end_time) as hour ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > curdate() group by hour(gi.end_time)
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select count(*) as todayInstall from TEAM WHERE DATE(TEAM.team_joined_time) = CURDATE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select count(*) as todayPlay  from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  WHERE DATE(gi.start_time) = CURDATE() 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select gr.user_id as userId,Max(gi.end_time) as recentTime, Max(gi.end_time)<DATE_SUB(CURDATE() , INTERVAL 7 DAY) as isInActive from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id group by gr.user_id
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select team_id,gameTotal,inActiveGameTotal,gameTotal=inActiveGameTotal as isInActive from(select gi.team_id as team_id,(select count(*) from GAME_INFO where team_id in( select team_id from GAME_INFO where team_id =gi.team_id)) AS gameTotal,count(*) as inActiveGameTotal from GAME_INFO as gi where gi.end_time < DATE_SUB(CURDATE(), INTERVAL 7 DAY)   group by gi.team_id) as sub
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from USER_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active = 0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from USER_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year)  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from USER_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active = 0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select hour(gi.end_time) as hour ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > curdate() group by hour(gi.end_time)
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(gi.end_time) as day ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > date_sub(now(),INTERVAL 1 month)  group by day(gi.end_time)
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(gi.end_time) as month ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > date_sub(now(),INTERVAL 1 year)  group by month(gi.end_time) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(gi.end_time) as day ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > date_sub(now(),INTERVAL 1 month)  group by day(gi.end_time)
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from USER_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active = 0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+WARNING:werkzeug: * Debugger is active!
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:show collation where `Charset` = 'utf8' and `Collation` = 'utf8_bin'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test plain returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test unicode returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test collated returns' AS CHAR CHARACTER SET utf8) COLLATE utf8_bin AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from TEAM_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active =0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+WARNING:werkzeug: * Debugger is active!
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:show collation where `Charset` = 'utf8' and `Collation` = 'utf8_bin'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test plain returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test unicode returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test collated returns' AS CHAR CHARACTER SET utf8) COLLATE utf8_bin AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:select pb.problem_text,ga.answer_text, ga.score,ga.speed,ga.accuracy,ga.elapsed_time,u.user_name from GAME_RESULT as ga inner join USER as u on u.user_id = ga.user_id  inner join GAME_INFO as gr on gr.game_id = ga.game_id  inner join PROBLEM as pb on gr.problem_id = pb.problem_id order by score desc limit 20
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select count(*) as todayInstall from TEAM WHERE DATE(TEAM.team_joined_time) = CURDATE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select count(*) as todayPlay  from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  WHERE DATE(gi.start_time) = CURDATE() 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select gr.user_id as userId,Max(gi.end_time) as recentTime, Max(gi.end_time)<DATE_SUB(CURDATE() , INTERVAL 7 DAY) as isInActive from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id group by gr.user_id
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select team_id,gameTotal,inActiveGameTotal,gameTotal=inActiveGameTotal as isInActive from(select gi.team_id as team_id,(select count(*) from GAME_INFO where team_id in( select team_id from GAME_INFO where team_id =gi.team_id)) AS gameTotal,count(*) as inActiveGameTotal from GAME_INFO as gi where gi.end_time < DATE_SUB(CURDATE(), INTERVAL 7 DAY)   group by gi.team_id) as sub
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select hour(gi.end_time) as hour ,count(*) as cnt from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id  where gi.end_time > curdate() group by hour(gi.end_time)
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from USER_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active = 0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from USER_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active=0 group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from TEAM_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active =0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from TEAM_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active =0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+WARNING:werkzeug: * Debugger is active!
+INFO:sqlalchemy.engine.base.Engine:SHOW VARIABLES LIKE 'sql_mode'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT DATABASE()
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:show collation where `Charset` = 'utf8' and `Collation` = 'utf8_bin'
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test plain returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test unicode returns' AS CHAR(60)) AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:SELECT CAST('test collated returns' AS CHAR CHARACTER SET utf8) COLLATE utf8_bin AS anon_1
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from TEAM_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active =0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select day(date) as day ,count(*) as cnt from TEAM_DAILY_ACTIVE where date > date_sub(now(),INTERVAL 1 month) and active =0  group by day(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
+INFO:sqlalchemy.engine.base.Engine:select month(date) as month ,count(*) as cnt from TEAM_DAILY_ACTIVE   where date > date_sub(now(),INTERVAL 1 year) and active =0  group by month(date) 
+INFO:sqlalchemy.engine.base.Engine:{}
+INFO:sqlalchemy.engine.base.Engine:COMMIT
