@@ -90,6 +90,34 @@ def slack_game_start():
     worker.delay(data)
     return 'hello'
 
+
+@app.route('/slack/myscore', methods = ['POST'])
+def slack_game_getMyScore():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = ".내점수"
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+    return 'wait..'  
+
+@app.route('/slack/score', methods = ['POST'])
+def slack_game_getScore():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = ".점수"
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+    return 'wait..'
+
+
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
     return 'hello'
