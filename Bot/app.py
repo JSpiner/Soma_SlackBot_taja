@@ -1,5 +1,7 @@
 #-*- coding: utf-8 -*-
-import sys 
+import sys
+from cmath import log
+
 sys.path.append("../")
 
 from celery_worker import worker
@@ -21,53 +23,42 @@ import base64
 import datetime
 import logging
 
+
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
 
-#log settings
 
-# logger 인스턴스를 생성 및 로그 레벨 설정
-logger_INFO = logging.getLogger("Bot_app_INFO")
-logger_WARNING = logging.getLogger("Bot_app_WARNING")
-logger_ERROR = logging.getLogger("Bot_app_ERROR")
-logger_ALL = logging.getLogger("Bot_app_ALL")
-
-logger_INFO.setLevel(logging.INFO)
-logger_WARNING.setLevel(logging.WARNING)
-logger_ERROR.setLevel(logging.ERROR)
-
-# formmater 생성
+# logging format
 formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
 
-# fileHandler와 StreamHandler를 생성
-fileHandler_INFO = logging.FileHandler('./Bot_app_INFO.log')
-fileHandler_WARNING = logging.FileHandler('./Bot_app_WARNING.log')
-fileHandler_ERROR = logging.FileHandler('./Bot_app_ERROR.log')
-fileHandler_ALL = logging.FileHandler('./Bot_app_ALL.log')
+# create file handler
+fileHandler = logging.FileHandler('./logs/Bot_app.log')
+fileHandler.setLevel(logging.DEBUG)
+fileHandler.setFormatter(formatter)
 
-streamHandler = logging.StreamHandler()
+# create stream handler
+stream_handler = logging.StreamHandler()
 
-# handler에 fommater 세팅
-fileHandler_INFO.setFormatter(formatter)
-fileHandler_WARNING.setFormatter(formatter)
-fileHandler_ERROR.setFormatter(formatter)
-fileHandler_ALL.setFormatter(formatter)
+app.logger.addHandler(fileHandler)
+app.logger.addHandler(stream_handler)
 
-streamHandler.setFormatter(formatter)
 
-# Handler를 logging에 추가
-logger_INFO.addHandler(fileHandler_INFO)
-logger_WARNING.addHandler(fileHandler_WARNING)
-logger_ERROR.addHandler(fileHandler_ERROR)
-logger_ALL.addHandler(fileHandler_ALL)
+"""
+root = logging.getLogger('test_app')
+root.setLevel(logging.DEBUG)
 
-logger_INFO.addHandler(streamHandler)
-logger_WARNING.addHandler(streamHandler)
-logger_ERROR.addHandler(streamHandler)
-logger_ALL.addHandler(streamHandler)
+formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
 
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('./logs/Bot_app.log')
+file_handler.setFormatter(formatter)
+
+root.addHandler(stream_handler)
+root.addHandler(file_handler)
+"""
 
 #load josn key file
 with open('../key.json', 'r') as f:

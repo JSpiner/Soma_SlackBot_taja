@@ -19,6 +19,8 @@ import time
 import random
 import threading
 import logging
+from celery.utils.log import get_task_logger
+
 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
@@ -28,47 +30,36 @@ with open('../key.json') as key_json:
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 
-#log settings
 
-# logger 인스턴스를 생성 및 로그 레벨 설정
-logger_INFO = logging.getLogger("Bot_celery_worker_INFO")
-logger_WARNING = logging.getLogger("Bot_celery_worker_WARNING")
-logger_ERROR = logging.getLogger("Bot_celery_worker_ERROR")
-logger_ALL = logging.getLogger("Bot_celery_worker_ALL")
+# get logger
+logger_celery = get_task_logger(__name__)
 
-logger_INFO.setLevel(logging.INFO)
-logger_WARNING.setLevel(logging.WARNING)
-logger_ERROR.setLevel(logging.ERROR)
-
-# formmater 생성
+# make format
 formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
 
-# fileHandler와 StreamHandler를 생성
-fileHandler_INFO = logging.FileHandler('./Bot_celery_worker_INFO.log')
-fileHandler_WARNING = logging.FileHandler('./Bot_celery_worker_WARNING.log')
-fileHandler_ERROR = logging.FileHandler('./Bot_celery_worker_ERROR.log')
-fileHandler_ALL = logging.FileHandler('./Bot_celery_worker_ALL.log')
+fileHandler = logging.FileHandler('./logs/Bot_celery_worker.log')
+fileHandler.setFormatter(formatter)
+fileHandler.setLevel(logging.DEBUG)
 
 streamHandler = logging.StreamHandler()
 
-# handler에 fommater 세팅
-fileHandler_INFO.setFormatter(formatter)
-fileHandler_WARNING.setFormatter(formatter)
-fileHandler_ERROR.setFormatter(formatter)
-fileHandler_ALL.setFormatter(formatter)
+logger_celery.addHandler(fileHandler)
+logger_celery.addHandler(streamHandler)
 
-streamHandler.setFormatter(formatter)
+"""
+root = logging.getLogger('test_celery')
+root.setLevel(logging.DEBUG)
 
-# Handler를 logging에 추가
-logger_INFO.addHandler(fileHandler_INFO)
-logger_WARNING.addHandler(fileHandler_WARNING)
-logger_ERROR.addHandler(fileHandler_ERROR)
-logger_ALL.addHandler(fileHandler_ALL)
+formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
 
-logger_INFO.addHandler(streamHandler)
-logger_WARNING.addHandler(streamHandler)
-logger_ERROR.addHandler(streamHandler)
-logger_ALL.addHandler(streamHandler)
+stream_handler = logging.StreamHandler(sys.stdout)
+stream_handler.setLevel(logging.DEBUG)
+file_handler = logging.FileHandler('./logs/Bot_celery_worker.log')
+file_handler.setFormatter(formatter)
+
+root.addHandler(stream_handler)
+root.addHandler(file_handler)
+"""
 
 @worker_init.connect
 def init_worker(**kwargs):

@@ -5,9 +5,14 @@ from sqlalchemy.pool import QueuePool
 from sqlalchemy.orm import scoped_session
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-
+import logging
 import json 
 
+
+logging.basicConfig(
+    filename = './dblog.log'
+)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
 
 
 with open('../conf.json') as conf_json:
