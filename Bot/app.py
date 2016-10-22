@@ -25,6 +25,8 @@ import datetime
 
 app = Flask(__name__)
 
+
+#ftp test
 #load josn key file
 with open('../key.json', 'r') as f:
     key = json.load(f)
