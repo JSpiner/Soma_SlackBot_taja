@@ -13,6 +13,7 @@ import time
 import sqlalchemy
 from Common.manager import redis_manager
 from Common.manager import db_manager
+from Common.manager import rtm_manager
 from Common import static
 import datetime
 from Common import util
@@ -79,15 +80,28 @@ def slack_oauth():
 
 @app.route('/slack/start', methods = ['POST'])
 def slack_game_start():
+
+    # TODO : 요청이 들어온 채널의 redis status 체크해서 게임이 이미 시작했으면 게임 플레이를 안하도록 수정 필요
     payload = request.get_data().decode()
     print(payload)
     data = {}
+
+    teamId = request.form.get('team_id')
+
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
-    worker.delay(data)
+
+    # 현재 채널 상태 설정
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
+
+    if is_socket_opened(teamId) == True:
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+        worker.delay(data)
+    else:
+        open_new_socket(teamId)
     return 'hello'
 
 

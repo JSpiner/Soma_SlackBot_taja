@@ -1,3 +1,4 @@
+import sys
 from slackclient import SlackClient
 
 from celery_worker import worker
@@ -13,10 +14,12 @@ import datetime
 from Common import util
 from Common.static import *
 import time
-import base64
+import base64 
+import threading
 import datetime
 
-def open_new_socket(teamId):
+isRemainTime = True
+def open_socket(teamId):
 
     redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTING)
     redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
@@ -32,15 +35,34 @@ def open_new_socket(teamId):
     bot_token = util.fetch_all_json(result)[0]['team_bot_access_token']
     _connect(teamId, bot_token)
 
+def _timeout(teamId):
+    while True:
+        time.sleep(SOCKET_EXPIRE_TIME)
+        
+        expireTime = redis_manager.redis_client.hget('rtm_status_'+teamId, 'expire_time')
+
+        if expireTime < time.time():
+            print("done")
+            global isRemainTime
+            isRemainTime = False
+            break
+    
+
 def _connect(teamId, bot_token):
-    sc = SlackClient(token)
+
+    timeoutThread = threading.Thread(target=_timeout, args=(teamId,))
+    timeoutThread.start()
+
+    global isRemainTime
+
+    sc = SlackClient(bot_token)
     if sc.rtm_connect():
         print("connected! : " + teamId)
    
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTED)
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
 
-        while True:
+        while isRemainTime:
             response = sc.rtm_read()
 
             if len(response) == 0:  
@@ -63,6 +85,8 @@ def _connect(teamId, bot_token):
 
                 except Exception as e:
                     print('error ' + str(e))
+        
+        print("socket disconnected")
     else:
         print("connection failed!")
         
@@ -72,3 +96,5 @@ def _connect(teamId, bot_token):
         _connect(teamId, bot_token)
 
     return 0
+
+#_connect('dd', 'xoxb-91817198689-IxlRCJKsV7HFukNJLVhICkyC')
