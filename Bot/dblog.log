@@ -28,3 +28,4 @@ INFO:sqlalchemy.engine.base.Engine:BEGIN (implicit)
 INFO:sqlalchemy.engine.base.Engine:INSERT INTO TEAM (`team_id`, `team_name`, `team_joined_time`, `team_access_token`)VALUES(%s, %s, %s, %s)
 INFO:sqlalchemy.engine.base.Engine:('T2L14942D', 'slackbot', datetime.datetime(2016, 10, 20, 20, 6, 43, 949589), 'xoxp-88038310081-87981042483-93895530022-24b5c65bb318e8132810d1c31c8bb025')
 WARNING:werkzeug: * Debugger is active!
+WARNING:werkzeug: * Debugger is active!
