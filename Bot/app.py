@@ -19,11 +19,55 @@ from Common import util
 import time
 import base64 
 import datetime
+import logging
 
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
+
+#log settings
+
+# logger 인스턴스를 생성 및 로그 레벨 설정
+logger_INFO = logging.getLogger("Bot_app_INFO")
+logger_WARNING = logging.getLogger("Bot_app_WARNING")
+logger_ERROR = logging.getLogger("Bot_app_ERROR")
+logger_ALL = logging.getLogger("Bot_app_ALL")
+
+logger_INFO.setLevel(logging.INFO)
+logger_WARNING.setLevel(logging.WARNING)
+logger_ERROR.setLevel(logging.ERROR)
+
+# formmater 생성
+formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+# fileHandler와 StreamHandler를 생성
+fileHandler_INFO = logging.FileHandler('./Bot_app_INFO.log')
+fileHandler_WARNING = logging.FileHandler('./Bot_app_WARNING.log')
+fileHandler_ERROR = logging.FileHandler('./Bot_app_ERROR.log')
+fileHandler_ALL = logging.FileHandler('./Bot_app_ALL.log')
+
+streamHandler = logging.StreamHandler()
+
+# handler에 fommater 세팅
+fileHandler_INFO.setFormatter(formatter)
+fileHandler_WARNING.setFormatter(formatter)
+fileHandler_ERROR.setFormatter(formatter)
+fileHandler_ALL.setFormatter(formatter)
+
+streamHandler.setFormatter(formatter)
+
+# Handler를 logging에 추가
+logger_INFO.addHandler(fileHandler_INFO)
+logger_WARNING.addHandler(fileHandler_WARNING)
+logger_ERROR.addHandler(fileHandler_ERROR)
+logger_ALL.addHandler(fileHandler_ALL)
+
+logger_INFO.addHandler(streamHandler)
+logger_WARNING.addHandler(streamHandler)
+logger_ERROR.addHandler(streamHandler)
+logger_ALL.addHandler(streamHandler)
+
 
 #load josn key file
 with open('../key.json', 'r') as f:

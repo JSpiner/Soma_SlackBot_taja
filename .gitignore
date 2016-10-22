@@ -11,3 +11,5 @@ __pycache__/
 .idea/workspace.xml
 log.log
 AdminWeb/log.log
+.idea/webServers.xml
+.idea/deployment.xml
