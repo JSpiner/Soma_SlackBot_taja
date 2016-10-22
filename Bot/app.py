@@ -58,23 +58,43 @@ def slack_oauth():
 
     print(response)
     ctime = datetime.datetime.now()
-
-    conn = db_manager.engine.connect()
-    trans = conn.begin()
-    conn.execute(
-        "INSERT INTO TEAM " 
-        "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`)"
-        "VALUES"
-        "(%s, %s, %s, %s)",
-        (
-            response['team_id'],
-            response['team_name'],
-            ctime,
-            response['access_token']
-        )
+    result = db_manager.query(
+        "SELECT * FROM TEAM "
+        "WHERE "
+        "team_id = %s "
+        "LIMIT 1",
+        (response['team_id'],)
     )
-    trans.commit()
-    conn.close()
+    rows = util.fetch_all_json(result)
+
+    if len(rows) == 0:
+        db_manager.query(
+            "INSERT INTO TEAM " 
+            "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`)"
+            "VALUES"
+            "(%s, %s, %s, %s)",
+            (
+                response['team_id'],
+                response['team_name'],
+                ctime,
+                response['access_token'],
+                response['bot']['bot_access_token']
+            )
+        )
+    else:
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_bot_access_token = %s , "
+            "team_access_token = %s "
+            "WHERE "
+            "team_id = %s",
+            (
+                response['bot']['bot_access_token'],
+                response['access_token'], 
+                response['team_id']
+            )
+        )
 
     return 'auth success' + response['access_token']
 
