@@ -19,6 +19,7 @@ import datetime
 from Common import util
 import time
 import base64 
+import Common.static
 import datetime
 
 # test before running flask
@@ -30,12 +31,22 @@ app = Flask(__name__)
 with open('../key.json', 'r') as f:
     key = json.load(f)
 
+##reset all socket status
+result = db_manager.query2(
+    "SELECT team_id "
+    "FROM TEAM "
+)
+rows = util.fetch_all_json(result)
+for row in rows:    
+    redis_manager.redis_client.hset('rtm_status_'+row['team_id'], 'status', static.SOCKET_STATUS_IDLE)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=commands+bot")
+        +"&scope=commands+bot+chat:write:bot")
 #        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands+client+rtm:stream")
 
 
@@ -117,11 +128,12 @@ def slack_game_start():
     # 현재 채널 상태 설정
     redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
 
-    if is_socket_opened(teamId) == True:
+    print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
         worker.delay(data)
     else:
-        open_new_socket(teamId)
+        rtm_manager.open_new_socket(teamId, data)
     return 'hello'
 
 

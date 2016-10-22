@@ -13,13 +13,14 @@ from Common import static
 import datetime
 from Common import util
 from Common.static import *
+from celery_worker import worker
 import time
 import base64 
 import threading
 import datetime
 
 isRemainTime = True
-def open_socket(teamId):
+def open_socket(teamId, data):
 
     redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTING)
     redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
@@ -33,7 +34,7 @@ def open_socket(teamId):
         (teamId, )
     )
     bot_token = util.fetch_all_json(result)[0]['team_bot_access_token']
-    _connect(teamId, bot_token)
+    _connect(teamId, bot_token, data)
 
 def _timeout(teamId):
     while True:
@@ -48,7 +49,7 @@ def _timeout(teamId):
             break
     
 
-def _connect(teamId, bot_token):
+def _connect(teamId, bot_token, data):
 
     timeoutThread = threading.Thread(target=_timeout, args=(teamId,))
     timeoutThread.start()
@@ -61,6 +62,8 @@ def _connect(teamId, bot_token):
    
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_CONNECTED)
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + SOCKET_EXPIRE_TIME)
+
+        worker.delay(data)
 
         while isRemainTime:
             response = sc.rtm_read()
@@ -87,6 +90,7 @@ def _connect(teamId, bot_token):
                     print('error ' + str(e))
         
         print("socket disconnected")
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_IDLE)
     else:
         print("connection failed!")
         
