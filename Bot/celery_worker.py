@@ -256,7 +256,10 @@ def init_slackapi(teamId):
 
 @app.task
 def worker(data):
+    thread = threading.Thread(target=run, args=(data,))
+    thread.start()
 
+def run(data):
     print(data)
     # print(teamId)
     teamId = data["team_id"]
@@ -417,7 +420,7 @@ def worker(data):
         )
         #db_manager.session.commit()
         #conn.close()
-
+  
 
         rows =util.fetch_all_json(result)
         # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
@@ -434,7 +437,7 @@ def worker(data):
             for row in rows:
                 print(row)
                 result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
-                rank = rank + 1
+                rank = rank + 1 
 
                 # 10위 까지만 출력
                 if(rank == 11):
