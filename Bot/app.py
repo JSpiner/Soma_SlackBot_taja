@@ -13,11 +13,13 @@ import time
 import sqlalchemy
 from Common.manager import redis_manager
 from Common.manager import db_manager
+from Common.manager import rtm_manager
 from Common import static
 import datetime
 from Common import util
 import time
 import base64 
+import Common.static
 import datetime
 
 # test before running flask
@@ -29,12 +31,22 @@ app = Flask(__name__)
 with open('../key.json', 'r') as f:
     key = json.load(f)
 
+##reset all socket status
+result = db_manager.query2(
+    "SELECT team_id "
+    "FROM TEAM "
+)
+rows = util.fetch_all_json(result)
+for row in rows:    
+    redis_manager.redis_client.hset('rtm_status_'+row['team_id'], 'status', static.SOCKET_STATUS_IDLE)
+
+
 @app.route('/', methods=['GET', 'POST'])
 def home():
 
     url = ("https://slack.com/oauth/authorize?client_id="
         +key['slackapp']['client_id']
-        +"&scope=client")
+        +"&scope=commands+bot+chat:write:bot+users:read+channels:read")
 #        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands+client+rtm:stream")
 
 
@@ -57,37 +69,71 @@ def slack_oauth():
 
     print(response)
     ctime = datetime.datetime.now()
-
-    conn = db_manager.engine.connect()
-    trans = conn.begin()
-    conn.execute(
-        "INSERT INTO TEAM " 
-        "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`)"
-        "VALUES"
-        "(%s, %s, %s, %s)",
-        (
-            response['team_id'],
-            response['team_name'],
-            ctime,
-            response['access_token']
-        )
+    result = db_manager.query(
+        "SELECT * FROM TEAM "
+        "WHERE "
+        "team_id = %s "
+        "LIMIT 1",
+        (response['team_id'],)
     )
-    trans.commit()
-    conn.close()
+    rows = util.fetch_all_json(result)
+
+    if len(rows) == 0:
+        db_manager.query(
+            "INSERT INTO TEAM " 
+            "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`)"
+            "VALUES"
+            "(%s, %s, %s, %s)",
+            (
+                response['team_id'],
+                response['team_name'],
+                ctime,
+                response['access_token'],
+                response['bot']['bot_access_token']
+            )
+        )
+    else:
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_bot_access_token = %s , "
+            "team_access_token = %s "
+            "WHERE "
+            "team_id = %s",
+            (
+                response['bot']['bot_access_token'],
+                response['access_token'], 
+                response['team_id']
+            )
+        )
 
     return 'auth success' + response['access_token']
 
 @app.route('/slack/start', methods = ['POST'])
 def slack_game_start():
+
+    # TODO : 요청이 들어온 채널의 redis status 체크해서 게임이 이미 시작했으면 게임 플레이를 안하도록 수정 필요
     payload = request.get_data().decode()
     print(payload)
     data = {}
+
+    teamId = request.form.get('team_id')
+
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
-    worker.delay(data)
+
+    # 현재 채널 상태 설정
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
+
+    print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+        worker.delay(data)
+    else:
+        rtm_manager.open_new_socket(teamId, data)
     return 'hello'
 
 

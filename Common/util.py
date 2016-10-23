@@ -104,7 +104,7 @@ def get_problems():
         1
     )
 
-    rows = util.fetch_all_json(result)
+    rows = fetch_all_json(result)
 
     for row in rows:
         texts[row['problem_id']] = row['problem_text']
