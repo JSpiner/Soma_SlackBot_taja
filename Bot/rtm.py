@@ -100,5 +100,3 @@ def _connect(teamId, bot_token, data):
         _connect(teamId, bot_token, data)
 
     return 0
-
-#_connect('dd', 'xoxb-91817198689-IxlRCJKsV7HFukNJLVhICkyC')
