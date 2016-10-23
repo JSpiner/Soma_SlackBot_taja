@@ -114,6 +114,7 @@ def game_end(slackApi, data, teamId):
             "color": "#764FA5"
         }   
     ]
+    
     slackApi.chat.postMessage(
         {
             "channel" : data["channel"],
@@ -271,6 +272,53 @@ def run(data):
     if data["text"] == static.GAME_COMMAND_START:
 
         print('start')
+
+        # 해당 채널 안에 봇이 들어있나 확인
+        bot_id = util.fetch_all_json(db_manager.query(
+            "SELECT bot_id "
+            "FROM TEAM "
+            "WHERE "
+            "team_id = %s "
+            "LIMIT 1 ",
+            (teamId,)
+        ))[0]['bot_id']
+        print("bot_id : " + bot_id)
+        channelInfo = slackApi.channels.info({'channel':data["channel"]})
+        print(channelInfo)
+        if bot_id not in channelInfo['channel']['members']:
+
+            attachments = [
+                {
+                    "text": "tajabot을 채널에 추가하시겠습니까?",
+                    "fallback": "fallbacktext",
+                    "callback_id": "wopr_game",
+                    "color": "#3AA3E3",
+                    "attachment_type": "default",
+                    "actions": [
+                        {
+                            "name": "invite_bot",
+                            "text": "초대하기",
+                            "type": "button",
+                            "value": "invite_bot",
+                            "confirm": {
+                                "title": "채널에 초대 하시겠습니까?",
+                                "text": "추후 채널에서 삭제가 가능합니다.",
+                                "ok_text": "초대",
+                                "dismiss_text": "다음기회에"
+                            }
+                        }
+                    ]
+                }
+            ]
+            slackApi.chat.postMessage(
+                {
+                    "channel" : data["channel"],
+                    "text" : "tajabot이 채널 안에 없습니다.",
+                    "attachments": json.dumps(attachments)
+                }
+            )
+            return
+                
 
         # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
         conn = db_manager.engine.connect()

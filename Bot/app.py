@@ -89,7 +89,7 @@ def slack_oauth():
     if len(rows) == 0:
         db_manager.query(
             "INSERT INTO TEAM " 
-            "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`)"
+            "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`, `bot_id`)"
             "VALUES"
             "(%s, %s, %s, %s)",
             (
@@ -97,7 +97,8 @@ def slack_oauth():
                 response['team_name'],
                 ctime,
                 response['access_token'],
-                response['bot']['bot_access_token']
+                response['bot']['bot_access_token'],
+                response['bot']['bot_user_id']
             )
         )
     else:
@@ -105,12 +106,14 @@ def slack_oauth():
             "UPDATE TEAM "
             "SET "
             "team_bot_access_token = %s , "
-            "team_access_token = %s "
+            "team_access_token = %s , "
+            "bot_id = %s "
             "WHERE "
             "team_id = %s",
             (
                 response['bot']['bot_access_token'],
                 response['access_token'], 
+                response['bot']['bot_user_id'],
                 response['team_id']
             )
         )
