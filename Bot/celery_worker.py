@@ -247,7 +247,7 @@ def init_slackapi(teamId):
             "LIMIT 1"
             ,
             (teamId,)
-        )
+        ) 
     )
 #    #conn.close()
     print(result)
@@ -256,8 +256,8 @@ def init_slackapi(teamId):
 
 @app.task
 def worker(data):
-    thread = threading.Thread(target=run, args=(data,))
-    thread.start()
+    gameThread = threading.Thread(target=run, args=(data,))
+    gameThread.start()
 
 def run(data):
     print(data)
