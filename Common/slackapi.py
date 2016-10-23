@@ -461,6 +461,7 @@ class SlackApi:
             SLACK_API_SERVER + method, 
             data = args
         )
+        print(r.text)
         return r.json()
         
 

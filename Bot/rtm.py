@@ -40,7 +40,7 @@ def _timeout(teamId):
     while True:
         time.sleep(SOCKET_EXPIRE_TIME)
         
-        expireTime = redis_manager.redis_client.hget('rtm_status_'+teamId, 'expire_time')
+        expireTime = float(redis_manager.redis_client.hget('rtm_status_'+teamId, 'expire_time'))
 
         if expireTime < time.time():
             print("done")
@@ -76,9 +76,9 @@ def _connect(teamId, bot_token, data):
                 print(data)
 
                 try:
-                    if data['type'] == "message":
+                    if data['type'] == "message" and 'subtype' not in data:
 
-                        data['team_id'] = data['team']
+                        data['team_id'] = data['team'] 
                         status_channel = redis_manager.redis_client.get("status_" + data["channel"])
                         
                         # 게임이 플레이중이라면
@@ -97,7 +97,7 @@ def _connect(teamId, bot_token, data):
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_RECONNECTING)
         
         time.sleep(3)
-        _connect(teamId, bot_token)
+        _connect(teamId, bot_token, data)
 
     return 0
 

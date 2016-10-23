@@ -28,7 +28,7 @@ SOCKET_STATUS_CONNECTED     = "2"
 SOCKET_STATUS_RECONNECTING  = "3"
 
 # socket expire time
-SOCKET_EXPIRE_TIME = 60 * 60 
+SOCKET_EXPIRE_TIME = 30
 
 # current_milli_time = lambda: int(round(time.time() * 1000))
 TIME_CURRENT = lambda: int(round(time.time() * 1000))
