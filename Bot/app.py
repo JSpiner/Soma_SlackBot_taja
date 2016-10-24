@@ -160,17 +160,22 @@ def slack_game_start():
     data['text'] = ".시작"
     data['user'] = request.form.get('user_id')
 
+    game_state = redis_manager.redis_client.get("status_"+data['channel'])
 
-    # 현재 채널 상태 설정
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING)
+    if game_state == None or game_state == static.GAME_STATE_IDLE:
+        # 현재 채널 상태 설정
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING)
 
-    print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
-    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
-        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
-        worker.delay(data)
-    else:
-        rtm_manager.open_new_socket(teamId, data)
-    return 'hello'
+        print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+        if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+            redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+            worker.delay(data)
+        else:
+            rtm_manager.open_new_socket(teamId, data)
+        return 'prepareing...'
+    else: 
+
+        return '이미 게임중 입니다. '
 
 
 @app.route('/slack/myscore', methods = ['POST'])
