@@ -62,6 +62,10 @@ def home():
     print('home')
     return html
 
+@app.route('/slack/btn_invite', methods=['POST'])
+def slack_btn_invite():
+    return 'hi'
+
 @app.route('/slack/oauth', methods = ['GET'])
 def slack_oauth():
     code = request.args.get('code')
