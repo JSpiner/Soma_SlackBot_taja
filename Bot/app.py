@@ -53,7 +53,7 @@ def home():
 
     html = (
         "<html>"
-        "<a href='https://slack.com/oauth/authorize?scope=commands+bot+chat:write:bot+users:read+channels:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
+        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
         "height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' "
         "srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x' /></a>"
         "</html>"
@@ -64,7 +64,28 @@ def home():
 
 @app.route('/slack/btn_invite', methods=['POST'])
 def slack_btn_invite():
-    return 'hi'
+    payload = json.loads(request.form.get('payload'))
+    print("btn callback")
+    print(payload)
+    print(payload['channel'])
+    print(payload['actions'])
+    print(payload['actions'][0])
+    print(payload['actions'][0]['name'])
+    if payload['actions'][0]['name'] == 'invite_bot':
+        channelId = payload['channel']['id']
+        teamId = payload['team']['id']
+
+        slackApi = util.init_slackapi(teamId)
+
+        slackApi.channels.invite(
+            {
+                'channel' : channelId,
+                'user' : util.get_bot_id(teamId)
+            }
+        )
+        
+
+    return ''
 
 @app.route('/slack/oauth', methods = ['GET'])
 def slack_oauth():
@@ -108,7 +129,7 @@ def slack_oauth():
     else:
         db_manager.query(
             "UPDATE TEAM "
-            "SET "
+            "SET " 
             "team_bot_access_token = %s , "
             "team_access_token = %s , "
             "bot_id = %s "

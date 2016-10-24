@@ -238,23 +238,6 @@ def get_user_info(slackApi, userId):
         "user" : userId
     })
 
-# 팀별 SlackApi 객체 생성
-def init_slackapi(teamId):
-
-#    #conn = db_manager.session.connection()
-    result = util.fetch_all_json(db_manager.query(
-            "SELECT team_access_token FROM TEAM "
-            "WHERE `team_id`   =  %s " 
-            "LIMIT 1"
-            ,
-            (teamId,)
-        ) 
-    )
-#    #conn.close()
-    print(result)
-    slackApi = SlackApi(result[0]['team_access_token'])
-    return slackApi
-
 @app.task
 def worker(data):
     gameThread = threading.Thread(target=run, args=(data,))
@@ -267,21 +250,14 @@ def run(data):
     # print(teamId)
 
     
-    slackApi = init_slackapi(teamId)
+    slackApi = util.init_slackapi(teamId)
 
     if data["text"] == static.GAME_COMMAND_START:
 
         print('start')
 
         # 해당 채널 안에 봇이 들어있나 확인
-        bot_id = util.fetch_all_json(db_manager.query(
-            "SELECT bot_id "
-            "FROM TEAM "
-            "WHERE "
-            "team_id = %s "
-            "LIMIT 1 ",
-            (teamId,)
-        ))[0]['bot_id']
+        bot_id = util.get_bot_id(teamId)
         print("bot_id : " + bot_id)
         channelInfo = slackApi.channels.info({'channel':data["channel"]})
         print(channelInfo)
