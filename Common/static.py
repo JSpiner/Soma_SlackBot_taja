@@ -5,10 +5,11 @@ import time
 
 # static variables
 
-GAME_COMMAND_START      = ".시작"
-GAME_COMMAND_RANK       = ".점수"
-GAME_COMMAND_MY_RANK    = ".내점수"
-GAME_COMMAND_EXIT       = ".강제종료"
+GAME_COMMAND_START      = "/start"
+GAME_COMMAND_SCORE      = "/score"
+GAME_COMMAND_RANK       = "/rank"
+GAME_COMMAND_MY_SCORE   = "/myscore"
+GAME_COMMAND_EXIT       = "/exit"
 
 # 0 = 게임이 실행중이지 않을 때
 # 1 = 게임 시작 요청 수립 후 소켓연결대기상태 

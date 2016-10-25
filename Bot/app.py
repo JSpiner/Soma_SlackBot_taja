@@ -44,13 +44,6 @@ for row in rows:
 @app.route('/', methods=['GET', 'POST'])
 def home():
 
-    """
-    url = ("https://slack.com/oauth/authorize?client_id="
-        +key['slackapp']['client_id']
-        +"&scope=commands+bot+chat:write:bot+users:read+channels:read")
-#        +"&scope=team:read+channels:read+channels:history+chat:write:bot+channels:read+users:read+bot+commands+client+rtm:stream")
-    """
-
     html = (
         "<html>"
         "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
@@ -157,7 +150,7 @@ def slack_game_start():
 
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = ".시작"
+    data['text'] = static.GAME_COMMAND_START
     data['user'] = request.form.get('user_id')
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
@@ -200,15 +193,38 @@ def slack_game_start():
         response.headers['Content-type'] = 'application/json'
         return response
 
-
-@app.route('/slack/myscore', methods = ['POST'])
-def slack_game_getMyScore():
+@app.route('/slack/rank', methods = ['POST'])
+def slack_game_rank():
     payload = request.get_data().decode()
     print(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = ".내점수"
+    data['text'] = static.GAME_COMMAND_RANK
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
+@app.route('/slack/myscore', methods = ['POST'])
+def slack_game_myscore():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_MY_RANK
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
@@ -226,13 +242,13 @@ def slack_game_getMyScore():
     return response  
 
 @app.route('/slack/score', methods = ['POST'])
-def slack_game_getScore():
+def slack_game_score():
     payload = request.get_data().decode()
     print(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = ".점수"
+    data['text'] = static.GAME_COMMAND_SCORE
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
@@ -318,7 +334,7 @@ def slack_event():
                 if eventData["text"] == static.GAME_COMMAND_START:
                     print('.start')
                     worker.delay(eventData)
-                elif eventData["text"] == static.GAME_COMMAND_RANK:
+                elif eventData["text"] == static.GAME_COMMAND_SCORE:
                     print('.rank')
                     worker.delay(eventData)
                 elif eventData["text"] == static.GAME_COMMAND_MY_RANK:

@@ -55,21 +55,15 @@ def game_end(slackApi, data, teamId):
     time.sleep(2)
 
     # 참여유저수 query로 가져오기
-    #conn = db_manager.session.connection()
-    #trans = conn.begin()
     result=db_manager.query(
         "SELECT * FROM slackbot.GAME_RESULT WHERE slackbot.GAME_RESULT.game_id = %s;",
         (game_id,)
     )
-    #db_manager.session.commit()
-    #conn.close()
 
     # 가져온 쿼리 결과로 user_num을 계산
     rows= util.fetch_all_json(result)
     user_num = len(rows)
 
-    #conn = db_manager.session.connection()
-    #trans = conn.begin()
     ctime = datetime.datetime.now()
     db_manager.query(
         "INSERT INTO GAME_INFO "
@@ -78,22 +72,17 @@ def game_end(slackApi, data, teamId):
         "(%s, %s, %s, %s, %s, %s, %s) ",
         (game_id, data["channel"], teamId, start_time_to_time_tamp, ctime, problem_id , user_num)
     )
-    #db_manager.session.commit()
-    #conn.close()
 
-
-    #conn = db_manager.session.connection()
     result = db_manager.query(
         "SELECT * FROM GAME_RESULT "
         "WHERE game_id = %s order by score desc",
         (game_id,)
     ) 
-    #conn.close()
     rows =util.fetch_all_json(result)
 
     print(rows)
  
-    result_string = ""#Game Result : "+str(len(rows))+"participants" + " : \n"
+    result_string = ""
     rank = 1
     for row in rows:
         result_string = result_string +(
@@ -245,438 +234,432 @@ def worker(data):
 
 def run(data):
     print(data)
-    # print(teamId)
-    teamId = data["team_id"]
-    # print(teamId)
-
-    
-    slackApi = util.init_slackapi(teamId)
 
     if data["text"] == static.GAME_COMMAND_START:
+        command_start(data)
+    # .점수 : 해당 채널에 score기준으로 TOP 10을 출력
+    elif data["text"] == static.GAME_COMMAND_SCORE:
+        command_rank(data)
+    # .강제종료 : 내 게임 상태를 강제로 종료
+    elif data["text"] == static.GAME_COMMAND_EXIT:
+        # 현재 상태 변경
+        command_exit(data)
+    # .내점수 : 내 모든 점수를 Direct Message로 출력
+    elif data["text"] == static.GAME_COMMAND_MY_SCORE:
+        command_myscore(data)
+    else :
+        command_typing(data)
 
-        print('start')
 
-        # 해당 채널 안에 봇이 들어있나 확인
-        bot_id = util.get_bot_id(teamId)
-        print("bot_id : " + bot_id)
-        channelInfo = slackApi.channels.info({'channel':data["channel"]})
-        print(channelInfo)
-        if bot_id not in channelInfo['channel']['members']:
-            redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE),
+def command_start(data):
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
 
-            attachments = [
-                {
-                    "text": "tajabot을 채널에 추가하시겠습니까?",
-                    "fallback": "fallbacktext",
-                    "callback_id": "wopr_game",
-                    "color": "#3AA3E3",
-                    "attachment_type": "default",
-                    "actions": [
-                        {
-                            "name": "invite_bot",
-                            "text": "초대하기",
-                            "type": "button",
-                            "value": "invite_bot",
-                            "confirm": {
-                                "title": "채널에 초대 하시겠습니까?",
-                                "text": "추후 채널에서 삭제가 가능합니다.",
-                                "ok_text": "초대",
-                                "dismiss_text": "다음기회에"
-                            }
+    print('start')
+
+    # 해당 채널 안에 봇이 들어있나 확인
+    bot_id = util.get_bot_id(teamId)
+    print("bot_id : " + bot_id)
+    channelInfo = slackApi.channels.info({'channel':data["channel"]})
+    print(channelInfo)
+    if bot_id not in channelInfo['channel']['members']:
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE),
+
+        attachments = [
+            {
+                "text": "tajabot을 채널에 추가하시겠습니까?",
+                "fallback": "fallbacktext",
+                "callback_id": "wopr_game",
+                "color": "#3AA3E3",
+                "attachment_type": "default",
+                "actions": [
+                    {
+                        "name": "invite_bot",
+                        "text": "초대하기",
+                        "type": "button",
+                        "value": "invite_bot",
+                        "confirm": {
+                            "title": "채널에 초대 하시겠습니까?",
+                            "text": "추후 채널에서 삭제가 가능합니다.",
+                            "ok_text": "초대",
+                            "dismiss_text": "다음기회에"
                         }
-                    ]
-                }
-            ]
-            slackApi.chat.postMessage(
-                {
-                    "channel" : data["channel"],
-                    "text" : "tajabot이 채널 안에 없습니다.",
-                    "attachments": json.dumps(attachments)
-                }
-            )
-            return
-
-        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING),
-
-
-        # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
-        conn = db_manager.engine.connect()
-        trans = conn.begin()
-        result = conn.execute(
-            "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
-            (data['channel'])
+                    }
+                ]
+            }
+        ]
+        slackApi.chat.postMessage(
+            {
+                "channel" : data["channel"],
+                "text" : "tajabot이 채널 안에 없습니다.",
+                "attachments": json.dumps(attachments)
+            }
         )
-        trans.commit()
-        conn.close()
+        return
 
-        # DB에 채널 정보가 없다면
-        if(result.fetchone() is None):
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING),
 
-            ctime = datetime.datetime.now()
 
-            # 채널 이름 가져오기
-            channel_list = get_channel_list(slackApi)
-            print(channel_list)
-            channels = channel_list['channels']
-            channel_name = ""
-            for channel_info in channels:
-                # id가 같으면 name을 가져온다/
-                if(channel_info['id'] == data['channel']):
-                    channel_name = channel_info['name']
+    # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
+    conn = db_manager.engine.connect()
+    trans = conn.begin()
+    result = conn.execute(
+        "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
+        (data['channel'])
+    )
+    trans.commit()
+    conn.close()
 
-            #conn = db_manager.session.connection()
-            #trans = conn.begin()
+    # DB에 채널 정보가 없다면
+    if(result.fetchone() is None):
 
-            try:
-                db_manager.query(
-                    "INSERT INTO CHANNEL"
-                    "(team_id, channel_id, channel_name, channel_joined_time)"
-                    "VALUES"
-                    "(%s, %s, %s, %s);",
-                    (teamId, data['channel'], channel_name, ctime)
-                )
+        ctime = datetime.datetime.now()
+
+        # 채널 이름 가져오기
+        channel_list = get_channel_list(slackApi)
+        print(channel_list)
+        channels = channel_list['channels']
+        channel_name = ""
+        for channel_info in channels:
+            # id가 같으면 name을 가져온다/
+            if(channel_info['id'] == data['channel']):
+                channel_name = channel_info['name']
+
+        try:
+            db_manager.query(
+                "INSERT INTO CHANNEL"
+                "(team_id, channel_id, channel_name, channel_joined_time)"
+                "VALUES"
+                "(%s, %s, %s, %s);",
+                (teamId, data['channel'], channel_name, ctime)
+            )
+            
+            result = db_manager.query(
+                "select * from CHANNEL_PROBLEM where channel_id = %s ",
+                (data['channel'],)
+            )
+
+            rows = util.fetch_all_json(result)
+            print(rows)
+
+            result = db_manager.query2(
+                "select * from PROBLEM"    
+            )
+
+            rows = util.fetch_all_json(result)
+
+            arrQueryString=[]
+            arrQueryString.append('INSERT INTO CHANNEL_PROBLEM (channel_id,problem_id) values ')
+
+            for row in rows:
+                arrQueryString.append('("'+ data['channel']+ '","'+ str(row['problem_id'])+ '")')
+                arrQueryString.append(',')
                 
-                result = db_manager.query(
-                    "select * from CHANNEL_PROBLEM where channel_id = %s ",
-                    (data['channel'],)
-                )
+            arrQueryString.pop()
+            lastQuery = "".join(arrQueryString)
 
-                rows = util.fetch_all_json(result)
-                print(rows)
-
-                result = db_manager.query2(
-                    "select * from PROBLEM"    
-                )
-
-                rows = util.fetch_all_json(result)
-
-                arrQueryString=[]
-                arrQueryString.append('INSERT INTO CHANNEL_PROBLEM (channel_id,problem_id) values ')
-
-                for row in rows:
-                    arrQueryString.append('("'+ data['channel']+ '","'+ str(row['problem_id'])+ '")')
-                    arrQueryString.append(',')
-                    
-                arrQueryString.pop()
-                lastQuery = "".join(arrQueryString)
-
-                print(lastQuery)
-                
-                result = db_manager.query2(
-                    lastQuery    
-                )
-            except Exception as e:
-                print('error : '+str(e))
+            print(lastQuery)
+            
+            result = db_manager.query2(
+                lastQuery    
+            )
+        except Exception as e:
+            print('error : '+str(e))
 
 
 #        sendMessage(slackApi, data["channel"], "타자게임을 시작합니다!")
-        response = sendMessage(slackApi, data["channel"], "Ready~")
-        print("response : " + str(response)) 
-        text_ts = response['ts']
-        text_channel = response['channel']
-        time.sleep(1)
-        
-        i = 3
-        while i != 0:
-            slackApi.chat.update(
-                {
-                    "ts" : text_ts,
-                    "channel": text_channel,
-                    "text" : str(i)
-                }
-            )
-#            sendMessage(slackApi, data["channel"], str(i))
-            time.sleep(1.0)
-            i = i - 1
-
-
-        # 문제들 가져오기
-        texts = util.get_problems()
-
-        # 문제 선택하기
-        problem_id = get_rand_game(data['channel']) #texts[problem_texts_index]['problem_id']
-        problem_text = texts[problem_id]
-
-        # 문제내는 부분
-
+    response = sendMessage(slackApi, data["channel"], "Ready~")
+    print("response : " + str(response)) 
+    text_ts = response['ts']
+    text_channel = response['channel']
+    time.sleep(1)
+    
+    i = 3
+    while i != 0:
         slackApi.chat.update(
             {
                 "ts" : text_ts,
                 "channel": text_channel,
-                "text" : "제시어 : *" + problem_text + "*"
+                "text" : str(i)
             }
         )
-
-        # 현재 채널 상태 설정
-        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
-
-
-
-        # 시작 시간 설정
-        redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000,)
-
-        # 해당 게임 문자열 설정
-        redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
-        redis_manager.redis_client.set("problem_id_" + data["channel"], problem_id)
-
-        # 현재 게임의 ID
-        redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
-
-        # 타이머 돌리기, 일단 시간은 문자열 길이/2
-        threading.Timer(10, game_end, [slackApi, data, teamId]).start()
+#            sendMessage(slackApi, data["channel"], str(i))
+        time.sleep(1.0)
+        i = i - 1
 
 
-    # .점수 : 해당 채널에 score기준으로 TOP 10을 출력
-    elif data["text"] == static.GAME_COMMAND_RANK:
+    # 문제들 가져오기
+    texts = util.get_problems()
 
-        channel_id = data["channel"]
+    # 문제 선택하기
+    problem_id = get_rand_game(data['channel']) 
+    problem_text = texts[problem_id]
 
-        # 게임 결과들 가져오기
-        #conn = db_manager.session.connection()
-        #trans = conn.begin()
+    # 문제내는 부분
 
-        result = db_manager.query(
-            "SELECT * from GAME_RESULT "
-            "RESULT inner join GAME_INFO INFO "
-            "on INFO.game_id = RESULT.game_id "
-            "inner join USER U " 
-            "on U.user_id = RESULT.user_id "
-            "where INFO.channel_id = %s " 
-            "order by score desc;",
-            (channel_id,)
-        )
-        #db_manager.session.commit()
-        #conn.close()
-  
+    slackApi.chat.update(
+        {
+            "ts" : text_ts,
+            "channel": text_channel,
+            "text" : "제시어 : *" + problem_text + "*"
+        }
+    )
 
-        rows = util.fetch_all_json(result)
-        # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
-#        sorted_by_score = sorted(rows, key=lambda tup: tup[3], reverse=True)
-
-        result_string = "Game Result : \n"
-        rank = 1
-        if(len(rows) <= 10):
-            for row in rows:
-                print(row)
-                result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
-                rank = rank + 1
-        else:
-            for row in rows:
-                print(row)
-                result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
-                rank = rank + 1 
-
-                # 10위 까지만 출력
-                if(rank == 11):
-                    break
-
-        sendMessage(slackApi, data["channel"], result_string)
-
-    # .강제종료 : 내 게임 상태를 강제로 종료
-    elif data["text"] == static.GAME_COMMAND_EXIT:
-        # 현재 상태 변경
-        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
-        sendMessage(slackApi, data["channel"], "종료되었습니다.")
-    # .내점수 : 내 모든 점수를 Direct Message로 출력
-    elif data["text"] == static.GAME_COMMAND_MY_RANK:
-
-        user_id = data["user"]
-
-        # user_name 가져오기
-        user_info = get_user_info(slackApi, user_id)
-        user_name = user_info['user']['name']
-
-        # 내 게임 결과들 가져오기
-        #conn = db_manager.session.connection()
-        #trans = conn.begin()
-        result = db_manager.query(
-            "SELECT * FROM GAME_RESULT "
-            "WHERE "
-            "user_id = %s order by score desc;",
-            (user_id,)
-        )
-        #db_manager.session.commit()
-        #conn.close()
-
-        rows = util.fetch_all_json(result)
-        # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
-        #sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
-
-        # 출력할 텍스트 생성
-        result_string = "Game Result : \n"
-        result_string = result_string + "Name : " + user_name + "\n"
-        rank = 1
-
-        if (len(rows) <= 10):
-            for row in rows:
-                result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " "\
-                                + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
-                rank = rank + 1
-        else:
-            for row in rows:
-                result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
-                                + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
-                rank = rank + 1
-
-                # 10위 까지만 출력
-                if (rank == 11):
-                    break
-
-        print(result_string)
-
-        sendMessage(slackApi, data["channel"], result_string)
-
-    else :
-        print("else!!")
-
-        distance = util.get_edit_distance(data["text"],
-                                          redis_manager.redis_client.get("problem_text_" + data["channel"]))
+    # 현재 채널 상태 설정
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
 
 
-        start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
-        current_time = time.time()*1000    
+
+    # 시작 시간 설정
+    redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000,)
+
+    # 해당 게임 문자열 설정
+    redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
+    redis_manager.redis_client.set("problem_id_" + data["channel"], problem_id)
+
+    # 현재 게임의 ID
+    redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
+
+    # 타이머 돌리기, 일단 시간은 문자열 길이/2
+    threading.Timer(10, game_end, [slackApi, data, teamId]).start()
+
+def command_exit(data):
+
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
+    
+    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+    sendMessage(slackApi, data["channel"], "종료되었습니다.")
+
+def command_myscore(data):
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
+
+    user_id = data["user"]
+
+    # user_name 가져오기
+    user_info = get_user_info(slackApi, user_id)
+    user_name = user_info['user']['name']
+
+    # 내 게임 결과들 가져오기
+    result = db_manager.query(
+        "SELECT * FROM GAME_RESULT "
+        "WHERE "
+        "user_id = %s order by score desc;",
+        (user_id,)
+    )
+
+    rows = util.fetch_all_json(result)
+    # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
+    #sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
+
+    # 출력할 텍스트 생성
+    result_string = "Game Result : \n"
+    result_string = result_string + "Name : " + user_name + "\n"
+    rank = 1
+
+    if (len(rows) <= 10):
+        for row in rows:
+            result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " "\
+                            + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
+            rank = rank + 1
+    else:
+        for row in rows:
+            result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
+                            + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
+            rank = rank + 1
+
+            # 10위 까지만 출력
+            if (rank == 11):
+                break
+
+    print(result_string)
+
+    sendMessage(slackApi, data["channel"], result_string)
 
 
-        elapsed_time = (current_time - float(start_time)) * 1000
+def command_score(data):
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
 
-        print(elapsed_time)
+def command_typing(data):
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
 
-        game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
+    print("else!!")
 
-        # 점수 계산
-        speed =  round(util.get_speed(data["text"], elapsed_time), 3)
-        problem_text = redis_manager.redis_client.get("problem_text_" + data["channel"])
-        accur_text = ""
-        if len(data["text"]) < len(problem_text):
-            accur_text = problem_text
-        else:
-            accur_text = data["text"]
-        accuracy = round(util.get_accuracy(accur_text, distance), 3)
-        score = util.get_score(speed, accuracy)
-        accuracy = accuracy * 100
-        print('distance : ' +str(distance))
-        print('speed : ' +str(speed))
-        print('elapsed_time : ' +str(elapsed_time))
-        print('accur : ' +str(accuracy))
-        print('text : ' + str(data["text"]))
+    distance = util.get_edit_distance(data["text"],
+                                        redis_manager.redis_client.get("problem_text_" + data["channel"]))
 
-        result = db_manager.query(
-            "SELECT game_id "
-            "FROM GAME_RESULT "
-            "WHERE "
-            "game_id = %s and user_id = %s "
-            "LIMIT 1",
-            (game_id, data["user"])
+
+    start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
+    current_time = time.time()*1000    
+
+
+    elapsed_time = (current_time - float(start_time)) * 1000
+
+    print(elapsed_time)
+
+    game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
+
+    # 점수 계산
+    speed =  round(util.get_speed(data["text"], elapsed_time), 3)
+    problem_text = redis_manager.redis_client.get("problem_text_" + data["channel"])
+    accur_text = ""
+    if len(data["text"]) < len(problem_text):
+        accur_text = problem_text
+    else:
+        accur_text = data["text"]
+    accuracy = round(util.get_accuracy(accur_text, distance), 3)
+    score = util.get_score(speed, accuracy)
+    accuracy = accuracy * 100
+    print('distance : ' +str(distance))
+    print('speed : ' +str(speed))
+    print('elapsed_time : ' +str(elapsed_time))
+    print('accur : ' +str(accuracy))
+    print('text : ' + str(data["text"]))
+
+    result = db_manager.query(
+        "SELECT game_id "
+        "FROM GAME_RESULT "
+        "WHERE "
+        "game_id = %s and user_id = %s "
+        "LIMIT 1",
+        (game_id, data["user"])
+    )
+
+    rows = util.fetch_all_json(result)
+    if len(rows) == 0:
+        
+        #새로 디비 연결하는부분.
+        db_manager.query(
+            "INSERT INTO GAME_RESULT "
+            "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
+            "VALUES"
+            "(%s, %s, %s, %s, %s, %s, %s)",
+            (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
         )
 
-        rows = util.fetch_all_json(result)
-        if len(rows) == 0:
-            
-            #새로 디비 연결하는부분.
-            #conn = db_manager.session.connection()
-            #trans = conn.begin()
-            db_manager.query(
-                "INSERT INTO GAME_RESULT "
-                "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
-                "VALUES"
-                "(%s, %s, %s, %s, %s, %s, %s)",
-                (game_id, data["user"], data["text"].encode('utf-8'), score, speed, accuracy, elapsed_time)
+        user_name = get_user_info(slackApi, data["user"])["user"]["name"]
+
+        try:
+            #이후 채널 랭크 업데이트.
+
+            result = db_manager.query(
+                "select * , "
+                "( "
+                    "SELECT count(*) "
+                    "FROM ( "
+                        "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                ") as userAllCnt "
+                "from ( "
+                    "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
+                    "FROM ( "
+                        " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
+                    ") "
+                    "userScoreTB "
+                    "INNER JOIN (SELECT @counter:=0) b "
+                ") as rankTB where user_id = %s "
+                ,
+                (data["user"],)
             )
-            #db_manager.session.commit()
-            #conn.close()
+            rows = util.fetch_all_json(result)
 
-            user_name = get_user_info(slackApi, data["user"])["user"]["name"]
+            userAll = rows[0]["userAllCnt"]
+            rank = rows[0]["rank"]
+            levelHirechy = rank/userAll * 100
 
-            try:
-                #이후 채널 랭크 업데이트.
-                #conn = db_manager.session.connection()
-                #trans = conn.begin()
+            level = 3
+            #100~91
+            if levelHirechy > 90 :
+                level = 1
+            #90~71
+            elif levelHirechy>70 and levelHirechy<91:   
+                level = 2
+            #70~31    
+            elif levelHirechy>30 and levelHirechy<81:   
+                level = 3  
+            #30~10
+            elif levelHirechy>10 and levelHirechy<31:   
+                level = 4
+            #10~0
+            elif levelHirechy>-1 and levelHirechy<11:   
+                level = 5          
+        
+            #이후 채널 랭크 업데이트.
 
-                result = db_manager.query(
-                    "select * , "
-                    "( "
-                        "SELECT count(*) "
-                        "FROM ( "
-                            "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                        ") "
-                        "userScoreTB "
-                    ") as userAllCnt "
-                    "from ( "
-                        "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
-                        "FROM ( "
-                            " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                        ") "
-                        "userScoreTB "
-                        "INNER JOIN (SELECT @counter:=0) b "
-                    ") as rankTB where user_id = %s "
-                    ,
-                    (data["user"],)
+            result = db_manager.query(
+                "update USER set user_level = %s where user_id = %s"
+                ,
+                (level,data["user"])
+            )
+
+        except Exception as e:
+            print(str(e))    
+
+
+        try:
+            result = db_manager.query(
+                "SELECT user_id "
+                "FROM USER "
+                "WHERE "
+                "user_id = %s "
+                "LIMIT 1"
+                ,
+                (data["user"],)
+            )
+            rows = util.fetch_all_json(result)
+
+            if len(rows) == 0:
+
+                db_manager.query(
+                    "INSERT INTO USER "
+                    "(team_id, user_id, user_name) "
+                    "VALUES "
+                    "(%s, %s, %s) ",
+                    (teamId,data["user"],user_name)
                 )
-                #db_manager.session.commit()
-                #conn.close()
-                rows = util.fetch_all_json(result)
+        except exc.SQLAlchemyError as e:
+            print("[DB] err==>"+str(e))
 
-                userAll = rows[0]["userAllCnt"]
-                rank = rows[0]["rank"]
-                levelHirechy = rank/userAll * 100
+def command_rank(data):
+    teamId = data["team_id"]
+    slackApi = util.init_slackapi(teamId)
+    channel_id = data["channel"]
 
-                level = 3
-                #100~91
-                if levelHirechy > 90 :
-                    level = 1
-                #90~71
-                elif levelHirechy>70 and levelHirechy<91:   
-                    level = 2
-                #70~31    
-                elif levelHirechy>30 and levelHirechy<81:   
-                    level = 3  
-                #30~10
-                elif levelHirechy>10 and levelHirechy<31:   
-                    level = 4
-                #10~0
-                elif levelHirechy>-1 and levelHirechy<11:   
-                    level = 5          
-            
-                #이후 채널 랭크 업데이트.
-                #conn = db_manager.session.connection()
-                #trans = conn.begin()
+    # 게임 결과들 가져오기
 
-                result = db_manager.query(
-                    "update USER set user_level = %s where user_id = %s"
-                    ,
-                    (level,data["user"])
-                )
-                #db_manager.session.commit()
-                #conn.close()
-
-            except Exception as e:
-                print(str(e))    
+    result = db_manager.query(
+        "SELECT * from GAME_RESULT "
+        "RESULT inner join GAME_INFO INFO "
+        "on INFO.game_id = RESULT.game_id "
+        "inner join USER U " 
+        "on U.user_id = RESULT.user_id "
+        "where INFO.channel_id = %s " 
+        "order by score desc;",
+        (channel_id,)
+    )
 
 
-            try:
-                #conn = db_manager.session.connection()
-                #trans = conn.begin()
-                result = db_manager.query(
-                    "SELECT user_id "
-                    "FROM USER "
-                    "WHERE "
-                    "user_id = %s "
-                    "LIMIT 1"
-                    ,
-                    (data["user"],)
-                )
-                rows = util.fetch_all_json(result)
+    rows = util.fetch_all_json(result)
 
-                if len(rows) == 0:
+    result_string = "Game Result : \n"
+    rank = 1
+    if(len(rows) <= 10):
+        for row in rows:
+            print(row)
+            result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
+            rank = rank + 1
+    else:
+        for row in rows:
+            print(row)
+            result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
+            rank = rank + 1 
 
-                    db_manager.query(
-                        "INSERT INTO USER "
-                        "(team_id, user_id, user_name) "
-                        "VALUES "
-                        "(%s, %s, %s) ",
-                        (teamId,data["user"],user_name)
-                    )
-                    #db_manager.session.commit()
-                    #conn.close()        
-            except exc.SQLAlchemyError as e:
-                print("[DB] err==>"+str(e))
+            # 10위 까지만 출력
+            if(rank == 11):
+                break
+
+    sendMessage(slackApi, data["channel"], result_string)
