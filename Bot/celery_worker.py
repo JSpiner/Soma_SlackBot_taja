@@ -262,6 +262,7 @@ def run(data):
         channelInfo = slackApi.channels.info({'channel':data["channel"]})
         print(channelInfo)
         if bot_id not in channelInfo['channel']['members']:
+            redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE),
 
             attachments = [
                 {
@@ -294,7 +295,9 @@ def run(data):
                 }
             )
             return
-                
+
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING),
+
 
         # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
         conn = db_manager.engine.connect()

@@ -18,7 +18,7 @@ from Common import static
 import datetime
 from Common import util
 import time
-import base64 
+import base64  
 import Common.static
 import datetime
 
@@ -161,6 +161,7 @@ def slack_game_start():
     data['user'] = request.form.get('user_id')
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
+    print(game_state)
 
     if game_state == None or game_state == static.GAME_STATE_IDLE:
         # 현재 채널 상태 설정
@@ -169,6 +170,8 @@ def slack_game_start():
         print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
         if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
             redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+            redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+
             worker.delay(data)
         else:
             rtm_manager.open_new_socket(teamId, data)
@@ -204,6 +207,19 @@ def slack_game_getScore():
     worker.delay(data)
     return 'wait..'
 
+@app.route('/slack/exit', methods = ['POST'])
+def slack_game_exit():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_EXIT
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+    return 'exiting..'
+
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
@@ -212,7 +228,7 @@ def slack_event():
     data = json.loads(payload) 
 
     print(data)
-    
+    worker.delay(eventData)
     
     response = {}
     response['ok'] = 'True'
