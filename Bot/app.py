@@ -174,7 +174,7 @@ def slack_game_start():
             json.dumps(
                 {
                     'response_type' : 'in_channel',
-                    'text' : '타자 게임을 시작합니다!'
+                    'text' : ''
                 }
             )
         )
