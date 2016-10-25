@@ -71,6 +71,9 @@ def command_start(data):
             {
                 "channel" : channelId,
                 "text" : "tajabot이 채널 안에 없습니다.",
+                'username'  : '타자봇',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false',
                 "attachments": json.dumps(
                     [
                         {
@@ -156,7 +159,7 @@ def command_start(data):
             print('error : '+str(e))
 
 
-    titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t 제한시간 10초!")
+    titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t")
     response = sendMessage(slackApi, channelId, "3초뒤 시작합니다!!!!")
     text_ts = response['ts']
     title_ts = titleResponse['ts']
@@ -169,7 +172,10 @@ def command_start(data):
             {
                 "ts" : text_ts,
                 "channel": channelId,
-                "text" : strs[i]
+                "text" : strs[i],
+                'username'  : '타자봇',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
             }
         )
         time.sleep(1.0)
@@ -185,7 +191,10 @@ def command_start(data):
         {
             "ts" : text_ts,
             "channel": channelId,
-            "text" : "제시어 : `" + problem_text + "`"
+            "text" : "제시어 : `" + problem_text + "`",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false'
         }
     )
     
@@ -202,7 +211,10 @@ def command_start(data):
             {
                 "ts" : title_ts,
                 "channel": channelId,
-                "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*"
+                "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*",
+                'username'  : '타자봇',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
             }
         )
         if time.time()-stTime <= 1:
@@ -212,7 +224,10 @@ def command_start(data):
         {
             "ts" : title_ts,
             "channel": channelId,
-            "text" : "타자게임을 시작합니다!\t 끗!"
+            "text" : "타자게임을 시작합니다!\t 끗!",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false'
         }
     )
     game_end(slackApi, teamId, channelId)
@@ -512,6 +527,9 @@ def game_end(slackApi, teamId, channelId):
         {
             "channel" : channelId,
             "text" : "게임 결과",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
@@ -584,6 +602,8 @@ def sendMessage(slackApi, channel, text):
         {
             'channel'   : channel,
             'text'      : text,
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
