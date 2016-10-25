@@ -32,7 +32,7 @@ with open('../key.json', 'r') as f:
     key = json.load(f)
 
 ##reset all socket status
-result = db_manager.query2(
+result = db_manager.query(
     "SELECT team_id "
     "FROM TEAM "
 )

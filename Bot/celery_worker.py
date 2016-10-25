@@ -106,7 +106,7 @@ def command_start(data):
     # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
     result = db_manager.query(
         "SELECT * FROM slackbot.CHANNEL WHERE slackbot.CHANNEL.channel_id = %s;",
-        (data['channel'])
+        (data['channel'],)
     )
 
     # DB에 채널 정보가 없다면
@@ -133,7 +133,7 @@ def command_start(data):
                 (teamId, data['channel'], channel_name, ctime)
             )
 
-            result = db_manager.query2(
+            result = db_manager.query(
                 "SELECT * from PROBLEM"    
             )
 
@@ -149,30 +149,30 @@ def command_start(data):
             arrQueryString.pop()
             lastQuery = "".join(arrQueryString)
             
-            result = db_manager.query2(
+            result = db_manager.query(
                 lastQuery    
             )
         except Exception as e:
             print('error : '+str(e))
 
 
-    sendMessage(slackApi, channelId, "타자게임을 시작합니다!")
-    response = sendMessage(slackApi, channelId, "Ready~")
+    titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t 제한시간 10초!")
+    response = sendMessage(slackApi, channelId, "3초뒤 시작합니다!!!!")
     text_ts = response['ts']
-    text_channel = response['channel']
+    title_ts = titleResponse['ts']
+
     time.sleep(1)
     
-    i = 3
-    while i != 0:
+    strs = ["준비 되셨나요??", "Ready~~~"]
+    for i in range(0,2):
         slackApi.chat.update(
             {
                 "ts" : text_ts,
-                "channel": text_channel,
-                "text" : str(i)
+                "channel": channelId,
+                "text" : strs[i]
             }
         )
         time.sleep(1.0)
-        i = i - 1
 
     # 문제들 가져오기
     texts = util.get_problems()
@@ -184,8 +184,8 @@ def command_start(data):
     slackApi.chat.update(
         {
             "ts" : text_ts,
-            "channel": text_channel,
-            "text" : "제시어 : *" + problem_text + "*"
+            "channel": channelId,
+            "text" : "제시어 : `" + problem_text + "`"
         }
     )
     
@@ -195,7 +195,27 @@ def command_start(data):
     redis_client.set("problem_id_" + channelId, problem_id)                 # 해당 게임 문자열 설정
     redis_client.set("game_id_" + channelId, util.generate_game_id())       # 현재 게임의 ID
 
-    threading.Timer(10, game_end, [slackApi, teamId, channelId]).start()
+    #threading.Timer(10, game_end, [slackApi, teamId, channelId, title_ts]).start()
+    for i in range(1,10):
+        stTime = time.time()
+        slackApi.chat.update(
+            {
+                "ts" : title_ts,
+                "channel": channelId,
+                "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*"
+            }
+        )
+        if time.time()-stTime <= 1:
+            time.sleep(1 - (time.time()-stTime))
+
+    slackApi.chat.update(
+        {
+            "ts" : title_ts,
+            "channel": channelId,
+            "text" : "타자게임을 시작합니다!\t 끗!"
+        }
+    )
+    game_end(slackApi, teamId, channelId)
 
 def command_exit(data):
     teamId = data["team_id"]
@@ -475,13 +495,13 @@ def game_end(slackApi, teamId, channelId):
     print(rows)
  
     result_string = ""
-    rank = 1
+    rank = 0
     for row in rows:
         result_string = result_string +(
-            str(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t" 
-            "종합점수 : " + str(row["score"]) + "점\t" +
-            "정확도 : " + str(row["accuracy"]) + "%\t" + 
-            "타속 : " + str(row["speed"])+"타 \n"
+            pretty_rank(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t\t" 
+            "종합점수 : " + str(int(row["score"])) + "점\t" +
+            "정확도 : " + pretty_accur(row["accuracy"]) + "%\t" + 
+            "타속 : " + str(int(row["speed"]))+"타 \n"
         )
         rank = rank + 1
 
@@ -620,3 +640,25 @@ def get_user_info(slackApi, userId):
             "user" : userId
         }
     )
+
+def pretty_score(score):
+    return "*"+str(int(score))+"*"
+
+def pretty_accur(accur):
+    if accur == 100:
+        return ":100:"
+    else:
+        return "*"+str(int(accur))+"*"
+
+def pretty_speed(speed):
+    return "*"+str(int(score))+"*"
+
+def pretty_rank(rank):
+    rank = str(rank)
+    
+    ranks = [":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":ten:"]
+
+    result = ""
+    for num in rank:
+        result+=ranks[int(num)]
+    return result
