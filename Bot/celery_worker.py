@@ -487,20 +487,21 @@ def game_end(slackApi, teamId, channelId):
 
     sendResult = str(result_string)
     print(channelId)
-    attachments = [
-        {
-            "title":"순위표",
-            "text": sendResult,
-            "mrkdwn_in": ["text", "pretext"],
-            "color": "#764FA5"
-        }   
-    ]
     
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
             "text" : "게임 결과",
-            "attachments" : json.dumps(attachments)
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":"순위표",
+                        "text": sendResult,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
         }
     )
     

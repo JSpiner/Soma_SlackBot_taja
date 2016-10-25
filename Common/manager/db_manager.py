@@ -33,8 +33,14 @@ engine = create_engine(
 session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
-#session.begin()
 
+# just raw query 
+def query(queryString):
+    print("query : " + queryString)
+    result = session.execute(queryString)
+    return result
+
+# query with args
 def query(queryString, params):
     print("query : " + queryString)
     print("params : " + str(params))
@@ -48,11 +54,4 @@ def query(queryString, params):
 
     queryString = queryString % params
     result = session.execute(queryString)
-#    session.commit()
-    return result
-
-def query2(queryString):
-    print("query : " + queryString)
-    result = session.execute(queryString)
-#    session.commit()
     return result
