@@ -209,12 +209,11 @@ def command_exit(data):
 def command_myscore(data):
     teamId = data["team_id"]
     channelId = data['channel']
+    userId = data["user"]
     slackApi = util.init_slackapi(teamId)
 
-    user_id = data["user"]
-
     # user_name 가져오기
-    user_info = get_user_info(slackApi, user_id)
+    user_info = get_user_info(slackApi, userId)
     user_name = user_info['user']['name']
 
     # 내 게임 결과들 가져오기
@@ -222,7 +221,7 @@ def command_myscore(data):
         "SELECT * FROM GAME_RESULT "
         "WHERE "
         "user_id = %s order by score desc;",
-        (user_id,)
+        (userId,)
     )
 
     rows = util.fetch_all_json(result)
@@ -240,8 +239,6 @@ def command_myscore(data):
         # 10위 까지만 출력
         if (rank == 11):
             break
-
-    print(result_string)
 
     sendMessage(slackApi, channelId, result_string)
 
@@ -264,7 +261,6 @@ def command_score(data):
         (channelId,)
     )
 
-
     rows = util.fetch_all_json(result)
 
     result_string = "Game Result : \n"
@@ -285,31 +281,22 @@ def command_typing(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
-    distance = util.get_edit_distance(data["text"],
-                                        redis_client.get("problem_text_" + channelId))
-
+    distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
 
     start_time = redis_client.get("start_time_" + channelId)
     current_time = time.time()*1000    
-
-
     elapsed_time = (current_time - float(start_time)) * 1000
-
-    print(elapsed_time)
 
     game_id = redis_client.get("game_id_" + channelId)
 
     # 점수 계산
     speed =  round(util.get_speed(data["text"], elapsed_time), 3)
     problem_text = redis_client.get("problem_text_" + channelId)
-    accur_text = ""
-    if len(data["text"]) < len(problem_text):
-        accur_text = problem_text
-    else:
-        accur_text = data["text"]
-    accuracy = round(util.get_accuracy(accur_text, distance), 3)
+    
+    accuracy = round(util.get_accuracy(max([data['text'], problem_text], key=len), distance), 3)
     score = util.get_score(speed, accuracy)
     accuracy = accuracy * 100
+
     print('distance : ' +str(distance))
     print('speed : ' +str(speed))
     print('elapsed_time : ' +str(elapsed_time))
@@ -328,7 +315,7 @@ def command_typing(data):
     rows = util.fetch_all_json(result)
     if len(rows) == 0:
         
-        #새로 디비 연결하는부분.
+        # 게임 결과 저장
         db_manager.query(
             "INSERT INTO GAME_RESULT "
             "(game_id, user_id, answer_text, score, speed, accuracy, elapsed_time) "
