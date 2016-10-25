@@ -35,66 +35,6 @@ def init_worker(**kwargs):
 def shutdown_worker(**kwargs):
     print('shutdown')
 
-def sendMessage(slackApi, channel, text):
-    return slackApi.chat.postMessage(
-        {
-            'channel'   : channel,
-            'text'      : text,
-            'as_user'   : 'false'
-        }
-    )
-
-def get_rand_game(channel):
-    result = db_manager.query(
-        "SELECT * "  
-        "FROM CHANNEL_PROBLEM "
-        "WHERE CHANNEL_PROBLEM.problem_cnt = ( "
-        "SELECT MIN(CHANNEL_PROBLEM.problem_cnt) "
-        "FROM CHANNEL_PROBLEM "
-        "WHERE CHANNEL_PROBLEM.channel_id = %s "
-        "LIMIT 1 "
-        ") "
-        "AND CHANNEL_PROBLEM.channel_id = %s "
-        "order by RAND() "
-        "LIMIT 1",
-        (channel, channel)
-    )
-
-    rows = util.fetch_all_json(result)
-    if len(rows) == 0:
-
-        result = db_manager.query(
-            "SELECT * "  
-            "FROM PROBLEM "
-            "order by RAND() "
-            "LIMIT 1",
-            ()
-        )
-        rows = util.fetch_all_json(result)
-        return rows[0]["problem_id"]
-
-    else:
-        db_manager.query(
-            "UPDATE CHANNEL_PROBLEM "
-            "SET `problem_cnt` = `problem_cnt` + 1 "
-            "WHERE "
-            "channel_id = %s and "
-            "problem_id = %s ",
-            (channel, rows[0]["problem_id"])
-        )
-        return rows[0]["problem_id"]
-
-# 채널 가져오기
-def get_channel_list(slackApi):
-
-    return slackApi.channels.list()
-
-# 유저 정보 가져오기
-def get_user_info(slackApi, userId):
-    return slackApi.users.info({
-        "user" : userId
-    })
-
 @app.task
 def worker(data):
     gameThread = threading.Thread(target=run, args=(data,))
@@ -103,19 +43,17 @@ def worker(data):
 def run(data):
     print(data)
 
-    if data["text"] == static.GAME_COMMAND_START:
+    if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
-    # .점수 : 해당 채널에 score기준으로 TOP 10을 출력
-    elif data["text"] == static.GAME_COMMAND_SCORE:
+    elif data["text"] == static.GAME_COMMAND_RANK:      # 해당 채널의 유저들의 랭크를 보여줌
         command_rank(data)
-    # .강제종료 : 내 게임 상태를 강제로 종료
-    elif data["text"] == static.GAME_COMMAND_EXIT:
-        # 현재 상태 변경
+    elif data["text"] == static.GAME_COMMAND_SCORE:     # 해당 채널의 최고기록들을 보여줌
+        command_score(data)
+    elif data["text"] == static.GAME_COMMAND_EXIT:      # 강제로 게임의 상태를 초기화함
         command_exit(data)
-    # .내점수 : 내 모든 점수를 Direct Message로 출력
-    elif data["text"] == static.GAME_COMMAND_MY_SCORE:
+    elif data["text"] == static.GAME_COMMAND_MY_SCORE:  # 나의 기록들을 보여줌
         command_myscore(data)
-    else :
+    else :                                              # typing 된 내용들
         command_typing(data)
 
 
@@ -220,7 +158,6 @@ def command_start(data):
 
     sendMessage(slackApi, channelId, "타자게임을 시작합니다!")
     response = sendMessage(slackApi, channelId, "Ready~")
-    print("response : " + str(response)) 
     text_ts = response['ts']
     text_channel = response['channel']
     time.sleep(1)
@@ -258,7 +195,6 @@ def command_start(data):
     redis_client.set("problem_id_" + channelId, problem_id)                 # 해당 게임 문자열 설정
     redis_client.set("game_id_" + channelId, util.generate_game_id())       # 현재 게임의 ID
 
-    # 타이머 돌리기, 일단 시간은 문자열 길이/2
     threading.Timer(10, game_end, [slackApi, teamId, channelId]).start()
 
 def command_exit(data):
@@ -290,28 +226,20 @@ def command_myscore(data):
     )
 
     rows = util.fetch_all_json(result)
-    # score 기준으로 tuple list 정렬, reversed=True -> 내림차순
-    #sorted_by_score = sorted(rows, key=lambda tup: tup[3], reversed=True)
 
     # 출력할 텍스트 생성
     result_string = "Game Result : \n"
     result_string = result_string + "Name : " + user_name + "\n"
     rank = 1
 
-    if (len(rows) <= 10):
-        for row in rows:
-            result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " "\
-                            + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
-            rank = rank + 1
-    else:
-        for row in rows:
-            result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
-                            + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
-            rank = rank + 1
+    for row in rows:
+        result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
+                        + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
+        rank = rank + 1
 
-            # 10위 까지만 출력
-            if (rank == 11):
-                break
+        # 10위 까지만 출력
+        if (rank == 11):
+            break
 
     print(result_string)
 
@@ -323,12 +251,39 @@ def command_score(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
+    # 게임 결과들 가져오기
+
+    result = db_manager.query(
+        "SELECT * from GAME_RESULT "
+        "RESULT inner join GAME_INFO INFO "
+        "on INFO.game_id = RESULT.game_id "
+        "inner join USER U " 
+        "on U.user_id = RESULT.user_id "
+        "WHERE INFO.channel_id = %s " 
+        "ORDER BY score desc;",
+        (channelId,)
+    )
+
+
+    rows = util.fetch_all_json(result)
+
+    result_string = "Game Result : \n"
+    rank = 1
+    for row in rows:
+        print(row)
+        result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
+        rank = rank + 1 
+
+        # 10위 까지만 출력
+        if(rank == 11):
+            break
+
+    sendMessage(slackApi, channelId, result_string)
+
 def command_typing(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
-
-    print("else!!")
 
     distance = util.get_edit_distance(data["text"],
                                         redis_client.get("problem_text_" + channelId))
@@ -470,42 +425,6 @@ def command_rank(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
-    channel_id = channelId
-
-    # 게임 결과들 가져오기
-
-    result = db_manager.query(
-        "SELECT * from GAME_RESULT "
-        "RESULT inner join GAME_INFO INFO "
-        "on INFO.game_id = RESULT.game_id "
-        "inner join USER U " 
-        "on U.user_id = RESULT.user_id "
-        "WHERE INFO.channel_id = %s " 
-        "ORDER BY score desc;",
-        (channel_id,)
-    )
-
-
-    rows = util.fetch_all_json(result)
-
-    result_string = "Game Result : \n"
-    rank = 1
-    if(len(rows) <= 10):
-        for row in rows:
-            print(row)
-            result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
-            rank = rank + 1
-    else:
-        for row in rows:
-            print(row)
-            result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
-            rank = rank + 1 
-
-            # 10위 까지만 출력
-            if(rank == 11):
-                break
-
-    sendMessage(slackApi, channelId, result_string)
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):
@@ -650,3 +569,66 @@ def game_end(slackApi, teamId, channelId):
 
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+
+
+def sendMessage(slackApi, channel, text):
+    return slackApi.chat.postMessage(
+        {
+            'channel'   : channel,
+            'text'      : text,
+            'as_user'   : 'false'
+        }
+    )
+
+def get_rand_game(channel):
+    result = db_manager.query(
+        "SELECT * "  
+        "FROM CHANNEL_PROBLEM "
+        "WHERE CHANNEL_PROBLEM.problem_cnt = ( "
+        "SELECT MIN(CHANNEL_PROBLEM.problem_cnt) "
+        "FROM CHANNEL_PROBLEM "
+        "WHERE CHANNEL_PROBLEM.channel_id = %s "
+        "LIMIT 1 "
+        ") "
+        "AND CHANNEL_PROBLEM.channel_id = %s "
+        "order by RAND() "
+        "LIMIT 1",
+        (channel, channel)
+    )
+
+    rows = util.fetch_all_json(result)
+    if len(rows) == 0:
+
+        result = db_manager.query(
+            "SELECT * "  
+            "FROM PROBLEM "
+            "order by RAND() "
+            "LIMIT 1",
+            ()
+        )
+        rows = util.fetch_all_json(result)
+        return rows[0]["problem_id"]
+
+    else:
+        db_manager.query(
+            "UPDATE CHANNEL_PROBLEM "
+            "SET `problem_cnt` = `problem_cnt` + 1 "
+            "WHERE "
+            "channel_id = %s and "
+            "problem_id = %s ",
+            (channel, rows[0]["problem_id"])
+        )
+        return rows[0]["problem_id"]
+
+# 채널 가져오기
+def get_channel_list(slackApi):
+
+    return slackApi.channels.list()
+
+# 유저 정보 가져오기
+def get_user_info(slackApi, userId):
+    return slackApi.users.info(
+        {
+            "user" : userId
+        }
+    )
