@@ -5,7 +5,7 @@ sys.path.append("../")
 from celery.bin.celery import result
 from sqlalchemy import exc
 from celery import Celery
-from Common.manager import redis_manager
+from Common.manager.redis_manager import redis_client
 from Common.manager import db_manager
 from Common import static
 from Common import util
@@ -40,16 +40,16 @@ def game_end(slackApi, data, teamId):
 
     sendMessage(slackApi, data["channel"], "Game End")
     
-    start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
-    game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
-    problem_id = redis_manager.redis_client.get("problem_id_" + data["channel"])
+    start_time = redis_client.get("start_time_" + data["channel"])
+    game_id = redis_client.get("game_id_" + data["channel"])
+    problem_id = redis_client.get("problem_id_" + data["channel"])
     
     print(start_time)
 
     start_time_to_time_tamp = datetime.datetime.utcfromtimestamp(float(start_time)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
 
     # 현재 상태 변경
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_CALCULATING)
+    redis_client.set("status_" + data["channel"], static.GAME_STATE_CALCULATING)
 
     sendMessage(slackApi, data["channel"], "==순위계산중입니다==")
     time.sleep(2)
@@ -113,8 +113,6 @@ def game_end(slackApi, data, teamId):
     )
     
 
-
-
     #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
     try:
 
@@ -165,7 +163,7 @@ def game_end(slackApi, data, teamId):
         print(str(e))    
 
     # 현재 상태 변경
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+    redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
 
 def sendMessage(slackApi, channel, text):
     return slackApi.chat.postMessage(
@@ -263,41 +261,42 @@ def command_start(data):
     channelInfo = slackApi.channels.info({'channel':data["channel"]})
     print(channelInfo)
     if bot_id not in channelInfo['channel']['members']:
-        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE),
+        redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE),
 
-        attachments = [
-            {
-                "text": "tajabot을 채널에 추가하시겠습니까?",
-                "fallback": "fallbacktext",
-                "callback_id": "wopr_game",
-                "color": "#3AA3E3",
-                "attachment_type": "default",
-                "actions": [
-                    {
-                        "name": "invite_bot",
-                        "text": "초대하기",
-                        "type": "button",
-                        "value": "invite_bot",
-                        "confirm": {
-                            "title": "채널에 초대 하시겠습니까?",
-                            "text": "추후 채널에서 삭제가 가능합니다.",
-                            "ok_text": "초대",
-                            "dismiss_text": "다음기회에"
-                        }
-                    }
-                ]
-            }
-        ]
         slackApi.chat.postMessage(
             {
                 "channel" : data["channel"],
                 "text" : "tajabot이 채널 안에 없습니다.",
-                "attachments": json.dumps(attachments)
+                "attachments": json.dumps(
+                    [
+                        {
+                            "text": "tajabot을 채널에 추가하시겠습니까?",
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#3AA3E3",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "invite_bot",
+                                    "text": "초대하기",
+                                    "type": "button",
+                                    "value": "invite_bot",
+                                    "confirm": {
+                                        "title": "채널에 초대 하시겠습니까?",
+                                        "text": "추후 채널에서 삭제가 가능합니다.",
+                                        "ok_text": "초대",
+                                        "dismiss_text": "다음기회에"
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                )
             }
         )
         return
 
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING),
+    redis_client.set("status_" + data["channel"], static.GAME_STATE_STARTING),
 
 
     # 채널 정보가 DB에 있는지 SELECT문으로 확인 후 없으면 DB에 저장
@@ -406,19 +405,19 @@ def command_start(data):
     )
 
     # 현재 채널 상태 설정
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
+    redis_client.set("status_" + data["channel"], static.GAME_STATE_PLAYING)
 
 
 
     # 시작 시간 설정
-    redis_manager.redis_client.set("start_time_" + data["channel"], time.time()*1000,)
+    redis_client.set("start_time_" + data["channel"], time.time()*1000,)
 
     # 해당 게임 문자열 설정
-    redis_manager.redis_client.set("problem_text_" + data["channel"], problem_text)
-    redis_manager.redis_client.set("problem_id_" + data["channel"], problem_id)
+    redis_client.set("problem_text_" + data["channel"], problem_text)
+    redis_client.set("problem_id_" + data["channel"], problem_id)
 
     # 현재 게임의 ID
-    redis_manager.redis_client.set("game_id_" + data["channel"], util.generate_game_id())
+    redis_client.set("game_id_" + data["channel"], util.generate_game_id())
 
     # 타이머 돌리기, 일단 시간은 문자열 길이/2
     threading.Timer(10, game_end, [slackApi, data, teamId]).start()
@@ -427,8 +426,8 @@ def command_exit(data):
 
     teamId = data["team_id"]
     slackApi = util.init_slackapi(teamId)
-    
-    redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
+
+    redis_client.set("status_" + data["channel"], static.GAME_STATE_IDLE)
     sendMessage(slackApi, data["channel"], "종료되었습니다.")
 
 def command_myscore(data):
@@ -489,10 +488,10 @@ def command_typing(data):
     print("else!!")
 
     distance = util.get_edit_distance(data["text"],
-                                        redis_manager.redis_client.get("problem_text_" + data["channel"]))
+                                        redis_client.get("problem_text_" + data["channel"]))
 
 
-    start_time = redis_manager.redis_client.get("start_time_" + data["channel"])
+    start_time = redis_client.get("start_time_" + data["channel"])
     current_time = time.time()*1000    
 
 
@@ -500,11 +499,11 @@ def command_typing(data):
 
     print(elapsed_time)
 
-    game_id = redis_manager.redis_client.get("game_id_" + data["channel"])
+    game_id = redis_client.get("game_id_" + data["channel"])
 
     # 점수 계산
     speed =  round(util.get_speed(data["text"], elapsed_time), 3)
-    problem_text = redis_manager.redis_client.get("problem_text_" + data["channel"])
+    problem_text = redis_client.get("problem_text_" + data["channel"])
     accur_text = ""
     if len(data["text"]) < len(problem_text):
         accur_text = problem_text
@@ -546,21 +545,21 @@ def command_typing(data):
             #이후 채널 랭크 업데이트.
 
             result = db_manager.query(
-                "select * , "
+                "SELECT * , "
                 "( "
-                    "SELECT count(*) "
-                    "FROM ( "
-                        "select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                    ") "
-                    "userScoreTB "
+                "SELECT count(*) "
+                "FROM ( "
+                "SELECT user_id,avg(score) as scoreAvgUser FROM GAME_RESULT GROUP BY user_id  order by scoreAvgUser desc "
+                ") "
+                "userScoreTB "
                 ") as userAllCnt "
-                "from ( "
-                    "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
-                    "FROM ( "
-                        " select user_id,avg(score) as scoreAvgUser from GAME_RESULT group by user_id  order by scoreAvgUser desc "
-                    ") "
-                    "userScoreTB "
-                    "INNER JOIN (SELECT @counter:=0) b "
+                "FROM ( "
+                "SELECT @counter:=@counter+1 as rank ,userScoreTB.user_id,userScoreTB.scoreAvgUser as average "
+                "FROM ( "
+                " SELECT user_id,avg(score) as scoreAvgUser FROM GAME_RESULT GROUP BY user_id  order by scoreAvgUser desc "
+                ") "
+                "userScoreTB "
+                "INNER JOIN (SELECT @counter:=0) b "
                 ") as rankTB where user_id = %s "
                 ,
                 (data["user"],)
@@ -591,7 +590,7 @@ def command_typing(data):
             #이후 채널 랭크 업데이트.
 
             result = db_manager.query(
-                "update USER set user_level = %s where user_id = %s"
+                "UPDATE USER SET user_level = %s WHERE user_id = %s"
                 ,
                 (level,data["user"])
             )
@@ -637,8 +636,8 @@ def command_rank(data):
         "on INFO.game_id = RESULT.game_id "
         "inner join USER U " 
         "on U.user_id = RESULT.user_id "
-        "where INFO.channel_id = %s " 
-        "order by score desc;",
+        "WHERE INFO.channel_id = %s " 
+        "ORDER BY score desc;",
         (channel_id,)
     )
 
