@@ -173,12 +173,32 @@ def slack_game_start():
             redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
 
             worker.delay(data)
-        else:
+        else:            
             rtm_manager.open_new_socket(teamId, data)
-        return 'prepareing...'
+        
+
+        response = Response(
+            json.dumps(
+                {
+                    'response_type' : 'in_channel',
+                    'text' : '타자 게임을 시작합니다!'
+                }
+            )
+        )
+        response.headers['Content-type'] = 'application/json'
+        return response
     else: 
 
-        return '이미 게임중 입니다. '
+        response = Response(
+            json.dumps(
+                {
+                    'response_type' : 'in_channel',
+                    'text' : '이미 게임이 동작 중 입니다.'
+                }
+            )
+        )
+        response.headers['Content-type'] = 'application/json'
+        return response
 
 
 @app.route('/slack/myscore', methods = ['POST'])
@@ -192,7 +212,18 @@ def slack_game_getMyScore():
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
-    return 'wait..'  
+
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
 
 @app.route('/slack/score', methods = ['POST'])
 def slack_game_getScore():
@@ -205,7 +236,17 @@ def slack_game_getScore():
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
-    return 'wait..'
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
 
 @app.route('/slack/exit', methods = ['POST'])
 def slack_game_exit():
@@ -218,7 +259,17 @@ def slack_game_exit():
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
-    return 'exiting..'
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
 
 
 @app.route('/slack/event', methods = ['POST'])
