@@ -184,10 +184,13 @@ def slack_game_start():
 
         response = Response(
             json.dumps(
-                {
+                { 
                     'response_type' : 'in_channel',
-                    'text' : '이미 게임이 동작 중 입니다.'
-                }
+                    'text' : '이미 게임이 동작 중 입니다',
+                    'username'  : '타자봇',
+                    'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                    'as_user'   : 'false'
+                } 
             )
         )
         response.headers['Content-type'] = 'application/json'
@@ -348,6 +351,6 @@ def slack_event():
 
 
 
-ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
-
-app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
+if __name__ == '__main__':
+    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+    app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)

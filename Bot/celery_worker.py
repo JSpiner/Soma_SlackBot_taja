@@ -224,7 +224,7 @@ def command_start(data):
         {
             "ts" : title_ts,
             "channel": channelId,
-            "text" : "타자게임을 시작합니다!\t 끗!",
+            "text" : "타자게임을 시작합니다!\t 게임 끝!",
             'username'  : '타자봇',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
@@ -363,7 +363,6 @@ def command_typing(data):
 
         try:
             #이후 채널 랭크 업데이트.
-
             result = db_manager.query(
                 "SELECT * , "
                 "( "
@@ -447,6 +446,65 @@ def command_rank(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+
+
+    # 내 게임 결과들 가져오기
+    result = db_manager.query(
+        "SELECT user_id, MAX(score) as max_score, AVG(score) as avg_score, AVG(score) as recent_score "
+        "FROM GAME_RESULT "
+        "WHERE game_id in ( "
+	    "SELECT GAME_INFO.game_id "
+        "FROM GAME_INFO "
+        "WHERE "
+        "GAME_INFO.channel_id = 'C2L1UBLM7' "
+        ") "
+        "GROUP BY GAME_RESULT.user_id "
+        "order by avg_score DESC; "
+    )
+
+    rows = util.fetch_all_json(result)
+
+    # 출력할 텍스트 생성
+    result_string = ""
+    rank = 0
+
+    for row in rows:
+        result_string = result_string + (
+            "%s위 : %-40s 최고기록 : %7s 평균기록 : %7s 최근평균 : %7s\n" %
+            (
+                pretty_rank(rank),
+                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
+                pretty_score(row["max_score"]),
+                pretty_score(row["avg_score"]),
+                pretty_score(row["avg_score"])
+            )
+        )
+        rank = rank + 1
+
+        # 10위 까지만 출력
+        if (rank == 11):
+            break 
+
+    slackApi.chat.postMessage(
+        {
+            "channel" : channelId,
+            "text" : "채널 랭킹",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":"순위표",
+                        "text": result_string,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
+        }
+    )
+
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):
@@ -548,9 +606,9 @@ def game_end(slackApi, teamId, channelId):
     try:
 
         result = db_manager.query(
-            "select  if(count(*)>10,true,false) as setUpChannelLevel "
-            "from GAME_INFO as gi where channel_id = %s "  
-            "order by gi.start_time desc LIMIT 10",
+            "SELECT  IF(COUNT(*)>10,true,false) as setUpChannelLevel "
+            "FROM GAME_INFO as gi WHERE channel_id = %s "  
+            "ORDER BY gi.start_time DESC LIMIT 10",
             (channelId,)
         )
         rows =util.fetch_all_json(result)
@@ -560,8 +618,8 @@ def game_end(slackApi, teamId, channelId):
             print("true") 
 
             result = db_manager.query(
-                "select u.user_id,u.user_level from ( "   
-                    "select  * from GAME_INFO as gi where channel_id = %s  order by gi.start_time desc LIMIT 10 "
+                "SELECT u.user_id,u.user_level FROM ( "   
+                "SELECT  * FROM GAME_INFO as gi WHERE channel_id = %s  ORDER BY gi.start_time DESC LIMIT 10 "
                 ") as recentGameTB "
                 "inner join GAME_RESULT as gr on recentGameTB.game_id = gr.game_id "
                 "inner join USER as u on u.user_id = gr.user_id group by u.user_id "
@@ -582,7 +640,7 @@ def game_end(slackApi, teamId, channelId):
                 #이후 채널 랭크 업데이트.
 
             result = db_manager.query(
-                "update CHANNEL set channel_level = %s where channel_id = %s"
+                "UPDATE CHANNEL SET channel_level = %s WHERE channel_id = %s"
                 ,
                 (channelRank,channelId)
             )
@@ -619,7 +677,7 @@ def get_rand_game(channel):
         "LIMIT 1 "
         ") "
         "AND CHANNEL_PROBLEM.channel_id = %s "
-        "order by RAND() "
+        "ORDER BY RAND() "
         "LIMIT 1",
         (channel, channel)
     )
@@ -630,7 +688,7 @@ def get_rand_game(channel):
         result = db_manager.query(
             "SELECT * "  
             "FROM PROBLEM "
-            "order by RAND() "
+            "ORDER BY RAND() "
             "LIMIT 1",
             ()
         )
