@@ -227,7 +227,7 @@ def slack_game_myscore():
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = static.GAME_COMMAND_MY_RANK
+    data['text'] = static.GAME_COMMAND_MY_SCORE
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)

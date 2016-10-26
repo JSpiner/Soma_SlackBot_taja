@@ -267,16 +267,41 @@ def command_myscore(data):
     rank = 1
 
     for row in rows:
-        result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
-                        + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
+        result_string = result_string + (
+            "%s위 : %s 점수 : %s 점 정확도 : %s 타속 : %s 타\n" %
+            (
+                pretty_rank(rank),
+                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
+                pretty_score(row["score"]),
+                pretty_accur(row["accuracy"]),
+                pretty_speed(row["speed"])
+            )
+        )
         rank = rank + 1
 
         # 10위 까지만 출력
         if (rank == 11):
             break
 
-    sendMessage(slackApi, channelId, result_string)
-
+    slackApi.chat.postMessage(
+        {
+            "channel" : channelId,
+            "text" : "내 기록",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":"기록표",
+                        "text": result_string,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
+        }
+    )
 
 def command_score(data):
     teamId = data["team_id"]
@@ -301,15 +326,40 @@ def command_score(data):
     result_string = "Game Result : \n"
     rank = 1
     for row in rows:
-        print(row)
-        result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
+        result_string = result_string + (
+            "%s위 : %s 종합점수 : %s 점 (%s)\n" %
+            (
+                pretty_rank(rank),
+                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
+                pretty_score(row["score"]),
+                row["answer_text"]
+            )
+        )
         rank = rank + 1 
 
         # 10위 까지만 출력
         if(rank == 11):
             break
 
-    sendMessage(slackApi, channelId, result_string)
+    slackApi.chat.postMessage(
+        {
+            "channel" : channelId,
+            "text" : "채널 최고 기록",
+            'username'  : '타자봇',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":"순위표",
+                        "text": result_string,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
+        }
+    )
 
 def command_typing(data):
     teamId = data["team_id"]
@@ -568,7 +618,7 @@ def game_end(slackApi, teamId, channelId):
     print(rows)
  
     result_string = ""
-    rank = 0
+    rank = 1
     for row in rows:
         result_string = result_string +(
             pretty_rank(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t\t" 
@@ -729,14 +779,15 @@ def pretty_accur(accur):
         return "*"+str(int(accur))+"*"
 
 def pretty_speed(speed):
-    return "*"+str(int(score))+"*"
+    return "*"+str(int(speed))+"*"
 
 def pretty_rank(rank):
     rank = str(rank)
     
-    ranks = [":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":ten:"]
+    ranks = [":zero:",":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:"]
 
     result = ""
     for num in rank:
+        print("ranks : " + str(num))
         result+=ranks[int(num)]
     return result
