@@ -1,6 +1,7 @@
 import sys
 from slackclient import SlackClient
 
+import os
 from celery_worker import worker
 import Common.test as tester
 import requests
@@ -91,6 +92,9 @@ def _connect(teamId, bot_token, data):
         
         print("socket disconnected")
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'status', SOCKET_STATUS_IDLE)
+        print("kill pid : " +str(os.getpid()))
+        #os.kill(os.getpid(), 9)
+        sys.exit(1)
     else:
         print("connection failed!")
         
@@ -100,5 +104,3 @@ def _connect(teamId, bot_token, data):
         _connect(teamId, bot_token, data)
 
     return 0
-
-#_connect('dd', 'xoxb-91817198689-IxlRCJKsV7HFukNJLVhICkyC')

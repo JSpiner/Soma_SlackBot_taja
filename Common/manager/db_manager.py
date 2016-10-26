@@ -7,7 +7,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 
 import json 
-import logging
+import logging 
 
 logging.basicConfig(
     filename = './dblog.log'
@@ -33,26 +33,20 @@ engine = create_engine(
 session = scoped_session(sessionmaker(autocommit=True,
                                          autoflush=False,
                                          bind=engine))
-#session.begin()
 
-def query(queryString, params):
+# query with args
+def query(queryString, params = None):
     print("query : " + queryString)
-    print("params : " + str(params))
-    params = list(params)
-    for idx, arg in enumerate(params):
-        print(arg)
-        if isinstance(arg, bytes):
-            arg = arg.decode('utf-8')
-        params[idx] = "'"+str(arg)+"'"
-    params = tuple(params)
+    if params != None:
+        params = list(params)
+        print("params : " + str(params))
+        for idx, arg in enumerate(params):
+            print(arg)
+            if isinstance(arg, bytes):
+                arg = arg.decode('utf-8')
+            params[idx] = "'"+str(arg)+"'"
+        params = tuple(params)
+        queryString = queryString % params
 
-    queryString = queryString % params
     result = session.execute(queryString)
-#    session.commit()
-    return result
-
-def query2(queryString):
-    print("query : " + queryString)
-    result = session.execute(queryString)
-#    session.commit()
     return result
