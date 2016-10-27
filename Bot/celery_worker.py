@@ -521,7 +521,7 @@ def command_rank(data):
 
     # 출력할 텍스트 생성
     result_string = ""
-    rank = 0
+    rank = 1
 
     for row in rows:
         result_string = result_string + (
