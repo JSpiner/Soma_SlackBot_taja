@@ -196,6 +196,22 @@ def slack_game_start():
         response.headers['Content-type'] = 'application/json'
         return response
 
+@app.route('/slack/help', methods = ['POST'])
+def slack_game_help():
+    payload = request.get_data().decode()
+    print(payload)
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : 'help texts'
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
 @app.route('/slack/rank', methods = ['POST'])
 def slack_game_rank():
     payload = request.get_data().decode()
