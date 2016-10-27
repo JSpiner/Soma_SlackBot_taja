@@ -21,11 +21,49 @@ import time
 import base64  
 import Common.static
 import datetime
+import logging
 
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
+
+# logging format
+formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
+
+# create file handler
+fileHandler = logging.FileHandler('./logs/Bot_app.log')
+fileHandler.setFormatter(formatter)
+
+# create stream handler
+stream_handler = logging.StreamHandler()
+
+app.logger.addHandler(fileHandler)
+app.logger.addHandler(stream_handler)
+
+app.logger.debug('debug')
+app.logger.info('info')
+app.logger.warn('warn')
+app.logger.error('error')
+app.logger.critical('critical')
+raise  TypeError
+"""
+root = logging.getLogger()
+
+formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+stream_handler = logging.StreamHandler(sys.stdout)
+file_handler = logging.FileHandler('./logs/Bot_app.log')
+file_handler.setFormatter(formatter)
+
+root.addHandler(stream_handler)
+root.addHandler(file_handler)
+"""
+logging.basicConfig(
+    filename = './logs/Bot_app.log',
+    format = '[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s'
+)
+app.logger.setLevel(logging.NOTSET)
 
 #load josn key file
 with open('../key.json', 'r') as f:

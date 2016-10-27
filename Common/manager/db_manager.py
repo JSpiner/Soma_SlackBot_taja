@@ -9,15 +9,16 @@ from sqlalchemy.ext.declarative import declarative_base
 import json 
 import logging 
 
-logging.basicConfig(
-    filename = './dblog.log'
-)
-logging.getLogger('sqlalchemy.pool').setLevel(logging.INFO)
-
 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
- 
+
+"""
+logging.basicConfig(
+    filename = './logs/dblog.log'
+)
+logging.getLogger('sqlalchemy.pool').setLevel(logging.NOTSET)
+"""
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
 engine = create_engine(

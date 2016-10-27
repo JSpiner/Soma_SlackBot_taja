@@ -18,6 +18,7 @@ import json
 import time
 import random
 import threading
+import logging
 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
@@ -26,6 +27,42 @@ with open('../key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
+
+# get logger
+logger_celery = get_task_logger(__name__)
+
+# make format
+formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
+
+fileHandler = logging.FileHandler('./logs/Bot_celery_worker.log')
+fileHandler.setFormatter(formatter)
+
+streamHandler = logging.StreamHandler()
+
+logger_celery.addHandler(fileHandler)
+logger_celery.addHandler(streamHandler)
+
+logger_celery.debug('debug')
+logger_celery.info('info')
+logger_celery.warn('warn')
+logger_celery.error('error')
+logger_celery.critical('critical')
+"""
+root = logging.getLogger()
+
+formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
+
+stream_handler = logging.StreamHandler(sys.stdout)
+file_handler = logging.FileHandler('./logs/Bot_app.log')
+file_handler.setFormatter(formatter)
+
+root.addHandler(stream_handler)
+root.addHandler(file_handler)
+"""
+logging.basicConfig(
+    filename = './logs/Bot_celery_worker.log'
+)
+get_task_logger(__name__).setLevel(logging.NOTSET)
 
 @worker_init.connect
 def init_worker(**kwargs):
