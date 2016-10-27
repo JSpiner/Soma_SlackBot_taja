@@ -17,18 +17,19 @@ with open('../conf.json') as conf_json:
 # get logger
 db_manager_logger = logging.getLogger('sqlalchemy.pool')
 
-# make format
+# make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
-# set handler
+# set log handler
 fileHandler = logging.FileHandler('./db_manager_logs.log')
 fileHandler.setFormatter(formatter)
 streamHandler = logging.StreamHandler()
 
-db_manager_logger.setLevel(logging.DEBUG)
-
 db_manager_logger.addHandler(fileHandler)
 db_manager_logger.addHandler(streamHandler)
+
+# set log level
+db_manager_logger.setLevel(logging.DEBUG)
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
 engine = create_engine(

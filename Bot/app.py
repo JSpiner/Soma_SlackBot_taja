@@ -28,10 +28,10 @@ import logging
 
 app = Flask(__name__)
 
-# make format
+# make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
-# set handler
+# set log handler
 fileHandler = logging.FileHandler('./logs/Bot_app.log')
 fileHandler.setFormatter(formatter)
 stream_handler = logging.StreamHandler()
@@ -39,6 +39,7 @@ stream_handler = logging.StreamHandler()
 app.logger.addHandler(fileHandler)
 app.logger.addHandler(stream_handler)
 
+# set log level
 app.logger.setLevel(logging.DEBUG)
 
 

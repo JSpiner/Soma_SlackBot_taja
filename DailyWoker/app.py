@@ -19,20 +19,19 @@ engine = create_engine('mysql+pymysql://'+conf["mysql"]["user"]+':'+conf["mysql"
 # get logger
 daily_worker_logger = logging.getLogger('daily_worker_logger')
 
-# make format
+# make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
-# set handler
+# set log handler
 fileHandler = logging.FileHandler('./DailyWorker.log')
 fileHandler.setFormatter(formatter)
 streamHandler = logging.StreamHandler()
 
-daily_worker_logger.setLevel(logging.DEBUG)
-
 daily_worker_logger.addHandler(fileHandler)
 daily_worker_logger.addHandler(streamHandler)
 
-
+# set log level
+daily_worker_logger.setLevel(logging.DEBUG)
 
 
 def fetch_all_json(result):

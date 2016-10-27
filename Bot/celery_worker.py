@@ -32,7 +32,7 @@ app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
 # get logger
 logger_celery = get_task_logger(__name__)
 
-# make format
+# make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
 # set handler
@@ -43,6 +43,7 @@ streamHandler = logging.StreamHandler()
 logger_celery.addHandler(fileHandler)
 logger_celery.addHandler(streamHandler)
 
+# set log level
 logger_celery.setLevel(logging.DEBUG)
 
 @worker_init.connect
