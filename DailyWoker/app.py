@@ -27,14 +27,12 @@ fileHandler = logging.FileHandler('./DailyWorker.log')
 fileHandler.setFormatter(formatter)
 streamHandler = logging.StreamHandler()
 
+daily_worker_logger.setLevel(logging.DEBUG)
+
 daily_worker_logger.addHandler(fileHandler)
 daily_worker_logger.addHandler(streamHandler)
 
-daily_worker_logger.debug('debug')
-daily_worker_logger.info('info')
-daily_worker_logger.warn('warn')
-daily_worker_logger.error('error')
-daily_worker_logger.critical('critical')
+
 
 
 def fetch_all_json(result):

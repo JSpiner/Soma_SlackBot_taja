@@ -43,11 +43,7 @@ streamHandler = logging.StreamHandler()
 logger_celery.addHandler(fileHandler)
 logger_celery.addHandler(streamHandler)
 
-logger_celery.debug('debug')
-logger_celery.info('info')
-logger_celery.warn('warn')
-logger_celery.error('error')
-logger_celery.critical('critical')
+logger_celery.setLevel(logging.DEBUG)
 
 @worker_init.connect
 def init_worker(**kwargs):

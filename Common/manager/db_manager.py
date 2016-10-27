@@ -25,14 +25,10 @@ fileHandler = logging.FileHandler('./db_manager_logs.log')
 fileHandler.setFormatter(formatter)
 streamHandler = logging.StreamHandler()
 
+db_manager_logger.setLevel(logging.DEBUG)
+
 db_manager_logger.addHandler(fileHandler)
 db_manager_logger.addHandler(streamHandler)
-
-db_manager_logger.debug('debug')
-db_manager_logger.info('info')
-db_manager_logger.warn('warn')
-db_manager_logger.error('error')
-db_manager_logger.critical('critical')
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
 engine = create_engine(

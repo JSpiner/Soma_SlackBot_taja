@@ -39,11 +39,7 @@ stream_handler = logging.StreamHandler()
 app.logger.addHandler(fileHandler)
 app.logger.addHandler(stream_handler)
 
-app.logger.debug('debug')
-app.logger.info('info')
-app.logger.warn('warn')
-app.logger.error('error')
-app.logger.critical('critical')
+app.logger.setLevel(logging.DEBUG)
 
 
 #load josn key file
