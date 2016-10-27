@@ -29,6 +29,9 @@ SOCKET_STATUS_CONNECTING    = "1"
 SOCKET_STATUS_CONNECTED     = "2"
 SOCKET_STATUS_RECONNECTING  = "3"
 
+# copy&paste check string
+CHAR_PASTE_ESCAPE = " " # HAIR SPACE
+
 # socket expire time
 SOCKET_EXPIRE_TIME = 30 #60*60
 

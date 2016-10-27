@@ -191,7 +191,7 @@ def command_start(data):
         {
             "ts" : text_ts,
             "channel": channelId,
-            "text" : "제시어 : `" + problem_text + "`",
+            "text" : "제시어 : `" + static.CHAR_PASTE_ESCAPE.join(problem_text) + "`",
             'username'  : '타자봇',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
@@ -365,6 +365,11 @@ def command_typing(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+
+    # 부정 복사 판단
+    if static.CHAR_PASTE_ESCAPE in data['text']:
+        sendMessage(slackApi, channelId, "복사는 금지입니다!")
+        return  
 
     distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
 
