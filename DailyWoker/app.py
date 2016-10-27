@@ -4,7 +4,8 @@ import time
 
 from sqlalchemy import create_engine
 
-import sys 
+import sys
+import logging
 sys.path.append("../")
 
 
@@ -14,6 +15,26 @@ with open('../conf.json') as conf_json:
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
 engine = create_engine('mysql+pymysql://'+conf["mysql"]["user"]+':'+conf["mysql"]["password"]+'@'+conf["mysql"]["host"]+'/'+conf["mysql"]["database"]+"?charset=utf8",pool_size=20, max_overflow=0,echo=True,execution_options={"autocommit": False})
+
+# get logger
+daily_worker_logger = logging.getLogger('daily_worker_logger')
+
+# make format
+formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
+
+# set handler
+fileHandler = logging.FileHandler('./DailyWorker.log')
+fileHandler.setFormatter(formatter)
+streamHandler = logging.StreamHandler()
+
+daily_worker_logger.addHandler(fileHandler)
+daily_worker_logger.addHandler(streamHandler)
+
+daily_worker_logger.debug('debug')
+daily_worker_logger.info('info')
+daily_worker_logger.warn('warn')
+daily_worker_logger.error('error')
+daily_worker_logger.critical('critical')
 
 
 def fetch_all_json(result):
@@ -25,9 +46,9 @@ def fetch_all_json(result):
 	    
 	    for data in row:
 	      # if(len(result.keys())
-	      # print(len(result.keys()))
-	      # print(i)
-	      # print(data)
+	      # daily_worker_logger.info(len(result.keys()))
+	      # daily_worker_logger.info(i)
+	      # daily_worker_logger.info(data)
 	        dic[result.keys()[i]]= str(data)
 	        if i == len(row)-1:
 	            lis.append(dic)
@@ -51,7 +72,7 @@ def updateTeamActive():
 			") as sub inner join TEAM_DAILY_ACTIVE as td  on td.team_id = sub.team_id where sub.gameTotal!=sub.inActiveGameTotal != td.active"
 		)
 		rows= fetch_all_json(result)
-		# print(rows)
+		# daily_worker_logger.info(rows)
 		if len(rows)==0:
 			trans.commit()
 			conn.close() 
@@ -71,7 +92,7 @@ def updateTeamActive():
 
 			arrQueryString.pop()
 			lastQuery = "".join(arrQueryString)		
-			print(lastQuery)
+			daily_worker_logger.info(lastQuery)
 			#qury 가 0 이아닐경우에만 실행하도록한다.
 			#qury 가 존재하지않을경우  exception이 발생하기떄문이다.
 			if len(lastQuery)!=0:
@@ -104,7 +125,7 @@ def updateTeamActive():
 
 			arrQueryString.pop()
 			lastQuery = "".join(arrQueryString)
-			print(lastQuery)
+			daily_worker_logger.info(lastQuery)
 
 			conn.execute(
 				lastQuery
@@ -115,12 +136,12 @@ def updateTeamActive():
 
 
 	except Exception as e:
-		print(str(e))
+		daily_worker_logger.error(str(e))
 
 
 
 def updateUserActive():
-	print('udate')
+	daily_worker_logger.info('udate')
 
 	# active 유저로만들기!
 	try:
@@ -169,7 +190,7 @@ def updateUserActive():
 
 			arrQueryString.pop()
 			lastQuery = "".join(arrQueryString)
-			print(lastQuery)
+			daily_worker_logger.info(lastQuery)
 
 			conn.execute(
 				lastQuery
@@ -178,7 +199,7 @@ def updateUserActive():
 		trans.commit()
 		conn.close() 
 	except Exception as e:
-		print(str(e))
+		daily_worker_logger.error(str(e))
 
 	try:
 		conn = engine.connect()
@@ -188,7 +209,7 @@ def updateUserActive():
 			"select * from (select MAX(gi.end_time) as recentTime,u.user_id from USER as u inner join GAME_RESULT as gr on u.user_id = gr.user_id inner join GAME_INFO as gi on gi.game_id = gr.game_id group by u.user_id) as rt where rt.recentTime < DATE_SUB(CURDATE() , INTERVAL 7 DAY)"
 		)
 		rows= fetch_all_json(result)
-		print(rows)
+		daily_worker_logger.info(rows)
 		if len(rows)==0:
 			trans.commit()
 			conn.close() 
@@ -231,7 +252,7 @@ def updateUserActive():
 
 				arrQueryString.pop()
 				lastQuery = "".join(arrQueryString)
-				print(lastQuery)
+				daily_worker_logger.info(lastQuery)
 
 				conn.execute(
 					lastQuery
@@ -239,7 +260,7 @@ def updateUserActive():
 			trans.commit()
 			conn.close() 
 	except Exception as e:
-		print(str(e))		
+		daily_worker_logger.error(str(e))
 
 
 def job():

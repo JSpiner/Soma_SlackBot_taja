@@ -13,12 +13,26 @@ import logging
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
 
-"""
-logging.basicConfig(
-    filename = './logs/dblog.log'
-)
-logging.getLogger('sqlalchemy.pool').setLevel(logging.NOTSET)
-"""
+
+# get logger
+db_manager_logger = logging.getLogger('sqlalchemy.pool').setLevel(logging.NOTSET)
+
+# make format
+formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
+
+# set handler
+fileHandler = logging.FileHandler('./db_manager_logs.log')
+fileHandler.setFormatter(formatter)
+streamHandler = logging.StreamHandler()
+
+db_manager_logger.addHandler(fileHandler)
+db_manager_logger.addHandler(streamHandler)
+
+db_manager_logger.debug('debug')
+db_manager_logger.info('info')
+db_manager_logger.warn('warn')
+db_manager_logger.error('error')
+db_manager_logger.critical('critical')
 
 # pool로 커낵션을 잡는다. 오토커밋 옵션을 false로해줘야한다.
 engine = create_engine(
@@ -37,12 +51,12 @@ session = scoped_session(sessionmaker(autocommit=True,
 
 # query with args
 def query(queryString, params = None):
-    print("query : " + queryString)
+    db_manager_logger.info("query : " + queryString)
     if params != None:
         params = list(params)
-        print("params : " + str(params))
+        db_manager_logger.info("params : " + str(params))
         for idx, arg in enumerate(params):
-            print(arg)
+            db_manager_logger.info(arg)
             if isinstance(arg, bytes):
                 arg = arg.decode('utf-8')
             params[idx] = "'"+str(arg)+"'"

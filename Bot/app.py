@@ -28,14 +28,12 @@ import logging
 
 app = Flask(__name__)
 
-# logging format
+# make format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
-# create file handler
+# set handler
 fileHandler = logging.FileHandler('./logs/Bot_app.log')
 fileHandler.setFormatter(formatter)
-
-# create stream handler
 stream_handler = logging.StreamHandler()
 
 app.logger.addHandler(fileHandler)
@@ -46,24 +44,7 @@ app.logger.info('info')
 app.logger.warn('warn')
 app.logger.error('error')
 app.logger.critical('critical')
-raise  TypeError
-"""
-root = logging.getLogger()
 
-formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
-
-stream_handler = logging.StreamHandler(sys.stdout)
-file_handler = logging.FileHandler('./logs/Bot_app.log')
-file_handler.setFormatter(formatter)
-
-root.addHandler(stream_handler)
-root.addHandler(file_handler)
-"""
-logging.basicConfig(
-    filename = './logs/Bot_app.log',
-    format = '[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s'
-)
-app.logger.setLevel(logging.NOTSET)
 
 #load josn key file
 with open('../key.json', 'r') as f:
@@ -90,18 +71,18 @@ def home():
         "</html>"
     )
     #"<html> <body> <a href='"+url+"'>슬랙 연결</a> </body> </html>"
-    print('home')
+    app.logger.info('home')
     return html
 
 @app.route('/slack/btn_invite', methods=['POST'])
 def slack_btn_invite():
     payload = json.loads(request.form.get('payload'))
-    print("btn callback")
-    print(payload)
-    print(payload['channel'])
-    print(payload['actions'])
-    print(payload['actions'][0])
-    print(payload['actions'][0]['name'])
+    app.logger.info("btn callback")
+    app.logger.info(payload)
+    app.logger.info(payload['channel'])
+    app.logger.info(payload['actions'])
+    app.logger.info(payload['actions'][0])
+    app.logger.info(payload['actions'][0]['name'])
     if payload['actions'][0]['name'] == 'invite_bot':
         channelId = payload['channel']['id']
         teamId = payload['team']['id']
@@ -131,7 +112,7 @@ def slack_oauth():
 
     response = json.loads(r.text)
 
-    print(response)
+    app.logger.info(response)
     ctime = datetime.datetime.now()
     result = db_manager.query(
         "SELECT * FROM TEAM "
@@ -181,7 +162,7 @@ def slack_game_start():
 
     # TODO : 요청이 들어온 채널의 redis status 체크해서 게임이 이미 시작했으면 게임 플레이를 안하도록 수정 필요
     payload = request.get_data().decode()
-    print(payload)
+    app.logger.info(payload)
     data = {}
 
     teamId = request.form.get('team_id')
@@ -192,13 +173,13 @@ def slack_game_start():
     data['user'] = request.form.get('user_id')
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
-    print(game_state)
+    app.logger.info(game_state)
 
     if game_state == None or game_state == static.GAME_STATE_IDLE:
         # 현재 채널 상태 설정
         redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING)
 
-        print("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+        app.logger.info("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
         if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
             redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
             redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
@@ -237,7 +218,7 @@ def slack_game_start():
 @app.route('/slack/rank', methods = ['POST'])
 def slack_game_rank():
     payload = request.get_data().decode()
-    print(payload)
+    app.logger.info(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -261,7 +242,7 @@ def slack_game_rank():
 @app.route('/slack/myscore', methods = ['POST'])
 def slack_game_myscore():
     payload = request.get_data().decode()
-    print(payload)
+    app.logger.info(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -285,7 +266,7 @@ def slack_game_myscore():
 @app.route('/slack/score', methods = ['POST'])
 def slack_game_score():
     payload = request.get_data().decode()
-    print(payload)
+    app.logger.info(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -308,7 +289,7 @@ def slack_game_score():
 @app.route('/slack/exit', methods = ['POST'])
 def slack_game_exit():
     payload = request.get_data().decode()
-    print(payload)
+    app.logger.info(payload)
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -335,7 +316,7 @@ def slack_event():
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
-    print(data)
+    app.logger.info(data)
     worker.delay(eventData)
     
     response = {}
@@ -354,37 +335,37 @@ def slack_event():
 
             status_channel = redis_manager.redis_client.get("status_" + eventData["channel"])
             # redis_manager.redis_client.set("status_" + eventData["channel"], static.GAME_STATE_IDLE)
-            # print('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
+            # app.logger.info('status_channel => '+ㄴㅅstatic.GAME_STATE_IDLE)
 
 
             # 강제종료 명령을 최우선으로 처리함
             if eventData["text"] == static.GAME_COMMAND_EXIT:
-                print('.exit')
+                app.logger.info('.exit')
                 worker.delay(eventData)
                 return(json.dumps(response))
             # 게임이 플레이중이라면
             if status_channel == static.GAME_STATE_PLAYING :
                 if eventData["text"][0] == ".":
                     return(json.dumps(response))
-                print('playing')
+                app.logger.info('playing')
                 worker.delay(eventData)
 
             # 게임 플레이중이 아니라면
             elif status_channel == static.GAME_STATE_IDLE or status_channel == None :
-                print('commend')
+                app.logger.info('commend')
                 if eventData["text"] == static.GAME_COMMAND_START:
-                    print('.start')
+                    app.logger.info('.start')
                     worker.delay(eventData)
                 elif eventData["text"] == static.GAME_COMMAND_SCORE:
-                    print('.rank')
+                    app.logger.info('.rank')
                     worker.delay(eventData)
                 elif eventData["text"] == static.GAME_COMMAND_MY_RANK:
-                    print('.myrank')
+                    app.logger.info('.myrank')
                     worker.delay(eventData)
                 elif eventData["type"] == "channel_joined":
-                    print('others')
+                    app.logger.info('others')
                     worker.delay(eventData)
-    print( json.dumps(response))
+    app.logger.info( json.dumps(response))
     return json.dumps(response)
 
 

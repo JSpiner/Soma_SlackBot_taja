@@ -19,6 +19,7 @@ import time
 import random
 import threading
 import logging
+from celery.utils.log import get_task_logger
 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
@@ -34,9 +35,9 @@ logger_celery = get_task_logger(__name__)
 # make format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
 
+# set handler
 fileHandler = logging.FileHandler('./logs/Bot_celery_worker.log')
 fileHandler.setFormatter(formatter)
-
 streamHandler = logging.StreamHandler()
 
 logger_celery.addHandler(fileHandler)
@@ -47,30 +48,14 @@ logger_celery.info('info')
 logger_celery.warn('warn')
 logger_celery.error('error')
 logger_celery.critical('critical')
-"""
-root = logging.getLogger()
-
-formatter = logging.Formatter('[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s')
-
-stream_handler = logging.StreamHandler(sys.stdout)
-file_handler = logging.FileHandler('./logs/Bot_app.log')
-file_handler.setFormatter(formatter)
-
-root.addHandler(stream_handler)
-root.addHandler(file_handler)
-"""
-logging.basicConfig(
-    filename = './logs/Bot_celery_worker.log'
-)
-get_task_logger(__name__).setLevel(logging.NOTSET)
 
 @worker_init.connect
 def init_worker(**kwargs):
-    print('init worker')
+    logger_celery.info('init worker')
 
 @worker_shutdown.connect
 def shutdown_worker(**kwargs):
-    print('shutdown')
+    logger_celery.info('shutdown')
 
 @app.task
 def worker(data):
@@ -78,7 +63,7 @@ def worker(data):
     gameThread.start()
 
 def run(data):
-    print(data)
+    logger_celery.info(data)
 
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
@@ -99,7 +84,7 @@ def command_start(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
-    print('start')
+    logger_celery.info('start')
 
     if not is_channel_has_bot(slackApi, teamId, channelId):
         redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
@@ -156,7 +141,7 @@ def command_start(data):
 
         # 채널 이름 가져오기
         channel_list = get_channel_list(slackApi)
-        print(channel_list)
+        logger_celery.info(channel_list)
         channels = channel_list['channels']
         channel_name = ""
         for channel_info in channels:
@@ -193,7 +178,7 @@ def command_start(data):
                 lastQuery    
             )
         except Exception as e:
-            print('error : '+str(e))
+            logger_celery.error('error : '+str(e))
 
 
     titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t")
@@ -338,7 +323,7 @@ def command_score(data):
     result_string = "Game Result : \n"
     rank = 1
     for row in rows:
-        print(row)
+        logger_celery.info(row)
         result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
         rank = rank + 1 
 
@@ -369,11 +354,11 @@ def command_typing(data):
     score = util.get_score(speed, accuracy)
     accuracy = accuracy * 100
 
-    print('distance : ' +str(distance))
-    print('speed : ' +str(speed))
-    print('elapsed_time : ' +str(elapsed_time))
-    print('accur : ' +str(accuracy))
-    print('text : ' + str(data["text"]))
+    logger_celery.info('distance : ' +str(distance))
+    logger_celery.info('speed : ' +str(speed))
+    logger_celery.info('elapsed_time : ' +str(elapsed_time))
+    logger_celery.info('accur : ' +str(accuracy))
+    logger_celery.info('text : ' + str(data["text"]))
 
     result = db_manager.query(
         "SELECT game_id "
@@ -452,7 +437,7 @@ def command_typing(data):
             )
 
         except Exception as e:
-            print(str(e))    
+            logger_celery.error(str(e))
 
 
         try:
@@ -477,7 +462,7 @@ def command_typing(data):
                     (teamId,data["user"],user_name)
                 )
         except exc.SQLAlchemyError as e:
-            print("[DB] err==>"+str(e))
+            logger_celery.error("[DB] err==>"+str(e))
 
 def command_rank(data):
     teamId = data["team_id"]
@@ -552,7 +537,7 @@ def is_channel_has_bot(slackApi, teamId, channelId):
             'channel' : channelId
         }
     )
-    print(channelInfo)
+    logger_celery.info(channelInfo)
 
     return bot_id in channelInfo['channel']['members']
         
@@ -566,7 +551,7 @@ def game_end(slackApi, teamId, channelId):
     game_id = redis_client.get("game_id_" + channelId)
     problem_id = redis_client.get("problem_id_" + channelId)
     
-    print(start_time)
+    logger_celery.info(start_time)
 
     start_time_to_time_tamp = datetime.datetime.utcfromtimestamp(float(start_time)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
 
@@ -602,7 +587,7 @@ def game_end(slackApi, teamId, channelId):
     ) 
     rows =util.fetch_all_json(result)
 
-    print(rows)
+    logger_celery.info(rows)
  
     result_string = ""
     rank = 0
@@ -616,7 +601,7 @@ def game_end(slackApi, teamId, channelId):
         rank = rank + 1
 
     sendResult = str(result_string)
-    print(channelId)
+    logger_celery.info(channelId)
     
     slackApi.chat.postMessage(
         {
@@ -649,10 +634,10 @@ def game_end(slackApi, teamId, channelId):
             (channelId,)
         )
         rows =util.fetch_all_json(result)
-        print(rows)
+        logger_celery.info(rows)
         # 레벨을 산정한다.
         if rows[0]['setUpChannelLevel'] == 1:
-            print("true") 
+            logger_celery.info("true")
 
             result = db_manager.query(
                 "SELECT u.user_id,u.user_level FROM ( "   
@@ -664,13 +649,13 @@ def game_end(slackApi, teamId, channelId):
                 (channelId,)
             )
             rows =util.fetch_all_json(result)
-            print(rows)
+            logger_celery.info(rows)
 
             levelSum = 0
             for row in rows:
                 levelSum = row["user_level"]
 
-            print(levelSum)
+            logger_celery.info(levelSum)
             
             #이후 반올림하여 채널랭크를 측정.
             channelRank = round(levelSum/len(row))
@@ -683,10 +668,10 @@ def game_end(slackApi, teamId, channelId):
             )
         #아무일도일어나지 않는다.
         else :
-            print("false")
+            logger_celery.info("false")
 
     except Exception as e:
-        print(str(e))    
+        logger_celery.error(str(e))
 
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
