@@ -15,7 +15,7 @@ with open('../conf.json') as conf_json:
 
 
 # get logger
-db_manager_logger = logging.getLogger('sqlalchemy.pool').setLevel(logging.NOTSET)
+db_manager_logger = logging.getLogger('sqlalchemy.pool')
 
 # make format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
