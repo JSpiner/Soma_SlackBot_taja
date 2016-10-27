@@ -5,3 +5,4 @@ __pycache__/
 *.log 
 .DS_Store  
 newrelic.ini
+.idea/workspace.xml
