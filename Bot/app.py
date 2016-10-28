@@ -72,15 +72,12 @@ def home():
     app.logger.info('home')
     return html
 
-@app.route('/slack/btn_invite', methods=['POST'])
-def slack_btn_invite():
+@app.route('/slack/event_btn', methods=['POST'])
+def slack_event_btn():
     payload = json.loads(request.form.get('payload'))
+    
     app.logger.info("btn callback")
-    app.logger.info(payload)
-    app.logger.info(payload['channel'])
-    app.logger.info(payload['actions'])
-    app.logger.info(payload['actions'][0])
-    app.logger.info(payload['actions'][0]['name'])
+    
     if payload['actions'][0]['name'] == 'invite_bot':
         channelId = payload['channel']['id']
         teamId = payload['team']['id']
@@ -93,7 +90,54 @@ def slack_btn_invite():
                 'user' : util.get_bot_id(teamId)
             }
         )
-        
+    elif payload['actions'][0]['name'] == 'lang_en':
+        teamId = payload['team']['id']
+        channelId = payload['channel']['id']
+
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_lang = %s "
+            "WHERE "
+            "team_id = %s ",
+            ("en", teamId)
+        )
+
+        slackApi = util.init_slackapi(teamId)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : '언어가 변경되었습니다.',
+                'username'  : '타자봇',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
+            }
+        )
+    elif payload['actions'][0]['name'] == 'lang_kr':
+        teamId = payload['team']['id']
+        channelId = payload['channel']['id']
+
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_lang = %s "
+            "WHERE "
+            "team_id = %s ",
+            ("kr", teamId)
+        )
+
+        slackApi = util.init_slackapi(teamId)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : '언어가 변경되었습니다.',
+                'username'  : '타자봇',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
+            }
+        )
+
+
 
     return ''
 
@@ -115,7 +159,7 @@ def slack_oauth():
     result = db_manager.query(
         "SELECT * FROM TEAM "
         "WHERE "
-        "team_id = %s "
+        "team_id = %s " 
         "LIMIT 1",
         (response['team_id'],)
     )
@@ -162,12 +206,38 @@ def slack_oauth():
     for member in slackMembers:
         slackBotApi.chat.postMessage(
             {
-                'as_user'   : 'true',
-                'channel'   : member['id'],
-                'text'      : '*Surfinger*을 설치해주셔서 감사합니다! `/helpgame` 명령어를 입력하시면 게임에 대한 상세한 정보를 보실 수 있습니다.'
+                'as_user'       : 'true',
+                'channel'       : member['user'],
+                'username'      : '타자봇',
+                'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text'          : '반갑습니다! \n :musical_note: *Surfinger* 을 설치해주셔서 감사합니다 :musical_note: \n\n아래 버튼을 눌러 언어를 바꿀수도 있고 `/helpgame` 명령어를 입력하시면 게임에 대한 상세한 정보를 보실 수 있습니다.',
+                'attachments'   : json.dumps(
+                    [
+                        {
+                            "text": "",
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#3AA3E3",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "lang_en",
+                                    "text": ":us: English",
+                                    "type": "button",
+                                    "value": "lang_en"
+                                },
+                                {
+                                    "name": "lang_kr",
+                                    "text": ":kr: 한국어",
+                                    "type": "button",
+                                    "value": "lang_kr"
+                                }
+                            ]
+                        }
+                    ]
+                )
             }
         )
-
     return 'auth success' + response['access_token']
 
 @app.route('/slack/start', methods = ['POST'])
@@ -227,6 +297,58 @@ def slack_game_start():
         )
         response.headers['Content-type'] = 'application/json'
         return response
+
+@app.route('/slack/lang', methods = ['POST'])
+def slack_game_lang():
+    payload = request.get_data().decode()
+    print(payload)
+
+    slackApi = util.init_slackapi(request.form.get('team_id'))
+    
+    slackApi.chat.postMessage(
+        {
+            'channel'       : request.form.get('channel_id'),
+            'username'      : '타자봇',
+            'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'text'          : '아래 버튼을 눌러 언어를 변경 할 수 있습니다.',
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": "",
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#3AA3E3",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "lang_en",
+                                "text": ":us: English",
+                                "type": "button",
+                                "value": "lang_en"
+                            },
+                            {
+                                "name": "lang_kr",
+                                "text": ":kr: 한국어",
+                                "type": "button",
+                                "value": "lang_kr"
+                            }
+                        ]
+                    }
+                ]
+            )
+        }
+    )
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
 
 @app.route('/slack/help', methods = ['POST'])
 def slack_game_help():
@@ -396,8 +518,6 @@ def slack_event():
                     worker.delay(eventData)
     app.logger.info( json.dumps(response))
     return json.dumps(response)
-
-
 
 if __name__ == '__main__':
     ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
