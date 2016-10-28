@@ -15,6 +15,7 @@ from Common.manager import redis_manager
 from Common.manager import db_manager
 from Common.manager import rtm_manager
 from Common import static
+from Common.slackapi import SlackApi
 import datetime
 from Common import util
 import time
@@ -62,7 +63,7 @@ def home():
 
     html = (
         "<html>"
-        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
+        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
         "height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' "
         "srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x' /></a>"
         "</html>"
@@ -150,6 +151,21 @@ def slack_oauth():
                 response['bot']['bot_user_id'],
                 response['team_id']
             )
+        )
+    
+    accessToken = response['access_token']
+
+    slackApi = SlackApi(accessToken)
+    slackBotApi = SlackApi(response['bot']['bot_access_token'])
+    slackMembers = slackApi.im.list()['ims']
+
+    for member in slackMembers:
+        slackBotApi.chat.postMessage(
+            {
+                'as_user'   : 'true',
+                'channel'   : member['id'],
+                'text'      : '*Surfinger*을 설치해주셔서 감사합니다! `/helpgame` 명령어를 입력하시면 게임에 대한 상세한 정보를 보실 수 있습니다.'
+            }
         )
 
     return 'auth success' + response['access_token']
