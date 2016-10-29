@@ -46,7 +46,6 @@ RES_DEFAULT = lambda code,data: {'code' : code,'data' : data}
 # defaultResponse = lambda code,data: {'code' : code,'data' : data}
 
 # string data code
-CODE_TEXT_GAME_START        = "code_game_start"
 CODE_TEXT_LANG_CHANGED      = "code_lang_changed"
 CODE_TEXT_JOIN_BOT          = "code_join_bot"
 CODE_TEXT_ALREADY_STARTED   = "code_already_started"

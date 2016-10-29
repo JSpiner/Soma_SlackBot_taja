@@ -266,6 +266,7 @@ def slack_game_start():
             redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
             redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
 
+            print('start')
             worker.delay(data)
         else:            
             rtm_manager.open_new_socket(teamId, data)
@@ -287,7 +288,7 @@ def slack_game_start():
             json.dumps(
                 { 
                     'response_type' : 'in_channel',
-                    'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
+                    'text' : static.getText(static.CODE_TEXT_ALREADY_STARTED, teamLang),
                     'username'  : 'surfinger',
                     'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                     'as_user'   : 'false'
@@ -310,7 +311,7 @@ def slack_game_lang():
             'channel'       : request.form.get('channel_id'),
             'username'      : 'surfinger',
             'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
-            'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),,
+            'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),
             'attachments'   : json.dumps(
                 [
                     {
@@ -463,11 +464,12 @@ def slack_game_exit():
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
-    return 'hello'
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
     app.logger.info(data)
+    print("event : " + str(data))
+    return 'hello'
     worker.delay(eventData)
     
     response = {}

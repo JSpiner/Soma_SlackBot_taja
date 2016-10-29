@@ -61,6 +61,7 @@ def worker(data):
 
 def run(data):
     logger_celery.info(data)
+    print("celery data : " + str(data))
 
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
@@ -254,6 +255,7 @@ def command_start(data):
 
 def command_exit(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
 
     slackApi = util.init_slackapi(teamId)
@@ -263,6 +265,7 @@ def command_exit(data):
 
 def command_myscore(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     userId = data["user"]
     slackApi = util.init_slackapi(teamId)
@@ -325,6 +328,7 @@ def command_myscore(data):
 
 def command_score(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
@@ -356,7 +360,6 @@ def command_score(data):
                 row["answer_text"]
             )
         )
-        result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
         rank = rank + 1 
 
         # 10위 까지만 출력
@@ -385,6 +388,7 @@ def command_score(data):
 
 def command_typing(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
@@ -521,6 +525,7 @@ def command_typing(data):
 
 def command_rank(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
@@ -600,6 +605,7 @@ def is_channel_has_bot(slackApi, teamId, channelId):
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, teamId, channelId):
 
+    teamLang = util.get_team_lang(teamId)
     sendMessage(slackApi, channelId, "Game End")
     
     start_time = redis_client.get("start_time_" + channelId)
