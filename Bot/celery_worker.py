@@ -259,7 +259,7 @@ def command_exit(data):
     slackApi = util.init_slackapi(teamId)
 
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
-    sendMessage(slackApi, channelId, "종료되었습니다.")
+    sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
 
 def command_myscore(data):
     teamId = data["team_id"]
@@ -288,7 +288,7 @@ def command_myscore(data):
 
     for row in rows:
         result_string = result_string + (
-            "%s위 : %s 점수 : %s 점 정확도 : %s 타속 : %s 타\n" %
+            static.getText(static.CODE_TEXT_RANK_FORMAT_1, teamLang) %
             (
                 pretty_rank(rank),
                 "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
@@ -306,14 +306,14 @@ def command_myscore(data):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "내 기록",
+            "text" : static.getText(static.CODE_TEXT_MY_SCORE, teamLang),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"기록표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": result_string,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
@@ -348,7 +348,7 @@ def command_score(data):
     for row in rows:
         logger_celery.info(row)
         result_string = result_string + (
-            "%s위 : %s 종합점수 : %s 점 (%s)\n" %
+            static.getText(static.CODE_TEXT_RANK_FORMAT_2, teamLang) %
             (
                 pretty_rank(rank),
                 "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
@@ -366,14 +366,14 @@ def command_score(data):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "채널 최고 기록",
+            "text" : static.getText(static.CODE_TEXT_SCORE, teamLang),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"순위표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": result_string,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
@@ -390,7 +390,7 @@ def command_typing(data):
 
     # 부정 복사 판단
     if static.CHAR_PASTE_ESCAPE in data['text']:
-        sendMessage(slackApi, channelId, "복사는 금지입니다 :imp:")
+        sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_WARNING_PASTE, teamLang))
         return  
 
     distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
@@ -547,7 +547,7 @@ def command_rank(data):
 
     for row in rows:
         result_string = result_string + (
-            "%s위 : %-40s 최고기록 : %7s 평균기록 : %7s 최근평균 : %7s\n" %
+            static.getText(static.CODE_TEXT_RANK_FORMAT_3, teamLang) %
             (
                 pretty_rank(rank),
                 "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
@@ -565,14 +565,14 @@ def command_rank(data):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "채널 랭킹",
+            "text" : static.getText(static.CODE_TEXT_RANK, teamLang),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"순위표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": result_string,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
