@@ -5,7 +5,7 @@ import time
 # static variables
 
 GAME_COMMAND_START      = "/start"
-GAME_COMMAND_SCORE      = "/score"
+GAME_COMMAND_SCORE      = "/score" 
 GAME_COMMAND_RANK       = "/rank"
 GAME_COMMAND_MY_SCORE   = "/myscore"
 GAME_COMMAND_EXIT       = "/exit"
@@ -44,3 +44,15 @@ TIME_CURRENT = lambda: int(round(time.time() * 1000))
 
 RES_DEFAULT = lambda code,data: {'code' : code,'data' : data}
 # defaultResponse = lambda code,data: {'code' : code,'data' : data}
+
+# string data code
+CODE_TEXT_GAME_START        = "code_game_start"
+CODE_TEXT_LANG_CHANGED      = "code_lang_changed"
+
+def getText(textCode, langCode):
+    if langCode == "KR":
+        return 1
+    elif langCode == "EN":
+        return 1
+    else 
+        return 1
