@@ -11,6 +11,13 @@
         "code_can_remove"       : "추후 채널에서 삭제가 가능합니다.",
         "code_option_invite"    : "초대",
         "code_option_later"     : "나중에",
+        "code_start_game"       : "타자게임을 시작합니다!\t",
+        "code_count_1"          : "3초뒤 시작합니다!!!!",
+        "code_count_2"          : "준비 되셨나요?",
+        "code_count_3"          : "Ready~~",
+        "code_suggest_problem"  : "제시어 : * %s *",
+        "code_start_game_count" : "타자게임을 시작합니다!\t 제한시간 * %s 초! *",
+        "code_start_game_end"   : "타자게임을 시작합니다!\t 게임 끝!",
     },
     "en":{ 
 

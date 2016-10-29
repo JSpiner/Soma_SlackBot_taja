@@ -58,6 +58,13 @@ CODE_TEXT_INVITE_ASK        = "code_invite_ask"
 CODE_TEXT_CAN_REMOVE        = "code_can_remove"
 CODE_TEXT_OPTION_INVITE     = "code_option_invite"
 CODE_TEXT_OPTION_LATER      = "code_option_later"
+CODE_TEXT_START_GAME        = "code_start_game"
+CODE_TEXT_COUNT_1           = "code_count_1"
+CODE_TEXT_COUNT_2           = "code_count_2"
+CODE_TEXT_COUNT_3           = "code_count_3"
+CODE_TEXT_SUGGEST_PROBLEM   = "code_suggest_problem"
+CODE_TEXT_START_GAME_COUNT  = "code_start_game_count"
+CODE_TEXT_START_GAME_END    = "code_start_game_end"
 
 
 # load json lang file

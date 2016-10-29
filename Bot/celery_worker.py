@@ -112,7 +112,7 @@ def command_start(data):
                                         "title": static.getText(static.CODE_TEXT_INVITE_ASK, teamLang),
                                         "text": static.getText(static.CODE_TEXT_CAN_REMOVE, teamLang),
                                         "ok_text": static.getText(static.CODE_TEXT_OPTION_INVITE, teamLang),
-                                        "dismiss_text": "다음기회에"
+                                        "dismiss_text": static.getText(static.CODE_TEXT_OPTION_LATER, teamLang),
                                     }
                                 }
                             ]
@@ -179,14 +179,14 @@ def command_start(data):
             logger_celery.error('error : '+str(e))
 
 
-    titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t")
-    response = sendMessage(slackApi, channelId, "3초뒤 시작합니다!!!!")
+    titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
+    response = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_COUNT_1, teamLang))
     text_ts = response['ts']
     title_ts = titleResponse['ts']
 
     time.sleep(1)
     
-    strs = ["준비 되셨나요??", "Ready~~~"]
+    strs = [static.getText(static.CODE_TEXT_COUNT_2, teamLang), static.getText(static.CODE_TEXT_COUNT_3, teamLang)]
     for i in range(0,2):
         slackApi.chat.update(
             {
@@ -211,7 +211,7 @@ def command_start(data):
         {
             "ts" : text_ts,
             "channel": channelId,
-            "text" : "제시어 : *" + static.CHAR_PASTE_ESCAPE.join(problem_text) + "*",
+            "text" : static.getText(static.CODE_TEXT_SUGGEST_PROBLEM, teamLang) % (static.CHAR_PASTE_ESCAPE.join(problem_text)),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
@@ -231,7 +231,7 @@ def command_start(data):
             {
                 "ts" : title_ts,
                 "channel": channelId,
-                "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*",
+                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
                 'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
@@ -244,7 +244,7 @@ def command_start(data):
         {
             "ts" : title_ts,
             "channel": channelId,
-            "text" : "타자게임을 시작합니다!\t 게임 끝!",
+            "text" : static.getText(static.CODE_TEXT_START_GAME_END, teamLang),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
