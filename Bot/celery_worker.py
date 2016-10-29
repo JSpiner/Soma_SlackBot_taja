@@ -80,6 +80,7 @@ def command_start(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+    teamLang = util.get_team_lang(teamId)
 
     logger_celery.info('start')
 
@@ -89,14 +90,14 @@ def command_start(data):
         slackApi.chat.postMessage(
             {
                 "channel" : channelId,
-                "text" : "tajabot이 채널 안에 없습니다.",
+                "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
                 'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false',
                 "attachments": json.dumps(
                     [
                         {
-                            "text": "tajabot을 채널에 추가하시겠습니까?",
+                            "text": static.getText(static.CODE_TEXT_INVITE_BOT, teamLang),
                             "fallback": "fallbacktext",
                             "callback_id": "wopr_game",
                             "color": "#3AA3E3",
@@ -104,13 +105,13 @@ def command_start(data):
                             "actions": [
                                 {
                                     "name": "invite_bot",
-                                    "text": "초대하기",
+                                    "text": static.getText(static.CODE_TEXT_INVITE, teamLang),
                                     "type": "button",
                                     "value": "invite_bot",
                                     "confirm": {
-                                        "title": "채널에 초대 하시겠습니까?",
-                                        "text": "추후 채널에서 삭제가 가능합니다.",
-                                        "ok_text": "초대",
+                                        "title": static.getText(static.CODE_TEXT_INVITE_ASK, teamLang),
+                                        "text": static.getText(static.CODE_TEXT_CAN_REMOVE, teamLang),
+                                        "ok_text": static.getText(static.CODE_TEXT_OPTION_INVITE, teamLang),
                                         "dismiss_text": "다음기회에"
                                     }
                                 }

@@ -1,7 +1,7 @@
 # #-*- coding: utf-8 -*-
 import datetime
 import time
-
+import json 
 # static variables
 
 GAME_COMMAND_START      = "/start"
@@ -48,11 +48,27 @@ RES_DEFAULT = lambda code,data: {'code' : code,'data' : data}
 # string data code
 CODE_TEXT_GAME_START        = "code_game_start"
 CODE_TEXT_LANG_CHANGED      = "code_lang_changed"
+CODE_TEXT_JOIN_BOT          = "code_join_bot"
+CODE_TEXT_ALREADY_STARTED   = "code_already_started"
+CODE_TEXT_BUTTON_LANG       = "code_button_lang"
+CODE_TEXT_BOT_NOTFOUND      = "code_bot_notfound"
+CODE_TEXT_INVITE_BOT        = "code_invite_bot"
+CODE_TEXT_INVITE            = "code_invite"
+CODE_TEXT_INVITE_ASK        = "code_invite_ask"
+CODE_TEXT_CAN_REMOVE        = "code_can_remove"
+CODE_TEXT_OPTION_INVITE     = "code_option_invite"
+CODE_TEXT_OPTION_LATER      = "code_option_later"
+
+
+# load json lang file
+with open('../Common/lang.json', 'r') as f:
+    lang = json.load(f)
 
 def getText(textCode, langCode):
-    if langCode == "KR":
-        return 1
-    elif langCode == "EN":
-        return 1
-    else 
-        return 1
+    print(langCode)
+    if langCode == "kr":
+        return lang['kr'][textCode]
+    elif langCode == "en":
+        return lang['en'][textCode]
+    else :
+        return lang['en'][textCode]

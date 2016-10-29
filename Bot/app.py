@@ -75,12 +75,13 @@ def home():
 @app.route('/slack/event_btn', methods=['POST'])
 def slack_event_btn():
     payload = json.loads(request.form.get('payload'))
+    channelId = payload['channel']['id']
+    teamId = payload['team']['id']
+    teamLang = util.get_team_lang(teamId)
     
     app.logger.info("btn callback")
     
     if payload['actions'][0]['name'] == 'invite_bot':
-        channelId = payload['channel']['id']
-        teamId = payload['team']['id']
 
         slackApi = util.init_slackapi(teamId)
 
@@ -91,8 +92,6 @@ def slack_event_btn():
             }
         )
     elif payload['actions'][0]['name'] == 'lang_en':
-        teamId = payload['team']['id']
-        channelId = payload['channel']['id']
 
         db_manager.query(
             "UPDATE TEAM "
@@ -107,15 +106,13 @@ def slack_event_btn():
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : '언어가 변경되었습니다.',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
                 'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
         )
     elif payload['actions'][0]['name'] == 'lang_kr':
-        teamId = payload['team']['id']
-        channelId = payload['channel']['id']
 
         db_manager.query(
             "UPDATE TEAM "
@@ -130,7 +127,7 @@ def slack_event_btn():
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : '언어가 변경되었습니다.',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
                 'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
@@ -198,6 +195,7 @@ def slack_oauth():
         )
     
     accessToken = response['access_token']
+    teamLang = util.get_team_lang(response['team_id'])
 
     slackApi = SlackApi(accessToken)
     slackBotApi = SlackApi(response['bot']['bot_access_token'])
@@ -210,7 +208,7 @@ def slack_oauth():
                 'channel'       : member['user'],
                 'username'      : 'surfinger',
                 'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
-                'text'          : '반갑습니다! \n :musical_note: *Surfinger* 을 설치해주셔서 감사합니다 :musical_note: \n\n아래 버튼을 눌러 언어를 바꿀수도 있고 `/helpgame` 명령어를 입력하시면 게임에 대한 상세한 정보를 보실 수 있습니다.',
+                'text'          : static.getText(static.CODE_TEXT_JOIN_BOT, teamLang),
                 'attachments'   : json.dumps(
                     [
                         {
@@ -249,6 +247,7 @@ def slack_game_start():
     data = {}
 
     teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
 
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -288,7 +287,7 @@ def slack_game_start():
             json.dumps(
                 { 
                     'response_type' : 'in_channel',
-                    'text' : '이미 게임이 동작 중 입니다',
+                    'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
                     'username'  : 'surfinger',
                     'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                     'as_user'   : 'false'
@@ -304,13 +303,14 @@ def slack_game_lang():
     print(payload)
 
     slackApi = util.init_slackapi(request.form.get('team_id'))
-    
+    teamLang = util.get_team_lang(request.form.get('team_id'))
+
     slackApi.chat.postMessage(
         {
             'channel'       : request.form.get('channel_id'),
             'username'      : 'surfinger',
             'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
-            'text'          : '아래 버튼을 눌러 언어를 변경 할 수 있습니다.',
+            'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),,
             'attachments'   : json.dumps(
                 [
                     {
