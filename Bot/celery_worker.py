@@ -2,16 +2,22 @@
 import sys 
 sys.path.append("../")
 
-from celery.bin.celery import result
+
 from sqlalchemy import exc
-from celery import Celery
+
+
+from Common.slackapi import SlackApi
 from Common.manager.redis_manager import redis_client
 from Common.manager import db_manager
+from Common.manager import mission_manager
 from Common import static
 from Common import util
+
+from celery import Celery
 from celery.signals import worker_init
 from celery.signals import worker_shutdown
-from Common.slackapi import SlackApi
+from celery.bin.celery import result
+
 import datetime
 import requests
 import json
@@ -28,6 +34,7 @@ with open('../key.json') as key_json:
     key = json.load(key_json)
 
 app = Celery('tasks', broker='amqp://guest:guest@localhost:5672//')
+
 
 # get logger
 logger_celery = get_task_logger(__name__)
@@ -176,6 +183,17 @@ def command_start(data):
             )
         except Exception as e:
             logger_celery.error('error : '+str(e))
+
+
+    # start_time = redis_client.get("start_time_" + channelId)
+
+    #만약 미션이 선택되었다면?!
+    #미션에해당하는 멘트들을 가져오고 해당 멘트를 레디스에서 긁어와서 메시지로 뿌려준다.
+    # if(mission_manager.pickUpGameEvent(data['channel'] == static.GAME_TYPE_MISSION):
+    if(mission_manager.pickUpGameEvent(data['channel'])== static.GAME_TYPE_MISSION):
+        sendMessage(slackApi, channelId, redis_client.get(static.GAME_MISSION_NOTI+ data['channel']))        
+        print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
+
 
 
     titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t")
@@ -541,7 +559,7 @@ def is_channel_has_bot(slackApi, teamId, channelId):
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, teamId, channelId):
-
+    
     sendMessage(slackApi, channelId, "Game End")
     
     start_time = redis_client.get("start_time_" + channelId)
@@ -620,6 +638,23 @@ def game_end(slackApi, teamId, channelId):
         }
     )
     
+
+
+    
+    #### 게임이 끝나고 미션 클리어했는지 판단해주는 로직이다.
+    if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!=None):
+        mission_result = mission_manager.is_mission_clear(channelId,game_id)
+        if(mission_result == static.GAME_MISSION_ABSENT):
+            sendMessage(slackApi, channelId, "인원이 부족하여 미션에 도전하지 못하였어요!")
+        elif(mission_result == static.GAME_MISSION_SUC):
+            sendMessage(slackApi,channelId,"mission Success!!")
+        elif(mission_result == static.GAME_MISSION_FAILE):
+            sendMessage(slackApi,channelId,"mission FAILE!!")        
+	# elif(mission_result== static.GAME_MISSION_SUC):
+	# 	sendMessage(slackApi,channelId,"미 션 성 공!")
+
+
+
 
     #게임한것이 10개인지 판단 하여 채널 레벨을 업데이트 시켜준다.
     try:
