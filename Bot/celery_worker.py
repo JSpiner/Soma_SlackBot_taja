@@ -90,7 +90,7 @@ def command_start(data):
             {
                 "channel" : channelId,
                 "text" : "tajabot이 채널 안에 없습니다.",
-                'username'  : '타자봇',
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false',
                 "attachments": json.dumps(
@@ -192,7 +192,7 @@ def command_start(data):
                 "ts" : text_ts,
                 "channel": channelId,
                 "text" : strs[i],
-                'username'  : '타자봇',
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
@@ -211,7 +211,7 @@ def command_start(data):
             "ts" : text_ts,
             "channel": channelId,
             "text" : "제시어 : *" + static.CHAR_PASTE_ESCAPE.join(problem_text) + "*",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
@@ -231,7 +231,7 @@ def command_start(data):
                 "ts" : title_ts,
                 "channel": channelId,
                 "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*",
-                'username'  : '타자봇',
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
@@ -244,7 +244,7 @@ def command_start(data):
             "ts" : title_ts,
             "channel": channelId,
             "text" : "타자게임을 시작합니다!\t 게임 끝!",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
@@ -306,7 +306,7 @@ def command_myscore(data):
         {
             "channel" : channelId,
             "text" : "내 기록",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
@@ -366,7 +366,7 @@ def command_score(data):
         {
             "channel" : channelId,
             "text" : "채널 최고 기록",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
@@ -565,7 +565,7 @@ def command_rank(data):
         {
             "channel" : channelId,
             "text" : "채널 랭킹",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
@@ -661,7 +661,7 @@ def game_end(slackApi, teamId, channelId):
         {
             "channel" : channelId,
             "text" : "게임 결과",
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
@@ -736,7 +736,7 @@ def sendMessage(slackApi, channel, text):
         {
             'channel'   : channel,
             'text'      : text,
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
