@@ -22,11 +22,14 @@
         "code_rank_format_1"    : "%s위 : %s 점수 : %s 점 정확도 : %s 타속 : %s 타\n",
         "code_rank_format_2"    : "%s위 : %s 종합점수 : %s 점 (%s)\n",
         "code_rank_format_3"    : "%s위 : %-40s 최고기록 : %7s 평균기록 : %7s 최근평균 : %7s\n",
+        "code_rank_format_4"    : "%s위 : *%s*\t\t종합점수 : %s 점\t정확도 : %s % \t 타곳 : 타 \n",
         "code_my_score"         : "내 기록",
         "code_score"            : "채널 최고 기록",
         "code_record"           : "기록표",
         "code_rank"             : "채널 랭킹",
-        "code_warning_paste"    : "복사는 금지입니다 :imp:"
+        "code_warning_paste"    : "복사는 금지입니다 :imp:",
+        "code_calc_score"       : "==순위계산중입니다==",
+        "code_game_result"      : "게임 결과",
     },
     "en":{ 
 

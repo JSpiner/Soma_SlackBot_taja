@@ -613,7 +613,7 @@ def game_end(slackApi, teamId, channelId):
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_CALCULATING)
 
-    sendMessage(slackApi, channelId, "==순위계산중입니다==")
+    sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_CALC_SCORE, teamLang))
     time.sleep(2)
 
     # 참여유저수 query로 가져오기
@@ -623,7 +623,7 @@ def game_end(slackApi, teamId, channelId):
     )
 
     # 가져온 쿼리 결과로 user_num을 계산
-    rows= util.fetch_all_json(result)
+    rows = util.fetch_all_json(result)
     user_num = len(rows)
 
     ctime = datetime.datetime.now()
@@ -648,10 +648,14 @@ def game_end(slackApi, teamId, channelId):
     rank = 1
     for row in rows:
         result_string = result_string +(
-            pretty_rank(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t\t" 
-            "종합점수 : " + str(int(row["score"])) + "점\t" +
-            "정확도 : " + pretty_accur(row["accuracy"]) + "%\t" + 
-            "타속 : " + str(int(row["speed"]))+"타 \n"
+            static.getText(static.CODE_TEXT_RANK_FORMAT_4, teamLang) %
+            (
+                pretty_rank(rank),
+                 str(get_user_info(slackApi, row["user_id"])["user"]["name"]),
+                 str(int(row["score"])),
+                 pretty_accur(row["accuracy"]),
+                 str(int(row["speed"]))
+            )
         )
         rank = rank + 1
 
@@ -661,14 +665,14 @@ def game_end(slackApi, teamId, channelId):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "게임 결과",
+            "text" : static.getText(static.CODE_TEXT_GAME_RESULT, teamLang),
             'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"순위표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": sendResult,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
