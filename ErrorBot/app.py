@@ -37,7 +37,7 @@ def logging():
                 'attachments'   : 
                 [
                     {
-                        "color": "#3AA3E3",
+                        "color": "#439FE0",
                         "text"  : text
                     }
                 ]
