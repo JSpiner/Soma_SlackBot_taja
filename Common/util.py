@@ -8,6 +8,7 @@ import threading
 from functools import wraps
 from Common.slackapi import SlackApi
 from Common.manager import db_manager
+import random
 
 
 # 팀별 SlackApi 객체 생성
@@ -152,3 +153,10 @@ def get_problems():
         texts[row['problem_id']] = row['problem_text']
 
     return texts
+
+#랜덤한 값출력해주는 함수. 
+#자주쓰는 함수임으로 등록.
+# getRandomValue(1,10) 이면 1~10까지의값중 하나를 선택해 랜덤하게 리턴해준다.
+def getRandomValue(to,frm):
+    return random.randrange(to,frm+1)
+
