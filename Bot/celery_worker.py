@@ -68,6 +68,7 @@ def worker(data):
 
 def run(data):
     logger_celery.info(data)
+    print("celery data : " + str(data))
 
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
@@ -87,6 +88,7 @@ def command_start(data):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+    teamLang = util.get_team_lang(teamId)
 
     logger_celery.info('start')
 
@@ -96,14 +98,14 @@ def command_start(data):
         slackApi.chat.postMessage(
             {
                 "channel" : channelId,
-                "text" : "tajabot이 채널 안에 없습니다.",
-                'username'  : '타자봇',
+                "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false',
                 "attachments": json.dumps(
                     [
                         {
-                            "text": "tajabot을 채널에 추가하시겠습니까?",
+                            "text": static.getText(static.CODE_TEXT_INVITE_BOT, teamLang),
                             "fallback": "fallbacktext",
                             "callback_id": "wopr_game",
                             "color": "#3AA3E3",
@@ -111,14 +113,14 @@ def command_start(data):
                             "actions": [
                                 {
                                     "name": "invite_bot",
-                                    "text": "초대하기",
+                                    "text": static.getText(static.CODE_TEXT_INVITE, teamLang),
                                     "type": "button",
                                     "value": "invite_bot",
                                     "confirm": {
-                                        "title": "채널에 초대 하시겠습니까?",
-                                        "text": "추후 채널에서 삭제가 가능합니다.",
-                                        "ok_text": "초대",
-                                        "dismiss_text": "다음기회에"
+                                        "title": static.getText(static.CODE_TEXT_INVITE_ASK, teamLang),
+                                        "text": static.getText(static.CODE_TEXT_CAN_REMOVE, teamLang),
+                                        "ok_text": static.getText(static.CODE_TEXT_OPTION_INVITE, teamLang),
+                                        "dismiss_text": static.getText(static.CODE_TEXT_OPTION_LATER, teamLang),
                                     }
                                 }
                             ]
@@ -177,7 +179,7 @@ def command_start(data):
                 
             arrQueryString.pop()
             lastQuery = "".join(arrQueryString)
-            
+             
             result = db_manager.query(
                 lastQuery    
             )
@@ -196,21 +198,23 @@ def command_start(data):
 
 
 
-    titleResponse = sendMessage(slackApi, channelId, "타자게임을 시작합니다!\t")
-    response = sendMessage(slackApi, channelId, "3초뒤 시작합니다!!!!")
+    titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
+    response = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_COUNT_1, teamLang))
+
+
     text_ts = response['ts']
     title_ts = titleResponse['ts']
 
     time.sleep(1)
     
-    strs = ["준비 되셨나요??", "Ready~~~"]
+    strs = [static.getText(static.CODE_TEXT_COUNT_2, teamLang), static.getText(static.CODE_TEXT_COUNT_3, teamLang)]
     for i in range(0,2):
         slackApi.chat.update(
             {
                 "ts" : text_ts,
                 "channel": channelId,
                 "text" : strs[i],
-                'username'  : '타자봇',
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
@@ -228,8 +232,8 @@ def command_start(data):
         {
             "ts" : text_ts,
             "channel": channelId,
-            "text" : "제시어 : `" + problem_text + "`",
-            'username'  : '타자봇',
+            "text" : static.getText(static.CODE_TEXT_SUGGEST_PROBLEM, teamLang) % (static.CHAR_PASTE_ESCAPE.join(problem_text)),
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
@@ -248,8 +252,8 @@ def command_start(data):
             {
                 "ts" : title_ts,
                 "channel": channelId,
-                "text" : "타자게임을 시작합니다!\t 제한시간 *"+str(10-i)+"초!*",
-                'username'  : '타자봇',
+                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
+                'username'  : 'surfinger',
                 'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
@@ -261,8 +265,8 @@ def command_start(data):
         {
             "ts" : title_ts,
             "channel": channelId,
-            "text" : "타자게임을 시작합니다!\t 게임 끝!",
-            'username'  : '타자봇',
+            "text" : static.getText(static.CODE_TEXT_START_GAME_END, teamLang),
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
@@ -271,15 +275,17 @@ def command_start(data):
 
 def command_exit(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
 
     slackApi = util.init_slackapi(teamId)
 
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
-    sendMessage(slackApi, channelId, "종료되었습니다.")
+    sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
 
 def command_myscore(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     userId = data["user"]
     slackApi = util.init_slackapi(teamId)
@@ -304,19 +310,45 @@ def command_myscore(data):
     rank = 1
 
     for row in rows:
-        result_string = result_string + str(rank) + ". SCORE : " + str(row["score"]) + " " \
-                        + "SPEED : " + str(row["speed"]) + "ACCURACY : " + str(row["accuracy"]) + "\n"
+        result_string = result_string + (
+            static.getText(static.CODE_TEXT_RANK_FORMAT_1, teamLang) %
+            (
+                pretty_rank(rank),
+                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
+                pretty_score(row["score"]),
+                pretty_accur(row["accuracy"]),
+                pretty_speed(row["speed"])
+            )
+        )
         rank = rank + 1
 
         # 10위 까지만 출력
         if (rank == 11):
             break
 
-    sendMessage(slackApi, channelId, result_string)
-
+    slackApi.chat.postMessage(
+        {
+            "channel" : channelId,
+            "text" : static.getText(static.CODE_TEXT_MY_SCORE, teamLang),
+            'username'  : 'surfinger',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
+                        "text": result_string,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
+        }
+    )
 
 def command_score(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
@@ -339,19 +371,51 @@ def command_score(data):
     rank = 1
     for row in rows:
         logger_celery.info(row)
-        result_string = result_string + str(rank) + ". Name : " + row["user_name"] + " " + "SCORE : " + str(row["score"]) + "\n"
+        result_string = result_string + (
+            static.getText(static.CODE_TEXT_RANK_FORMAT_2, teamLang) %
+            (
+                pretty_rank(rank),
+                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
+                pretty_score(row["score"]),
+                row["answer_text"]
+            )
+        )
         rank = rank + 1 
 
         # 10위 까지만 출력
         if(rank == 11):
             break
 
-    sendMessage(slackApi, channelId, result_string)
+    slackApi.chat.postMessage(
+        {
+            "channel" : channelId,
+            "text" : static.getText(static.CODE_TEXT_SCORE, teamLang),
+            'username'  : 'surfinger',
+            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'as_user'   : 'false',
+            "attachments" : json.dumps(
+                [
+                    {
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
+                        "text": result_string,
+                        "mrkdwn_in": ["text", "pretext"],
+                        "color": "#764FA5"
+                    }   
+                ]
+            )
+        }
+    )
 
 def command_typing(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+
+    # 부정 복사 판단
+    if static.CHAR_PASTE_ESCAPE in data['text']:
+        sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_WARNING_PASTE, teamLang))
+        return  
 
     distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
 
@@ -481,6 +545,7 @@ def command_typing(data):
 
 def command_rank(data):
     teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
@@ -503,11 +568,11 @@ def command_rank(data):
 
     # 출력할 텍스트 생성
     result_string = ""
-    rank = 0
+    rank = 1
 
     for row in rows:
         result_string = result_string + (
-            "%s위 : %-40s 최고기록 : %7s 평균기록 : %7s 최근평균 : %7s\n" %
+            static.getText(static.CODE_TEXT_RANK_FORMAT_3, teamLang) %
             (
                 pretty_rank(rank),
                 "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
@@ -525,14 +590,14 @@ def command_rank(data):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "채널 랭킹",
-            'username'  : '타자봇',
+            "text" : static.getText(static.CODE_TEXT_RANK, teamLang),
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"순위표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": result_string,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
@@ -559,7 +624,8 @@ def is_channel_has_bot(slackApi, teamId, channelId):
 
 # 타이머 실행 함수(게임 종료시)
 def game_end(slackApi, teamId, channelId):
-    
+
+    teamLang = util.get_team_lang(teamId)
     sendMessage(slackApi, channelId, "Game End")
     
     start_time = redis_client.get("start_time_" + channelId)
@@ -573,7 +639,7 @@ def game_end(slackApi, teamId, channelId):
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_CALCULATING)
 
-    sendMessage(slackApi, channelId, "==순위계산중입니다==")
+    sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_CALC_SCORE, teamLang))
     time.sleep(2)
 
     # 참여유저수 query로 가져오기
@@ -583,7 +649,7 @@ def game_end(slackApi, teamId, channelId):
     )
 
     # 가져온 쿼리 결과로 user_num을 계산
-    rows= util.fetch_all_json(result)
+    rows = util.fetch_all_json(result)
     user_num = len(rows)
 
     ctime = datetime.datetime.now()
@@ -605,13 +671,17 @@ def game_end(slackApi, teamId, channelId):
     logger_celery.info(rows)
  
     result_string = ""
-    rank = 0
+    rank = 1
     for row in rows:
         result_string = result_string +(
-            pretty_rank(rank) + "위 : *" + str(get_user_info(slackApi, row["user_id"])["user"]["name"]) + "*\t\t" 
-            "종합점수 : " + str(int(row["score"])) + "점\t" +
-            "정확도 : " + pretty_accur(row["accuracy"]) + "%\t" + 
-            "타속 : " + str(int(row["speed"]))+"타 \n"
+            static.getText(static.CODE_TEXT_RANK_FORMAT_4, teamLang) %
+            (
+                pretty_rank(rank),
+                 str(get_user_info(slackApi, row["user_id"])["user"]["name"]),
+                 str(int(row["score"])),
+                 pretty_accur(row["accuracy"]),
+                 str(int(row["speed"]))
+            )
         )
         rank = rank + 1
 
@@ -621,14 +691,14 @@ def game_end(slackApi, teamId, channelId):
     slackApi.chat.postMessage(
         {
             "channel" : channelId,
-            "text" : "게임 결과",
-            'username'  : '타자봇',
+            "text" : static.getText(static.CODE_TEXT_GAME_RESULT, teamLang),
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
                     {
-                        "title":"순위표",
+                        "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
                         "text": sendResult,
                         "mrkdwn_in": ["text", "pretext"],
                         "color": "#764FA5"
@@ -714,7 +784,7 @@ def sendMessage(slackApi, channel, text):
         {
             'channel'   : channel,
             'text'      : text,
-            'username'  : '타자봇',
+            'username'  : 'surfinger',
             'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
@@ -783,14 +853,15 @@ def pretty_accur(accur):
         return "*"+str(int(accur))+"*"
 
 def pretty_speed(speed):
-    return "*"+str(int(score))+"*"
+    return "*"+str(int(speed))+"*"
 
 def pretty_rank(rank):
     rank = str(rank)
     
-    ranks = [":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:",":ten:"]
+    ranks = [":zero:",":one:",":two:",":three:",":four:",":five:",":six:",":seven:",":eight:",":nine:"]
 
     result = ""
     for num in rank:
+        print("ranks : " + str(num))
         result+=ranks[int(num)]
     return result

@@ -39,6 +39,18 @@ def get_bot_id(teamId):
     ))[0]['bot_id']
     return bot_id
 
+def get_team_lang(teamId):
+    team_lang = fetch_all_json(db_manager.query(
+        "SELECT team_lang "
+        "FROM TEAM "
+        "WHERE "
+        "team_id = %s "
+        "LIMIT 1 ",
+        (teamId,)
+    ))[0]['team_lang']
+    return team_lang
+
+
 # delay
 def delay(delay=0.):
    def wrap(f):

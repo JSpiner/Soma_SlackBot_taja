@@ -1,11 +1,11 @@
 # #-*- coding: utf-8 -*-
 import datetime
 import time
-
+import json 
 # static variables
 
 GAME_COMMAND_START      = "/start"
-GAME_COMMAND_SCORE      = "/score"
+GAME_COMMAND_SCORE      = "/score" 
 GAME_COMMAND_RANK       = "/rank"
 GAME_COMMAND_MY_SCORE   = "/myscore"
 GAME_COMMAND_EXIT       = "/exit"
@@ -29,6 +29,8 @@ SOCKET_STATUS_CONNECTING    = "1"
 SOCKET_STATUS_CONNECTED     = "2"
 SOCKET_STATUS_RECONNECTING  = "3"
 
+# copy&paste check string
+CHAR_PASTE_ESCAPE = " " # HAIR SPACE
 
 #후에 다양해질 게임에 대하여 게임타입을 추가해 준다.
 GAME_TYPE_NORMAL = "GAME_TYPE_NORMAL"
@@ -57,3 +59,48 @@ TIME_CURRENT = lambda: int(round(time.time() * 1000))
 
 RES_DEFAULT = lambda code,data: {'code' : code,'data' : data}
 # defaultResponse = lambda code,data: {'code' : code,'data' : data}
+
+# string data code
+CODE_TEXT_LANG_CHANGED      = "code_lang_changed"
+CODE_TEXT_JOIN_BOT          = "code_join_bot"
+CODE_TEXT_ALREADY_STARTED   = "code_already_started"
+CODE_TEXT_BUTTON_LANG       = "code_button_lang"
+CODE_TEXT_BOT_NOTFOUND      = "code_bot_notfound"
+CODE_TEXT_INVITE_BOT        = "code_invite_bot"
+CODE_TEXT_INVITE            = "code_invite"
+CODE_TEXT_INVITE_ASK        = "code_invite_ask"
+CODE_TEXT_CAN_REMOVE        = "code_can_remove"
+CODE_TEXT_OPTION_INVITE     = "code_option_invite"
+CODE_TEXT_OPTION_LATER      = "code_option_later"
+CODE_TEXT_START_GAME        = "code_start_game"
+CODE_TEXT_COUNT_1           = "code_count_1"
+CODE_TEXT_COUNT_2           = "code_count_2"
+CODE_TEXT_COUNT_3           = "code_count_3"
+CODE_TEXT_SUGGEST_PROBLEM   = "code_suggest_problem"
+CODE_TEXT_START_GAME_COUNT  = "code_start_game_count"
+CODE_TEXT_START_GAME_END    = "code_start_game_end"
+CODE_TEXT_GAME_DONE         = "code_game_done"
+CODE_TEXT_RANK_FORMAT_1     = "code_rank_format_1"
+CODE_TEXT_RANK_FORMAT_2     = "code_rank_format_2"
+CODE_TEXT_RANK_FORMAT_3     = "code_rank_format_3"
+CODE_TEXT_RANK_FORMAT_4     = "code_rank_format_4"
+CODE_TEXT_MY_SCORE          = "code_my_score"
+CODE_TEXT_RECORD            = "code_record"
+CODE_TEXT_SCORE             = "code_score"
+CODE_TEXT_RANK              = "code_rank"
+CODE_TEXT_WARNING_PASTE     = "code_warning_paste"
+CODE_TEXT_CALC_SCORE        = "code_calc_score"
+CODE_TEXT_GAME_RESULT       = "code_game_result"
+
+# load json lang file
+with open('../Common/lang.json', 'r') as f:
+    lang = json.load(f)
+
+def getText(textCode, langCode):
+    print(langCode)
+    if langCode == "kr":
+        return lang['kr'][textCode]
+    elif langCode == "en":
+        return lang['en'][textCode]
+    else :
+        return lang['en'][textCode]

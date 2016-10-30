@@ -78,7 +78,8 @@ def _connect(teamId, bot_token, data):
 
                 try:
                     if data['type'] == "message" and 'subtype' not in data:
-
+                        if data['text'][0] == '/':
+                            continue
                         data['team_id'] = data['team'] 
                         status_channel = redis_manager.redis_client.get("status_" + data["channel"])
                         

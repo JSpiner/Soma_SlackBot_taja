@@ -15,6 +15,7 @@ from Common.manager import redis_manager
 from Common.manager import db_manager
 from Common.manager import rtm_manager
 from Common import static
+from Common.slackapi import SlackApi
 import datetime
 from Common import util
 import time
@@ -62,7 +63,7 @@ def home():
 
     html = (
         "<html>"
-        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
+        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
         "height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' "
         "srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x' /></a>"
         "</html>"
@@ -71,18 +72,16 @@ def home():
     app.logger.info('home')
     return html
 
-@app.route('/slack/btn_invite', methods=['POST'])
-def slack_btn_invite():
+@app.route('/slack/event_btn', methods=['POST'])
+def slack_event_btn():
     payload = json.loads(request.form.get('payload'))
+    channelId = payload['channel']['id']
+    teamId = payload['team']['id']
+    teamLang = util.get_team_lang(teamId)
+    
     app.logger.info("btn callback")
-    app.logger.info(payload)
-    app.logger.info(payload['channel'])
-    app.logger.info(payload['actions'])
-    app.logger.info(payload['actions'][0])
-    app.logger.info(payload['actions'][0]['name'])
+    
     if payload['actions'][0]['name'] == 'invite_bot':
-        channelId = payload['channel']['id']
-        teamId = payload['team']['id']
 
         slackApi = util.init_slackapi(teamId)
 
@@ -92,7 +91,50 @@ def slack_btn_invite():
                 'user' : util.get_bot_id(teamId)
             }
         )
-        
+    elif payload['actions'][0]['name'] == 'lang_en':
+
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_lang = %s "
+            "WHERE "
+            "team_id = %s ",
+            ("en", teamId)
+        )
+
+        slackApi = util.init_slackapi(teamId)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
+                'username'  : 'surfinger',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
+            }
+        )
+    elif payload['actions'][0]['name'] == 'lang_kr':
+
+        db_manager.query(
+            "UPDATE TEAM "
+            "SET "
+            "team_lang = %s "
+            "WHERE "
+            "team_id = %s ",
+            ("kr", teamId)
+        )
+
+        slackApi = util.init_slackapi(teamId)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
+                'username'  : 'surfinger',
+                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'as_user'   : 'false'
+            }
+        )
+
+
 
     return ''
 
@@ -114,7 +156,7 @@ def slack_oauth():
     result = db_manager.query(
         "SELECT * FROM TEAM "
         "WHERE "
-        "team_id = %s "
+        "team_id = %s " 
         "LIMIT 1",
         (response['team_id'],)
     )
@@ -151,7 +193,49 @@ def slack_oauth():
                 response['team_id']
             )
         )
+    
+    accessToken = response['access_token']
+    teamLang = util.get_team_lang(response['team_id'])
 
+    slackApi = SlackApi(accessToken)
+    slackBotApi = SlackApi(response['bot']['bot_access_token'])
+    slackMembers = slackApi.im.list()['ims']
+
+    for member in slackMembers:
+        slackBotApi.chat.postMessage(
+            {
+                'as_user'       : 'true',
+                'channel'       : member['user'],
+                'username'      : 'surfinger',
+                'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text'          : static.getText(static.CODE_TEXT_JOIN_BOT, teamLang),
+                'attachments'   : json.dumps(
+                    [
+                        {
+                            "text": "",
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#3AA3E3",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "lang_en",
+                                    "text": ":us: English",
+                                    "type": "button",
+                                    "value": "lang_en"
+                                },
+                                {
+                                    "name": "lang_kr",
+                                    "text": ":kr: 한국어",
+                                    "type": "button",
+                                    "value": "lang_kr"
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }
+        )
     return 'auth success' + response['access_token']
 
 @app.route('/slack/start', methods = ['POST'])
@@ -163,6 +247,7 @@ def slack_game_start():
     data = {}
 
     teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
 
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
@@ -181,6 +266,7 @@ def slack_game_start():
             redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
             redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
 
+            print('start')
             worker.delay(data)
         else:            
             rtm_manager.open_new_socket(teamId, data)
@@ -202,8 +288,8 @@ def slack_game_start():
             json.dumps(
                 { 
                     'response_type' : 'in_channel',
-                    'text' : '이미 게임이 동작 중 입니다',
-                    'username'  : '타자봇',
+                    'text' : static.getText(static.CODE_TEXT_ALREADY_STARTED, teamLang),
+                    'username'  : 'surfinger',
                     'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                     'as_user'   : 'false'
                 } 
@@ -211,6 +297,75 @@ def slack_game_start():
         )
         response.headers['Content-type'] = 'application/json'
         return response
+
+@app.route('/slack/lang', methods = ['POST'])
+def slack_game_lang():
+    payload = request.get_data().decode()
+    print(payload)
+
+    slackApi = util.init_slackapi(request.form.get('team_id'))
+    teamLang = util.get_team_lang(request.form.get('team_id'))
+
+    slackApi.chat.postMessage(
+        {
+            'channel'       : request.form.get('channel_id'),
+            'username'      : 'surfinger',
+            'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+            'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": "",
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#3AA3E3",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "lang_en",
+                                "text": ":us: English",
+                                "type": "button",
+                                "value": "lang_en"
+                            },
+                            {
+                                "name": "lang_kr",
+                                "text": ":kr: 한국어",
+                                "type": "button",
+                                "value": "lang_kr"
+                            }
+                        ]
+                    }
+                ]
+            )
+        }
+    )
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
+@app.route('/slack/help', methods = ['POST'])
+def slack_game_help():
+    payload = request.get_data().decode()
+    print(payload)
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : 'help texts'
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
 
 @app.route('/slack/rank', methods = ['POST'])
 def slack_game_rank():
@@ -243,7 +398,7 @@ def slack_game_myscore():
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = static.GAME_COMMAND_MY_RANK
+    data['text'] = static.GAME_COMMAND_MY_SCORE
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
@@ -309,11 +464,12 @@ def slack_game_exit():
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
-    return 'hello'
     payload = request.get_data().decode()
     data = json.loads(payload) 
 
     app.logger.info(data)
+    print("event : " + str(data))
+    return 'hello'
     worker.delay(eventData)
     
     response = {}
@@ -364,7 +520,6 @@ def slack_event():
                     worker.delay(eventData)
     app.logger.info( json.dumps(response))
     return json.dumps(response)
-
 
 if __name__ == '__main__':
     ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')

@@ -26,6 +26,7 @@ def pickUpGameEvent(channelId):
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
 	if util.getRandomValue(1,2) == 1 :
+		print('mission start')
 		result = db_manager.query(
 			"SELECT * FROM GAME_MISSION WHERE validity = 1 ORDER BY rand() LIMIT 1 "
 		)
@@ -42,6 +43,7 @@ def pickUpGameEvent(channelId):
 		return static.GAME_TYPE_MISSION
 	#노말 모드이다.
 	else :
+		print('normal')
 		redis_client.set(static.GAME_MISSION_NOTI + channelId, None)
 		redis_client.set(static.GAME_MISSION_CONDI + channelId, None)
 		return static.GAME_TYPE_NORMAL
