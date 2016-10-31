@@ -75,12 +75,39 @@ def run(data):
     teamLang = util.get_team_lang(teamId)
 
     if teamLang is None:
+        redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+
         slackApi = util.init_slackapi(teamId)
 
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text'  : "언어가 설정되지 않았습니다. 언어를 골라주세요"
+                'text'  : static.getText(static.CODE_TEXT_CHOOSE_LANG, "en"),
+                'attachments'   : json.dumps(
+                    [
+                        {
+                            "text": "",
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#3AA3E3",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "lang_en",
+                                    "text": ":us: English",
+                                    "type": "button",
+                                    "value": "lang_en"
+                                },
+                                {
+                                    "name": "lang_kr",
+                                    "text": ":kr: 한국어",
+                                    "type": "button",
+                                    "value": "lang_kr"
+                                }
+                            ]
+                        }
+                    ]
+                )
             }
         )
         
@@ -115,8 +142,6 @@ def command_start(data):
             {
                 "channel" : channelId,
                 "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false',
                 "attachments": json.dumps(
                     [
@@ -230,8 +255,6 @@ def command_start(data):
                 "ts" : text_ts,
                 "channel": channelId,
                 "text" : strs[i],
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
         )
@@ -249,8 +272,6 @@ def command_start(data):
             "ts" : text_ts,
             "channel": channelId,
             "text" : static.getText(static.CODE_TEXT_SUGGEST_PROBLEM, teamLang) % (static.CHAR_PASTE_ESCAPE.join(problem_text)),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
@@ -269,8 +290,6 @@ def command_start(data):
                 "ts" : title_ts,
                 "channel": channelId,
                 "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
         )
@@ -282,8 +301,6 @@ def command_start(data):
             "ts" : title_ts,
             "channel": channelId,
             "text" : static.getText(static.CODE_TEXT_START_GAME_END, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
@@ -346,8 +363,6 @@ def command_myscore(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_MY_SCORE, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -406,8 +421,6 @@ def command_score(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_SCORE, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -607,8 +620,6 @@ def command_rank(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_RANK, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -708,8 +719,6 @@ def game_end(slackApi, teamId, channelId):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_GAME_RESULT, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -800,8 +809,6 @@ def sendMessage(slackApi, channel, text):
         {
             'channel'   : channel,
             'text'      : text,
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )

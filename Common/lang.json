@@ -29,7 +29,8 @@
         "code_rank"             : "채널 랭킹",
         "code_warning_paste"    : "복사는 금지입니다 :imp:",
         "code_calc_score"       : "==순위계산중입니다==",
-        "code_game_result"      : "게임 결과"
+        "code_game_result"      : "게임 결과",
+        "code_choose_lang"      : "시작하기에 앞서, 언어를 선택해 주세요."
     },
     "en":{ 
         "code_lang_changed"     : "Language has been changed.",
@@ -61,6 +62,7 @@
         "code_rank"             : "Channel ranking",
         "code_warning_paste"    : "Paste is cheating :imp:",
         "code_calc_score"       : "== Calculating score... ==",
-        "code_game_result"      : "Game result"
+        "code_game_result"      : "Game result",
+        "code_choose_lang"       : "First, Choose your language!"
     }
 } 

@@ -26,7 +26,7 @@ def pickUpGameEvent(channelId):
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomValue(1,2) == 1 :
+	if util.getRandomValue(1,20) == 1 :
 		print('mission start')
 		result = db_manager.query(
 			"SELECT * FROM GAME_MISSION WHERE validity = 1 ORDER BY rand() LIMIT 1 "

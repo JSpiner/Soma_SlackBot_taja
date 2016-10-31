@@ -106,9 +106,7 @@ def slack_event_btn():
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, "en"),
                 'as_user'   : 'false'
             }
         )
@@ -127,9 +125,7 @@ def slack_event_btn():
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, "kr"),
                 'as_user'   : 'false'
             }
         )
@@ -291,8 +287,6 @@ def slack_game_start():
                 { 
                     'response_type' : 'in_channel',
                     'text' : static.getText(static.CODE_TEXT_ALREADY_STARTED, teamLang),
-                    'username'  : 'surfinger',
-                    'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                     'as_user'   : 'false'
                 } 
             )
@@ -311,8 +305,6 @@ def slack_game_lang():
     slackApi.chat.postMessage(
         {
             'channel'       : request.form.get('channel_id'),
-            'username'      : 'surfinger',
-            'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),
             'attachments'   : json.dumps(
                 [
@@ -368,6 +360,10 @@ def slack_game_help():
     )
     response.headers['Content-type'] = 'application/json'
     return response  
+
+@app.route('/slack/kok', methods = ['POST'])
+def slack_game_kok():
+    return 'hi'
 
 @app.route('/slack/rank', methods = ['POST'])
 def slack_game_rank():
