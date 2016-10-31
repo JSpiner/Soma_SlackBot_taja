@@ -197,6 +197,7 @@ def slack_oauth():
     accessToken = response['access_token']
     teamLang = util.get_team_lang(response['team_id'])
 
+    """
     slackApi = SlackApi(accessToken)
     slackBotApi = SlackApi(response['bot']['bot_access_token'])
     slackMembers = slackApi.im.list()['ims']
@@ -236,6 +237,7 @@ def slack_oauth():
                 )
             }
         )
+    """
     return 'auth success' + response['access_token']
 
 @app.route('/slack/start', methods = ['POST'])

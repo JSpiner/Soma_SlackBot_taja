@@ -20,8 +20,9 @@ def pickUpGameEvent(channelId):
 	
 	#기존 레디스정보가있다면 None 로 초기화시켜라 ==> None 은 없는것이나 마찬가지
 	# redis_client.set(static.GAME_MISSION_ID + channelId, None)
-	redis_client.set(static.GAME_MISSION_NOTI + channelId, None)
-	redis_client.set(static.GAME_MISSION_CONDI + channelId, None)
+	
+	redis_client.set(static.GAME_MISSION_NOTI + channelId,0)
+	redis_client.set(static.GAME_MISSION_CONDI + channelId,0)
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
@@ -44,8 +45,7 @@ def pickUpGameEvent(channelId):
 	#노말 모드이다.
 	else :
 		print('normal')
-		redis_client.set(static.GAME_MISSION_NOTI + channelId, None)
-		redis_client.set(static.GAME_MISSION_CONDI + channelId, None)
+		
 		return static.GAME_TYPE_NORMAL
 
 

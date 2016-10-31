@@ -70,6 +70,22 @@ def run(data):
     logger_celery.info(data)
     print("celery data : " + str(data))
 
+    teamId = data["team_id"]
+    channelId = data['channel']
+    teamLang = util.get_team_lang(teamId)
+
+    if teamLang is None:
+        slackApi = util.init_slackapi(teamId)
+
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text'  : "언어가 설정되지 않았습니다. 언어를 골라주세요"
+            }
+        )
+        
+        return
+
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
     elif data["text"] == static.GAME_COMMAND_RANK:      # 해당 채널의 유저들의 랭크를 보여줌
@@ -712,7 +728,7 @@ def game_end(slackApi, teamId, channelId):
 
     
     #### 게임이 끝나고 미션 클리어했는지 판단해주는 로직이다.
-    if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!=None):
+    if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!="0"):
         mission_result = mission_manager.is_mission_clear(channelId,game_id)
         if(mission_result == static.GAME_MISSION_ABSENT):
             sendMessage(slackApi, channelId, "인원이 부족하여 미션에 도전하지 못하였어요!")
