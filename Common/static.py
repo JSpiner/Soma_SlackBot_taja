@@ -7,6 +7,7 @@ import json
 GAME_COMMAND_START      = "/start"
 GAME_COMMAND_SCORE      = "/score" 
 GAME_COMMAND_RANK       = "/rank"
+GAME_COMMAND_KOK        = "/kok"
 GAME_COMMAND_MY_SCORE   = "/myscore"
 GAME_COMMAND_EXIT       = "/exit"
 

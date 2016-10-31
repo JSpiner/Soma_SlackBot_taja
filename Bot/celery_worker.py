@@ -123,6 +123,8 @@ def run(data):
         command_exit(data)
     elif data["text"] == static.GAME_COMMAND_MY_SCORE:  # 나의 기록들을 보여줌
         command_myscore(data)
+    elif data["text"] == static.GAME_COMMAND_KOK:
+        command_kok(data)
     else :                                              # typing 된 내용들
         command_typing(data)
 
@@ -634,6 +636,14 @@ def command_rank(data):
         }
     )
 
+def command_kok(data):
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+    
+
+    return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):

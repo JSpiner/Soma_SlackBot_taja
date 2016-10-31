@@ -368,7 +368,7 @@ def slack_game_kok():
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
-    data['text'] = static.GAME_COMMAND_RANK
+    data['text'] = static.GAME_COMMAND_KOK
     data['user'] = request.form.get('user_id')
 
     worker.delay(data)
