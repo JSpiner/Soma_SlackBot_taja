@@ -363,7 +363,26 @@ def slack_game_help():
 
 @app.route('/slack/kok', methods = ['POST'])
 def slack_game_kok():
-    return 'hi'
+    payload = request.get_data().decode()
+    app.logger.info(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_RANK
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
 
 @app.route('/slack/rank', methods = ['POST'])
 def slack_game_rank():
