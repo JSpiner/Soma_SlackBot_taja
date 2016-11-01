@@ -405,28 +405,6 @@ def slack_game_kok():
     data['text'] = static.GAME_COMMAND_KOK
     data['user'] = request.form.get('user_id')
 
-    worker.delay(data)
-
-    response = Response(
-        json.dumps(
-            {
-                'response_type' : 'in_channel',
-                'text' : ''
-            }
-        )
-    )
-    response.headers['Content-type'] = 'application/json'
-    return response  
-
-@app.route('/slack/kok_start', methods = ['POST'])
-def slack_game_kok_start():
-    payload = request.get_data().decode()
-    app.logger.info(payload)
-    data = {}
-    data['team_id'] = request.form.get('team_id')
-    data['channel'] = request.form.get('channel_id')
-    data['text'] = static.GAME_COMMAND_KOK
-    data['user'] = request.form.get('user_id')
 
     if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)

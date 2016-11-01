@@ -767,11 +767,8 @@ def command_kok(data):
 
 
 def start_kok(data):
+    command_start(data)
     
-    requests.post("https://ssoma.xyz:20000/slack/kok_start",{
-            "payload" : data
-        }
-    )
     """
     app.logger.info("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
     if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
