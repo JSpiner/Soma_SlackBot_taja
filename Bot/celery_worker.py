@@ -767,6 +767,22 @@ def command_kok(data):
 
 
 def start_kok(data):
+    
+    requests.post("https://ssoma.xyz:20000/slack/kok_start",{
+            "payload" : data
+        }
+    )
+    """
+    app.logger.info("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+        redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+        redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+
+        print('start')
+        worker.delay(data)
+    else:            
+        rtm_manager.open_new_socket(teamId, data)
+    """
     return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
