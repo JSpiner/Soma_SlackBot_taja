@@ -642,8 +642,13 @@ def command_kok(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
     
+    slackApi.chat.postMessage(
+        {
+            'channel'   : channelId,
+            'text'      : "King of the Keyboard"
+        }
+    )
 
-    return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):
