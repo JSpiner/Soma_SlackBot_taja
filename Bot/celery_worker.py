@@ -26,7 +26,7 @@ import random
 import threading
 import logging
 from celery.utils.log import get_task_logger
-
+ 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
 
@@ -642,13 +642,132 @@ def command_kok(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
     
-    slackApi.chat.postMessage(
+    if not is_channel_has_bot(slackApi, teamId, channelId):
+        redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+        
+        slackApi.chat.postMessage(
+            {
+                "channel" : channelId,
+                "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
+                'as_user'   : 'false',
+                "attachments": json.dumps(
+                    [
+                        {
+                            "text": static.getText(static.CODE_TEXT_INVITE_BOT, teamLang),
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#FF2222",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "invite_bot",
+                                    "text": static.getText(static.CODE_TEXT_INVITE, teamLang),
+                                    "type": "button",
+                                    "value": "invite_bot",
+                                    "confirm": {
+                                        "title": static.getText(static.CODE_TEXT_INVITE_ASK, teamLang),
+                                        "text": static.getText(static.CODE_TEXT_CAN_REMOVE, teamLang),
+                                        "ok_text": static.getText(static.CODE_TEXT_OPTION_INVITE, teamLang),
+                                        "dismiss_text": static.getText(static.CODE_TEXT_OPTION_LATER, teamLang),
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }
+        )
+        return
+    
+    game_id = str(util.generate_game_id())
+
+    redis_client.hset("kokusers_"+game_id, data['user'], "1")
+    result = slackApi.chat.postMessage(
         {
             'channel'   : channelId,
-            'text'      : "King of the Keyboard"
+            'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in 20 s"
+        }
+    )
+    
+    result2 = slackApi.chat.postMessage(
+        {
+            'channel'   : channelId,
+            'text'      : "",
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": "참가자 : <@" + data['user'] + ">",
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#FF2222",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "kok_join",
+                                "text": ":dagger_knife: Join",
+                                "type": "button",
+                                "value": "kok_join"
+                            }
+                        ]
+                    }
+                ]
+            )
         }
     )
 
+    redis_client.set('game_id_'+channelId, game_id)
+    redis_client.set('kokmsg_'+channelId, result2['ts'])
+
+    for i in range(1,20):
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'ts'        : result['ts'],
+                'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in %s s" % (str(20-i))                
+            }
+        )
+        time.sleep(1)
+
+
+    slackApi.chat.update(
+        {
+            'channel'   : channelId,
+            'ts'        : result['ts'],
+            'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in %s" % ("timeout")
+        }
+    )
+    
+    users = redis_client.hgetall('kokusers_'+game_id)
+
+    print(users)
+    userString = ""
+    for key, value in users.items():
+        if value == "1":
+            userString += "<@" + key + ">  "
+    slackApi.chat.update(
+        {
+            'channel'   : channelId,
+            'text'      : "",
+            'ts'        : result2['ts'],
+            'attachments'   : json.dumps(
+                [   
+                    {
+                        "text": "참가자 : " + userString + "\n Ok, Start",
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#FF2222",
+                        "attachment_type": "default",
+                    }
+                ]
+            )
+        }               
+    )
+
+    start_kok(data)
+
+
+def start_kok(data):
+    return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):

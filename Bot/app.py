@@ -78,12 +78,11 @@ def slack_event_btn():
     channelId = payload['channel']['id']
     teamId = payload['team']['id']
     teamLang = util.get_team_lang(teamId)
+    slackApi = util.init_slackapi(teamId)
     
-    app.logger.info("btn callback")
+    app.logger.info("btn callback" + str(payload))
     
     if payload['actions'][0]['name'] == 'invite_bot':
-
-        slackApi = util.init_slackapi(teamId)
 
         slackApi.channels.invite(
             {
@@ -102,7 +101,6 @@ def slack_event_btn():
             ("en", teamId)
         )
 
-        slackApi = util.init_slackapi(teamId)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
@@ -121,7 +119,6 @@ def slack_event_btn():
             ("kr", teamId)
         )
 
-        slackApi = util.init_slackapi(teamId)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
@@ -129,7 +126,44 @@ def slack_event_btn():
                 'as_user'   : 'false'
             }
         )
+    elif payload['actions'][0]['name'] == 'kok_join':
+        ts = redis_manager.redis_client.get('kokmsg_'+channelId)
+        game_id = redis_manager.redis_client.get('game_id_'+channelId)
+        
+        redis_manager.redis_client.hset('kokusers_'+game_id, payload['user']['id'], "1")
+        users = redis_manager.redis_client.hgetall('kokusers_'+game_id)
 
+        print(users)
+        userString = ""
+        for key, value in users.items():
+            if value == "1":
+                userString += "<@" + key + ">  "
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'text'      : "",
+                'ts'        : ts,
+                'attachments'   : json.dumps(
+                    [   
+                        {
+                            "text": "참가자 : " + userString,
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#FF2222",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "kok_join",
+                                    "text": ":dagger_knife: Join",
+                                    "type": "button",
+                                    "value": "kok_join"
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }               
+        )
 
 
     return ''
@@ -539,4 +573,7 @@ def slack_event():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+    app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
+
+#    app.run(debug = True)
