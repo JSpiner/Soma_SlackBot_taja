@@ -1027,6 +1027,8 @@ def game_end(slackApi, data, round = 0):
     if data['mode'] == "kok":
         print("start next round")
         start_kok(data, round+1)
+    
+    calc_badge(data)
 
 
 def sendMessage(slackApi, channel, text):
@@ -1113,3 +1115,90 @@ def pretty_rank(rank):
         print("ranks : " + str(num))
         result+=ranks[int(num)]
     return result
+
+def calc_badge(data):
+    
+    """
+    팀 뱃지
+
+    1 : '입문자' : 10판 플레이
+    2 : '세계정복' : 모든 채널에 봇이 초대됨
+    3 : '동작그만' : 게임취소 명령어를 1회 사용
+    4 : '게임중독' : 200판 플레이
+    5 : '만장일치' : 팀 내 모든 플레이어가 1회이상 게임 참여
+    
+    
+    개인 뱃지
+
+    1 : 'POTG' : 1등을 연속으로 3번 했을때
+    2 : '동반입대' : 특정플레이어와 2명이서 10판 이상 플레이
+    3 : '저승사자' : 연속 5번 1위
+    4 : '콩진호' : 22번 연속 2위
+    5 : '도와줘요 스피드웨건' : /help 명령어 1회 사용
+    """
+
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    badgeRows = util.fetch_all_json(db_manager.query(
+        "SELECT * "
+        "FROM TEAM_BADGE "
+        "WHERE "
+        "team_id = %s ",
+        (
+            teamId,
+        )
+    ))
+
+    if check_badge_exist(badgeRows, 1) == False:
+        rows = util.fetch_all_json(db_manager.query(
+            "SELECT COUNT(game_id) as game_num "
+            "FROM GAME_INFO "
+            "WHERE "
+            "team_id = %s",
+            (
+                teamId,
+            )
+        ))
+        if rows[0]['game_num'] >= 10:
+            reward_badge(data, 1)
+
+
+
+    return 0
+
+def check_badge_exist(rows, badge_id):
+
+    for row in rows:
+        if row['badge_id'] == badge_id:
+            return True
+
+    return False
+
+def reward_badge(data, badgeId):
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : ':fireworks: Your team get `new badge`!',
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": ":sports_medal: *입문자* : 게임 10판 플레이",
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#3AA3E3",
+                        "attachment_type": "default"
+                    }
+                ]
+            )
+        }
+    )
+
+    return 0
