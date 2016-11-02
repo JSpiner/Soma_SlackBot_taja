@@ -2,7 +2,7 @@
 import sys 
 sys.path.append("../")
 
-
+ 
 from sqlalchemy import exc
 
 
@@ -237,10 +237,11 @@ def command_start(data, round = 0):
     #만약 미션이 선택되었다면?!
     #미션에해당하는 멘트들을 가져오고 해당 멘트를 레디스에서 긁어와서 메시지로 뿌려준다.
     # if(mission_manager.pickUpGameEvent(data['channel'] == static.GAME_TYPE_MISSION):
+    """
     if(mission_manager.pickUpGameEvent(data['channel'])== static.GAME_TYPE_MISSION):
         sendMessage(slackApi, channelId, redis_client.get(static.GAME_MISSION_NOTI+ data['channel']))        
         print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
-
+    """
 
 
     titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
@@ -1001,6 +1002,7 @@ def game_end(slackApi, data, round = 0):
 
 
     
+    """
     #### 게임이 끝나고 미션 클리어했는지 판단해주는 로직이다.
     if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!="0"):
         mission_result = mission_manager.is_mission_clear(channelId,game_id)
@@ -1012,6 +1014,7 @@ def game_end(slackApi, data, round = 0):
             sendMessage(slackApi,channelId,"mission FAILE!!")        
 	# elif(mission_result== static.GAME_MISSION_SUC):
 	# 	sendMessage(slackApi,channelId,"미 션 성 공!")
+    """
 
 
 
@@ -1211,7 +1214,21 @@ def calc_badge(data):
 
     if check_badge_exist(badgeRows, 2) == False:
         if data['text'] == static.GAME_COMMAND_EXIT:       
-            reward_badge(data, 1)
+            reward_badge(data, 2)
+
+
+    if check_badge_exist(badgeRows, 3) == False:
+        rows = util.fetch_all_json(db_manager.query(
+            "SELECT COUNT(game_id) as game_num "
+            "FROM GAME_INFO "
+            "WHERE "
+            "team_id = %s",
+            (
+                teamId,
+            )
+        ))
+        if rows[0]['game_num'] >= 200:
+            reward_badge(data, 3)
 
 
     return 0

@@ -197,8 +197,8 @@ def slack_oauth():
             "INSERT INTO TEAM " 
             "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`, `bot_id`)"
             "VALUES"
-            "(%s, %s, %s, %s)",
-            (
+            "(%s, %s, %s, %s, %s, %s)",
+            ( 
                 response['team_id'],
                 response['team_name'],
                 ctime,
