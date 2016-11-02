@@ -712,7 +712,7 @@ def command_kok(data):
             'attachments'   : json.dumps(
                 [
                     {
-                        "text": "참가자 : <@" + data['user'] + ">",
+                        "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % ("<@" + data['user'] + ">"),
                         "fallback": "fallbacktext",
                         "callback_id": "wopr_game",
                         "color": "#FF2222",
@@ -740,7 +740,7 @@ def command_kok(data):
             {
                 'channel'   : channelId,
                 'ts'        : result['ts'],
-                'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in %s s" % (str(20-i))                
+                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % (str(20-i))                
             }
         )
         time.sleep(1)
@@ -750,7 +750,7 @@ def command_kok(data):
         {
             'channel'   : channelId,
             'ts'        : result['ts'],
-            'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in %s" % ("timeout")
+            'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("timeout")
         }
     )
     
@@ -769,7 +769,7 @@ def command_kok(data):
             'attachments'   : json.dumps(
                 [   
                     {
-                        "text": "참가자 : " + userString + "\n Ok, Start",
+                        "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % (userString),
                         "fallback": "fallbacktext",
                         "callback_id": "wopr_game",
                         "color": "#FF2222",
@@ -787,6 +787,7 @@ def start_kok(data, round):
     
     slackApi = util.init_slackapi(data['team_id'])
     channelId = data['channel']
+    teamLang = util.get_team_lang(data['team_id'])
 
     game_id = redis_client.get('kokgame_id_'+channelId)
     users = redis_client.hgetall('kokusers_'+game_id)
@@ -804,7 +805,7 @@ def start_kok(data, round):
         slackApi.chat.postMessage(
             {
                 'channel' : data['channel'],
-                'text' : "*King of the Keyboard* : " + userString
+                'text' : "*King of the Keyboard* : :crown: " + userString + " :crown:"
             }
         )
         redis_client.set('game_mode_'+channelId, "0")
@@ -813,7 +814,7 @@ def start_kok(data, round):
     slackApi.chat.postMessage(
         {
             'channel' : data['channel'],
-            'text' : "Round %s Survival : %s" % (round, userString)
+            'text' : static.getText(static.CODE_TEXT_KOK_ROUND, teamLang) % (round, userString)
         }
     )
 

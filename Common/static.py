@@ -93,6 +93,11 @@ CODE_TEXT_WARNING_PASTE     = "code_warning_paste"
 CODE_TEXT_CALC_SCORE        = "code_calc_score"
 CODE_TEXT_GAME_RESULT       = "code_game_result"
 CODE_TEXT_CHOOSE_LANG       = "code_choose_lang"
+CODE_TEXT_KOK_TITLE         = "code_kok_title"
+CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
+CODE_TEXT_KOK_ROUND         = "code_kok_round"
+
+
 
 # load json lang file
 with open('../Common/lang.json', 'r') as f:

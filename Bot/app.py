@@ -146,7 +146,7 @@ def slack_event_btn():
                 'attachments'   : json.dumps(
                     [   
                         {
-                            "text": "참가자 : " + userString,
+                            "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % (userString),
                             "fallback": "fallbacktext",
                             "callback_id": "wopr_game",
                             "color": "#FF2222",
