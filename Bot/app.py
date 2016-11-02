@@ -128,7 +128,7 @@ def slack_event_btn():
         )
     elif payload['actions'][0]['name'] == 'kok_join':
         ts = redis_manager.redis_client.get('kokmsg_'+channelId)
-        game_id = redis_manager.redis_client.get('game_id_'+channelId)
+        game_id = redis_manager.redis_client.get('kokgame_id_'+channelId)
         
         redis_manager.redis_client.hset('kokusers_'+game_id, payload['user']['id'], "1")
         users = redis_manager.redis_client.hgetall('kokusers_'+game_id)
@@ -285,6 +285,8 @@ def slack_game_start():
     data['channel'] = request.form.get('channel_id')
     data['text'] = static.GAME_COMMAND_START
     data['user'] = request.form.get('user_id')
+    data['mode'] = "normal"
+    redis_manager.redis_client.set('game_mode_'+request.form.get('channel_id'), "normal")
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
     app.logger.info(game_state)
@@ -405,6 +407,7 @@ def slack_game_kok():
     data['text'] = static.GAME_COMMAND_KOK
     data['user'] = request.form.get('user_id')
 
+    teamId = request.form.get('team_id')
 
     if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
         redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)

@@ -49,7 +49,7 @@ GAME_MISSION_SUC = "MISSION SUCCESS!!!!!"
 GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
 
 # socket expire time
-SOCKET_EXPIRE_TIME = 30 #60*60
+SOCKET_EXPIRE_TIME = 60*60
 
 # current_milli_time = lambda: int(round(time.time() * 1000))
 TIME_CURRENT = lambda: int(round(time.time() * 1000))

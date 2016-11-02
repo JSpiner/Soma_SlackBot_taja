@@ -129,7 +129,7 @@ def run(data):
         command_typing(data)
 
 
-def command_start(data):
+def command_start(data, round = 0):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
@@ -306,7 +306,7 @@ def command_start(data):
             'as_user'   : 'false'
         }
     )
-    game_end(slackApi, teamId, channelId)
+    game_end(slackApi, data, round)
 
 def command_exit(data):
     teamId = data["team_id"]
@@ -316,6 +316,7 @@ def command_exit(data):
     slackApi = util.init_slackapi(teamId)
 
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+    redis_client.set("game_mode" + channelId, "0")
     sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
 
 def command_myscore(data):
@@ -442,6 +443,21 @@ def command_typing(data):
     teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+
+    gamemode = redis_client.get('game_mode_'+channelId)
+    if gamemode == "kok":
+        game_id = redis_client.get('kokgame_id_'+channelId)
+        users = redis_client.hgetall('kokusers_'+game_id)
+
+        sw = False
+        for key, value in users.items():
+            if key == data['user'] and value == "1":
+                sw = True
+                break
+        
+        if sw == False:
+            print("=====================================")
+            return 0
 
     # 부정 복사 판단
     if static.CHAR_PASTE_ESCAPE in data['text']:
@@ -715,7 +731,8 @@ def command_kok(data):
         }
     )
 
-    redis_client.set('game_id_'+channelId, game_id)
+    redis_client.set('kokgame_id_'+channelId, game_id)
+    redis_client.set('game_mode_'+channelId, 'kok')
     redis_client.set('kokmsg_'+channelId, result2['ts'])
 
     for i in range(1,20):
@@ -763,11 +780,52 @@ def command_kok(data):
         }               
     )
 
-    start_kok(data)
+    start_kok(data, 1)
 
 
-def start_kok(data):
-    command_start(data)
+def start_kok(data, round):
+    
+    slackApi = util.init_slackapi(data['team_id'])
+    channelId = data['channel']
+
+    game_id = redis_client.get('kokgame_id_'+channelId)
+    users = redis_client.hgetall('kokusers_'+game_id)
+
+
+    print(users)
+    userString = ""
+    count = 0
+    for key, value in users.items():
+        if value == "1":
+            userString += "<@" + key + ">  "
+            count+=1
+
+    if count<=1:
+        slackApi.chat.postMessage(
+            {
+                'channel' : data['channel'],
+                'text' : "*King of the Keyboard* : " + userString
+            }
+        )
+        redis_client.set('game_mode_'+channelId, "0")
+        return 
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : data['channel'],
+            'text' : "Round %s Survival : %s" % (round, userString)
+        }
+    )
+
+    data['mode'] = "kok"
+
+    if round == 1:
+        time.sleep(2)
+    else:
+        time.sleep(4)
+    command_start(data, round)
+
+
     
     """
     app.logger.info("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
@@ -797,7 +855,10 @@ def is_channel_has_bot(slackApi, teamId, channelId):
         
 
 # 타이머 실행 함수(게임 종료시)
-def game_end(slackApi, teamId, channelId):
+def game_end(slackApi, data, round = 0):
+
+    teamId = data['team_id']
+    channelId = data['channel']
 
     teamLang = util.get_team_lang(teamId)
     sendMessage(slackApi, channelId, "Game End")
@@ -846,6 +907,13 @@ def game_end(slackApi, teamId, channelId):
  
     result_string = ""
     rank = 1
+    if data['mode'] == "kok":
+        kokgame_id = redis_client.get('kokgame_id_'+channelId)
+        users = redis_client.hgetall('kokusers_'+kokgame_id)
+
+        for key, value in users.items():
+            redis_client.hset("kokusers_"+kokgame_id, key, "0")
+
     for row in rows:
         result_string = result_string +(
             static.getText(static.CODE_TEXT_RANK_FORMAT_4, teamLang) %
@@ -858,6 +926,11 @@ def game_end(slackApi, teamId, channelId):
             )
         )
         rank = rank + 1
+        if data['mode'] == "kok":
+            if rank == len(rows) + 1:
+                redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "0")
+            else:
+                redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "1")
 
     sendResult = str(result_string)
     logger_celery.info(channelId)
@@ -949,6 +1022,10 @@ def game_end(slackApi, teamId, channelId):
 
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+
+    if data['mode'] == "kok":
+        print("start next round")
+        start_kok(data, round+1)
 
 
 def sendMessage(slackApi, channel, text):
