@@ -1236,6 +1236,7 @@ def reward_badge(data, badgeId):
         )
     )
 
+    time.sleep(1)
     slackApi.chat.postMessage(
         {
             'channel' : channelId,
@@ -1253,5 +1254,14 @@ def reward_badge(data, badgeId):
             )
         }
     )
+
+    if badgeId == 0:
+        time.sleep(3)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/'
+            }
+        )
 
     return 0

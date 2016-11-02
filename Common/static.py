@@ -97,6 +97,7 @@ CODE_TEXT_CHOOSE_LANG       = "code_choose_lang"
 CODE_TEXT_KOK_TITLE         = "code_kok_title"
 CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
 CODE_TEXT_KOK_ROUND         = "code_kok_round"
+CODE_TEXT_GAME_REVIEW       = "code_game_review"
 
 
 CODE_TEXT_TEAM_BADGES = [
