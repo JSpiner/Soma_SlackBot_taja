@@ -39,7 +39,8 @@
         "code_team_badge_3"     : ":sports_medal: 동작그만 : 게임 취소 명령어를 사용",
         "code_team_badge_4"     : ":sports_medal: 숙련자 : 게임 200판 플레이",
         "code_team_badge_5"     : ":sports_medal: 만장일치 : 팀 내의 모든 플레이어가 1회이상 게임에 참여",
-        "code_game_review"      : "게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/"
+        "code_game_review"      : "게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/",
+        "code_new_badge"        : ":fireworks: 새로운 `뱃지`를 수집했습니다!"
     },
     "en":{ 
         "code_lang_changed"     : "Language has been changed.",
@@ -81,6 +82,7 @@
         "code_team_badge_3"     : ":sports_medal: Hold on : Use /exit command",
         "code_team_badge_4"     : ":sports_medal: Export : Play over 200 times",
         "code_team_badge_5"     : ":sports_medal: Unanimous : Everyone in the team plays more than once",
-        "code_game_review"      : "Is it funny? :grin: \n Leave a review for more fun games! \n http://ssoma.xyz/wordpress/"
+        "code_game_review"      : "Is it funny? :grin: \n Leave a review for more fun games! \n http://ssoma.xyz/wordpress/",
+        "code_new_badge"        : ":fireworks: Your team get `new badge`!"
     }
 } 

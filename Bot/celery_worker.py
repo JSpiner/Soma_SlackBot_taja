@@ -321,6 +321,8 @@ def command_exit(data):
     redis_client.set("game_mode" + channelId, "0")
     sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
 
+    calc_badge(data)
+
 def command_myscore(data):
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
@@ -1207,6 +1209,9 @@ def calc_badge(data):
         if rows[0]['game_num'] >= 10:
             reward_badge(data, 0)
 
+    if check_badge_exist(badgeRows, 2) == False:
+        if data['text'] == static.GAME_COMMAND_EXIT:       
+            reward_badge(data, 1)
 
 
     return 0
@@ -1240,7 +1245,7 @@ def reward_badge(data, badgeId):
     slackApi.chat.postMessage(
         {
             'channel' : channelId,
-            'text' : ':fireworks: Your team get `new badge`!',
+            'text' : static.getText(static.CODE_TEXT_NEW_BADGE, teamLang),
             'attachments'   : json.dumps(
                 [
                     {
