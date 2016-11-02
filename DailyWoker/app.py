@@ -313,7 +313,7 @@ def job():
 # schedule.every().hour.do(job)
 # 매일 특정 시간에
 #schedule.every().day.at("00:00").do(job)
-schedule.every(20).second.do(job)
+schedule.every(20).seconds.do(job)
 
 while 1:
     schedule.run_pending()
