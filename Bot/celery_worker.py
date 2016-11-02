@@ -123,8 +123,10 @@ def run(data):
         command_exit(data)
     elif data["text"] == static.GAME_COMMAND_MY_SCORE:  # 나의 기록들을 보여줌
         command_myscore(data)
-    elif data["text"] == static.GAME_COMMAND_KOK:
+    elif data["text"] == static.GAME_COMMAND_KOK:       # King of the Keyboard 모드 
         command_kok(data)
+    elif data["text"] == static.GAME_COMMAND_BADGE:     # badge 목록을 보여줌  
+        command_badge(data)
     else :                                              # typing 된 내용들
         command_typing(data)
 
@@ -782,6 +784,46 @@ def command_kok(data):
 
     start_kok(data, 1)
 
+def command_badge(data):
+
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    rows = util.fetch_all_json(db_manager.query(
+        "SELECT * "
+        "FROM TEAM_BADGE "
+        "WHERE "
+        "team_id = %s ",
+        (
+            teamId,
+        )
+    ))
+
+    resultString = ""
+    for row in rows:
+        resultString += static.getText(static.CODE_TEXT_TEAM_BADGES[row['badge_id']], teamLang) + "\n"
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : 'TEAM BADGES',
+            'attachments'   : json.dumps(
+                [   
+                    {
+                        "text": resultString,
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#2f35a3",
+                        "attachment_type": "default",
+                    }
+                ]
+            )
+        }
+    )
+
+
 
 def start_kok(data, round):
     
@@ -1121,20 +1163,20 @@ def calc_badge(data):
     """
     팀 뱃지
 
-    1 : '입문자' : 10판 플레이
-    2 : '세계정복' : 모든 채널에 봇이 초대됨
-    3 : '동작그만' : 게임취소 명령어를 1회 사용
-    4 : '게임중독' : 200판 플레이
-    5 : '만장일치' : 팀 내 모든 플레이어가 1회이상 게임 참여
+    0 : '입문자' : 10판 플레이
+    1 : '세계정복' : 모든 채널에 봇이 초대됨
+    2 : '동작그만' : 게임취소 명령어를 1회 사용
+    3 : '게임중독' : 200판 플레이
+    4 : '만장일치' : 팀 내 모든 플레이어가 1회이상 게임 참여
     
     
     개인 뱃지
 
-    1 : 'POTG' : 1등을 연속으로 3번 했을때
-    2 : '동반입대' : 특정플레이어와 2명이서 10판 이상 플레이
-    3 : '저승사자' : 연속 5번 1위
-    4 : '콩진호' : 22번 연속 2위
-    5 : '도와줘요 스피드웨건' : /help 명령어 1회 사용
+    0 : 'POTG' : 1등을 연속으로 3번 했을때
+    1 : '동반입대' : 특정플레이어와 2명이서 10판 이상 플레이
+    2 : '저승사자' : 연속 5번 1위
+    3 : '콩진호' : 22번 연속 2위
+    4 : '도와줘요 스피드웨건' : /help 명령어 1회 사용
     """
 
     teamId = data["team_id"]
@@ -1152,7 +1194,7 @@ def calc_badge(data):
         )
     ))
 
-    if check_badge_exist(badgeRows, 1) == False:
+    if check_badge_exist(badgeRows, 0) == False:
         rows = util.fetch_all_json(db_manager.query(
             "SELECT COUNT(game_id) as game_num "
             "FROM GAME_INFO "
@@ -1163,7 +1205,7 @@ def calc_badge(data):
             )
         ))
         if rows[0]['game_num'] >= 10:
-            reward_badge(data, 1)
+            reward_badge(data, 0)
 
 
 
@@ -1201,7 +1243,7 @@ def reward_badge(data, badgeId):
             'attachments'   : json.dumps(
                 [
                     {
-                        "text": ":sports_medal: 입문자 : 게임 10판 플레이",
+                        "text": static.getText(static.CODE_TEXT_TEAM_BADGES[badgeId], teamLang),
                         "fallback": "fallbacktext",
                         "callback_id": "wopr_game",
                         "color": "#3AA3E3",

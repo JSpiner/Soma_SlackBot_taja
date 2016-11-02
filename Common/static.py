@@ -9,6 +9,7 @@ GAME_COMMAND_SCORE      = "/score"
 GAME_COMMAND_RANK       = "/rank"
 GAME_COMMAND_KOK        = "/kok"
 GAME_COMMAND_MY_SCORE   = "/myscore"
+GAME_COMMAND_BADGE      = "/badge"
 GAME_COMMAND_EXIT       = "/exit"
 
 # 0 = 게임이 실행중이지 않을 때
@@ -98,13 +99,13 @@ CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
 CODE_TEXT_KOK_ROUND         = "code_kok_round"
 
 
-CODE_TEXT_TEAM_BADGES = {
+CODE_TEXT_TEAM_BADGES = [
     "code_team_badge_1",
     "code_team_badge_2",
     "code_team_badge_3",
     "code_team_badge_4",
     "code_team_badge_5"
-}
+]
 
 # load json lang file
 with open('../Common/lang.json', 'r') as f:

@@ -330,6 +330,31 @@ def slack_game_start():
         response.headers['Content-type'] = 'application/json'
         return response
 
+@app.route('/slack/badge', methods = ['POST'])
+def slack_game_badge():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_BADGE
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
 @app.route('/slack/pvp', methods = ['POST'])
 def slack_game_pvp():
     payload = request.get_data().decode()
