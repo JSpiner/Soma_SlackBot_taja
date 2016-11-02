@@ -330,6 +330,38 @@ def slack_game_start():
         response.headers['Content-type'] = 'application/json'
         return response
 
+@app.route('/slack/pvp', methods = ['POST'])
+def slack_game_pvp():
+    payload = request.get_data().decode()
+    print(payload)
+
+    slackApi = util.init_slackapi(request.form.get('team_id'))
+    teamLang = util.get_team_lang(request.form.get('team_id'))
+
+    channelId = request.form.get('channel_id')
+    text = request.form.get('text')
+    text = text.replace('@', '')
+
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : 'pvp with other user'
+        }
+    )
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
+
 @app.route('/slack/lang', methods = ['POST'])
 def slack_game_lang():
     payload = request.get_data().decode()
