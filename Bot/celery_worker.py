@@ -1183,6 +1183,17 @@ def reward_badge(data, badgeId):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
 
+    db_manager.query(
+        "INSERT INTO TEAM_BADGE "
+        "(`team_id`, `badge_id`) "
+        "VALUES "
+        "(%s, %s)",
+        (
+            teamId,
+            badgeId
+        )
+    )
+
     slackApi.chat.postMessage(
         {
             'channel' : channelId,
@@ -1190,7 +1201,7 @@ def reward_badge(data, badgeId):
             'attachments'   : json.dumps(
                 [
                     {
-                        "text": ":sports_medal: *입문자* : 게임 10판 플레이",
+                        "text": ":sports_medal: 입문자 : 게임 10판 플레이",
                         "fallback": "fallbacktext",
                         "callback_id": "wopr_game",
                         "color": "#3AA3E3",
