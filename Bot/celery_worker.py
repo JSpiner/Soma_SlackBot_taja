@@ -337,7 +337,14 @@ def command_myscore(data):
 
     # 내 게임 결과들 가져오기
     result = db_manager.query(
-        "SELECT * FROM GAME_RESULT "
+        "SELECT * , ( "
+        "SELECT COUNT(*) + 1 "
+        "FROM GAME_RESULT "
+        "WHERE "
+        "score > a.score and "
+        "game_id = a.game_id"
+        ") as rank "
+        "FROM GAME_RESULT as a "
         "WHERE "
         "user_id = %s order by score desc;",
         (userId,)
@@ -357,7 +364,7 @@ def command_myscore(data):
                 pretty_score(row["score"]),
                 pretty_accur(row["accuracy"]),
                 pretty_speed(row["speed"]),
-                pretty_speed(row["speed"])
+                pretty_speed(row["rank"])
             )
         )
         rank = rank + 1
