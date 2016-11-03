@@ -472,10 +472,10 @@ def command_typing(data):
         if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_REVERSE):
             logger_celery.info('[MISSION_REVERESE]')
             reverse_text = ''.join(reversed(data["text"]))
-            
             logger_celery.info('[MISSION_REVERESE] ==> user:'+data["text"] +' problem'+redis_client.get("problem_text_" + channelId))
-
             distance = util.get_edit_distance(reverse_text, redis_client.get("problem_text_" + channelId))
+        else:
+            distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
 
     else:
         distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
@@ -959,7 +959,59 @@ def game_end(slackApi, data, round = 0):
     ) 
     rows =util.fetch_all_json(result)
 
-    logger_celery.info(rows)
+    logger_celery.info('game result orow'+str(rows))
+
+
+    #참여인원에대한 플래그는 하상 0 이다.
+    redis_client.set(static.GAME_MISSION_FLG_MIN_MEMBER + channelId, 0)
+    
+    #none이아니면 미션이라는 이야기이다.
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+
+        # code가 102인경우 ==> 1등과 2등을 바꿔져야한다.
+        # 단 로우가 2이상일경우에만..
+        if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SENCONDORY and len(rows) > 1):            
+            redis_client.set(static.GAME_MISSION_FLG_MIN_MEMBER + channelId, 1)
+
+            first_user_id = rows[0]['user_id'];
+            second_user_id = rows[1]['user_id'];
+            
+            # logger_celery.info('[MISSION_SECONDORY] UPDATE 1th = '+get_user_info(slackApi,first_user_id)["user"]["name"] +' 2th = '+get_user_info(slackApi,second_user_id)["user"]["name"])
+
+            #1등자리에 2등을 넣고
+            try :
+                
+                #first에 #을붙인다.
+                db_manager.query(
+                    "UPDATE GAME_RESULT "
+                    "set user_id = %s where game_id = %s and user_id = %s ",
+                    (first_user_id+'#',game_id,first_user_id)
+                )
+                #그리고 second에 first를 넣고
+                db_manager.query(
+                    "UPDATE GAME_RESULT "
+                    "set user_id = %s where game_id = %s and user_id = %s ",
+                    (first_user_id,game_id,second_user_id)
+                )
+
+                db_manager.query(
+                    "UPDATE GAME_RESULT "
+                    "set user_id = %s where game_id = %s and user_id = %s ",
+                    (second_user_id,game_id,first_user_id+'#')
+                )                
+
+            except Exception as e:
+                logger_celery.error(str(e))
+        else :
+            redis_client.set(static.GAME_MISSION_FLG_MIN_MEMBER + channelId, 0)
+    
+        result = db_manager.query(
+            "SELECT * FROM GAME_RESULT "
+            "WHERE game_id = %s order by score desc",
+            (game_id,)
+        ) 
+        rows =util.fetch_all_json(result)
+
  
     result_string = ""
     rank = 1
@@ -1029,10 +1081,19 @@ def game_end(slackApi, data, round = 0):
             elif(mission_result == static.GAME_MISSION_FAILE):
                 logger_celery.info('[MISSION_RESULT]==> MISSION FAILE')
                 sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))
-        #100보다 클경우 => special한 미션일 경우다.
+        #Random일 경우
         elif(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_REVERSE):
             logger_celery.info('[MISSION_RESULT]==> REVERSE MISSION END')
-            # sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))    
+            sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_REVERSE, teamLang))    
+        #2등만보여줄경우.
+        elif(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SENCONDORY):
+
+            if(int(redis_client.get(static.GAME_MISSION_FLG_MIN_MEMBER+ channelId))==1):
+                logger_celery.info('[MISSION_RESULT]==> SECONDORY MISSION END')
+                sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_SECONDORY, teamLang))    
+            elif(int(redis_client.get(static.GAME_MISSION_FLG_MIN_MEMBER+ channelId))==0):
+                logger_celery.info('[MISSION_RESULT]==> SECONDORY MISSION END not enough member')
+                sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_MIN_MEMBER, teamLang))    
             # mission_manager.mission_reverse_typing()
 
 
