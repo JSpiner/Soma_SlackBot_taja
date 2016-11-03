@@ -63,6 +63,8 @@ def shutdown_worker(**kwargs):
 
 @app.task
 def worker(data):
+    raise NameError
+
     gameThread = threading.Thread(target=run, args=(data,))
     gameThread.start()
 
