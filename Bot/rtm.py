@@ -2,7 +2,6 @@ import sys
 from slackclient import SlackClient
 
 import os
-from celery_worker import worker
 import Common.test as tester
 import requests
 import json

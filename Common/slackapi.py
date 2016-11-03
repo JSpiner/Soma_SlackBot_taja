@@ -1,7 +1,7 @@
 import requests
 import sys 
 
-SLACK_API_SERVER = "https://slack.com/api/"
+SLACK_API_SERVER = "https://slack.com/api/"#"https://54.192.183.186/api/"
 
 class SlackApi:
 

@@ -29,7 +29,18 @@
         "code_rank"             : "채널 랭킹",
         "code_warning_paste"    : "복사는 금지입니다 :imp:",
         "code_calc_score"       : "==순위계산중입니다==",
-        "code_game_result"      : "게임 결과"
+        "code_game_result"      : "게임 결과",
+        "code_choose_lang"      : "시작하기에 앞서, 언어를 선택해 주세요.",
+        "code_kok_title"        : ":crown: *King of the Keyboard* :crown: \n한명이 남을때까지 싸우는 서바이벌 모드입니다. 곧 마감됩니다. %s ",
+        "code_kok_entry"        : "참가자 : %s ",
+        "code_kok_round"        : "라운드 *%s* 생존자 : %s",
+        "code_team_badge_1"     : ":sports_medal: 입문자 : 게임 10판 플레이",
+        "code_team_badge_2"     : ":sports_medal: 세계정복 : 모든 채널에 봇을 초대함",
+        "code_team_badge_3"     : ":sports_medal: 동작그만 : 게임 취소 명령어를 사용",
+        "code_team_badge_4"     : ":sports_medal: 숙련자 : 게임 200판 플레이",
+        "code_team_badge_5"     : ":sports_medal: 만장일치 : 팀 내의 모든 플레이어가 1회이상 게임에 참여",
+        "code_game_review"      : "게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/",
+        "code_new_badge"        : ":fireworks: 새로운 `뱃지`를 수집했습니다!"
     },
     "en":{ 
         "code_lang_changed"     : "Language has been changed.",
@@ -61,6 +72,17 @@
         "code_rank"             : "Channel ranking",
         "code_warning_paste"    : "Paste is cheating :imp:",
         "code_calc_score"       : "== Calculating score... ==",
-        "code_game_result"      : "Game result"
+        "code_game_result"      : "Game result",
+        "code_choose_lang"      : "First, Choose your language!",
+        "code_kok_title"        : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? %s ",
+        "code_kok_entry"        : "Entry members : %s ",
+        "code_kok_round"        : "Round %s Survival : %s",
+        "code_team_badge_1"     : ":sports_medal: Beginner : Play over 10 times",
+        "code_team_badge_2"     : ":sports_medal: World conquest : Invited bot to all channels",
+        "code_team_badge_3"     : ":sports_medal: Hold on : Use /exit command",
+        "code_team_badge_4"     : ":sports_medal: Export : Play over 200 times",
+        "code_team_badge_5"     : ":sports_medal: Unanimous : Everyone in the team plays more than once",
+        "code_game_review"      : "Is it funny? :grin: \n Leave a review for more fun games! \n http://ssoma.xyz/wordpress/",
+        "code_new_badge"        : ":fireworks: Your team get `new badge`!"
     }
 } 

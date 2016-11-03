@@ -78,12 +78,11 @@ def slack_event_btn():
     channelId = payload['channel']['id']
     teamId = payload['team']['id']
     teamLang = util.get_team_lang(teamId)
+    slackApi = util.init_slackapi(teamId)
     
-    app.logger.info("btn callback")
+    app.logger.info("btn callback" + str(payload))
     
     if payload['actions'][0]['name'] == 'invite_bot':
-
-        slackApi = util.init_slackapi(teamId)
 
         slackApi.channels.invite(
             {
@@ -102,13 +101,10 @@ def slack_event_btn():
             ("en", teamId)
         )
 
-        slackApi = util.init_slackapi(teamId)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, "en"),
                 'as_user'   : 'false'
             }
         )
@@ -123,17 +119,51 @@ def slack_event_btn():
             ("kr", teamId)
         )
 
-        slackApi = util.init_slackapi(teamId)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
+                'text' : static.getText(static.CODE_TEXT_LANG_CHANGED, "kr"),
                 'as_user'   : 'false'
             }
         )
+    elif payload['actions'][0]['name'] == 'kok_join':
+        ts = redis_manager.redis_client.get('kokmsg_'+channelId)
+        game_id = redis_manager.redis_client.get('kokgame_id_'+channelId)
+        
+        redis_manager.redis_client.hset('kokusers_'+game_id, payload['user']['id'], "1")
+        users = redis_manager.redis_client.hgetall('kokusers_'+game_id)
 
+        print(users)
+        userString = ""
+        for key, value in users.items():
+            if value == "1":
+                userString += "<@" + key + ">  "
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'text'      : "",
+                'ts'        : ts,
+                'attachments'   : json.dumps(
+                    [   
+                        {
+                            "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % (userString),
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#FF2222",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "kok_join",
+                                    "text": ":dagger_knife: Join",
+                                    "type": "button",
+                                    "value": "kok_join"
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }               
+        )
 
 
     return ''
@@ -167,8 +197,8 @@ def slack_oauth():
             "INSERT INTO TEAM " 
             "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`, `bot_id`)"
             "VALUES"
-            "(%s, %s, %s, %s)",
-            (
+            "(%s, %s, %s, %s, %s, %s)",
+            ( 
                 response['team_id'],
                 response['team_name'],
                 ctime,
@@ -197,6 +227,7 @@ def slack_oauth():
     accessToken = response['access_token']
     teamLang = util.get_team_lang(response['team_id'])
 
+    """
     slackApi = SlackApi(accessToken)
     slackBotApi = SlackApi(response['bot']['bot_access_token'])
     slackMembers = slackApi.im.list()['ims']
@@ -236,6 +267,7 @@ def slack_oauth():
                 )
             }
         )
+    """
     return 'auth success' + response['access_token']
 
 @app.route('/slack/start', methods = ['POST'])
@@ -253,6 +285,8 @@ def slack_game_start():
     data['channel'] = request.form.get('channel_id')
     data['text'] = static.GAME_COMMAND_START
     data['user'] = request.form.get('user_id')
+    data['mode'] = "normal"
+    redis_manager.redis_client.set('game_mode_'+request.form.get('channel_id'), "normal")
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
     app.logger.info(game_state)
@@ -289,14 +323,69 @@ def slack_game_start():
                 { 
                     'response_type' : 'in_channel',
                     'text' : static.getText(static.CODE_TEXT_ALREADY_STARTED, teamLang),
-                    'username'  : 'surfinger',
-                    'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                     'as_user'   : 'false'
                 } 
             )
         )
         response.headers['Content-type'] = 'application/json'
         return response
+
+@app.route('/slack/badge', methods = ['POST'])
+def slack_game_badge():
+    payload = request.get_data().decode()
+    print(payload)
+    data = {}
+
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_BADGE
+    data['user'] = request.form.get('user_id')
+
+    worker.delay(data)
+
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
+@app.route('/slack/pvp', methods = ['POST'])
+def slack_game_pvp():
+    payload = request.get_data().decode()
+    print(payload)
+
+    slackApi = util.init_slackapi(request.form.get('team_id'))
+    teamLang = util.get_team_lang(request.form.get('team_id'))
+
+    channelId = request.form.get('channel_id')
+    text = request.form.get('text')
+    text = text.replace('@', '')
+
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : 'pvp with other user'
+        }
+    )
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
 
 @app.route('/slack/lang', methods = ['POST'])
 def slack_game_lang():
@@ -309,8 +398,6 @@ def slack_game_lang():
     slackApi.chat.postMessage(
         {
             'channel'       : request.form.get('channel_id'),
-            'username'      : 'surfinger',
-            'icon_url'      : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'text'          : static.getText(static.CODE_TEXT_BUTTON_LANG, teamLang),
             'attachments'   : json.dumps(
                 [
@@ -361,6 +448,38 @@ def slack_game_help():
             {
                 'response_type' : 'in_channel',
                 'text' : 'help texts'
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response  
+
+@app.route('/slack/kok', methods = ['POST'])
+def slack_game_kok():
+    payload = request.get_data().decode()
+    app.logger.info(payload)
+    data = {}
+    data['team_id'] = request.form.get('team_id')
+    data['channel'] = request.form.get('channel_id')
+    data['text'] = static.GAME_COMMAND_KOK
+    data['user'] = request.form.get('user_id')
+
+    teamId = request.form.get('team_id')
+
+    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+
+        print('start')
+        worker.delay(data)
+    else:            
+        rtm_manager.open_new_socket(teamId, data)
+
+    response = Response(
+        json.dumps(
+            {
+                'response_type' : 'in_channel',
+                'text' : ''
             }
         )
     )
@@ -522,4 +641,7 @@ def slack_event():
     return json.dumps(response)
 
 if __name__ == '__main__':
+#    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+#    app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
+
     app.run(debug = True)
