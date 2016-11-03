@@ -60,7 +60,7 @@ for row in rows:
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-
+    df
     html = (
         "<html>"
         "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
