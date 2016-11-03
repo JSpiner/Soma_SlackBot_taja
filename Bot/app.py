@@ -641,7 +641,7 @@ def slack_event():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
-    app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
+#    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
+#    app.run(host='0.0.0.0', debug = True, port = 20000, ssl_context = ssl_context)
 
-#    app.run(debug = True)
+    app.run(debug = True)
