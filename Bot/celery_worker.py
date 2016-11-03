@@ -186,15 +186,13 @@ def command_start(data):
         except Exception as e:
             logger_celery.error('error : '+str(e))
 
-
-    # start_time = redis_client.get("start_time_" + channelId)
-
     #만약 미션이 선택되었다면?!
-    #미션에해당하는 멘트들을 가져오고 해당 멘트를 레디스에서 긁어와서 메시지로 뿌려준다.
-    # if(mission_manager.pickUpGameEvent(data['channel'] == static.GAME_TYPE_MISSION):
-    if(mission_manager.pickUpGameEvent(data['channel'])== static.GAME_TYPE_MISSION):
-        sendMessage(slackApi, channelId, redis_client.get(static.GAME_MISSION_NOTI+ data['channel']))        
-        print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
+    #미션에해당하는 멘트들을 가져오고 해당 멘트를 레디스에서 긁어와서 메시지로 뿌려준다.    
+    if(mission_manager.pickUpGameEvent(data['channel'],teamId)== static.GAME_TYPE_MISSION):
+        logger_celery.info('[MISSION]==>START!')
+        sendMessage(slackApi, channelId, redis_client.get(static.GAME_MISSION_NOTI+ data['channel']))
+        logger_celery.info('[MISSION_CONDI_inREDSI]==> '+static.GAME_MISSION_CONDI+data['channel'])
+        # print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
 
 
 
@@ -715,11 +713,14 @@ def game_end(slackApi, teamId, channelId):
     if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!=None):
         mission_result = mission_manager.is_mission_clear(channelId,game_id)
         if(mission_result == static.GAME_MISSION_ABSENT):
-            sendMessage(slackApi, channelId, "인원이 부족하여 미션에 도전하지 못하였어요!")
+            logger_celery.info('[MISSION_RESULT]==> notEnough member')
+            sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_MISSION_RESULT_MIN_MEMBER, teamLang))
         elif(mission_result == static.GAME_MISSION_SUC):
-            sendMessage(slackApi,channelId,"mission Success!!")
+            logger_celery.info('[MISSION_RESULT]==> MISSION SUCCESS')
+            sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_SUCCESS, teamLang))
         elif(mission_result == static.GAME_MISSION_FAILE):
-            sendMessage(slackApi,channelId,"mission FAILE!!")        
+            logger_celery.info('[MISSION_RESULT]==> MISSION FAILE')
+            sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))
 	# elif(mission_result== static.GAME_MISSION_SUC):
 	# 	sendMessage(slackApi,channelId,"미 션 성 공!")
 

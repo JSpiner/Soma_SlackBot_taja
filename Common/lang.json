@@ -29,7 +29,10 @@
         "code_rank"             : "채널 랭킹",
         "code_warning_paste"    : "복사는 금지입니다 :imp:",
         "code_calc_score"       : "==순위계산중입니다==",
-        "code_game_result"      : "게임 결과"
+        "code_game_result"      : "게임 결과",
+        "code_text_mission_result_min_member" : "[미션 실패] 인원이 충분하지 않습니다. ",
+        "code_text_mission_result_success" : "[미션 성공] 미션에 성공하셨어요!! ",
+        "code_text_mission_result_fail" : "[미션 실패] 미션에 실패하셨어요!! "
     },
     "en":{ 
         "code_lang_changed"     : "Language has been changed.",
@@ -61,6 +64,10 @@
         "code_rank"             : "Channel ranking",
         "code_warning_paste"    : "Paste is cheating :imp:",
         "code_calc_score"       : "== Calculating score... ==",
-        "code_game_result"      : "Game result"
+        "code_game_result"      : "Game result",
+        "code_text_mission_result_min_member" : "[mission fail] Not enough people. ",
+        "code_text_mission_result_success" : "[mission success] mission success!! ",
+        "code_text_mission_result_fail" : "[mission fail] mission fail!! "
+
     }
 } 

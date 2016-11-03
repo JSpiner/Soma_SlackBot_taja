@@ -92,6 +92,10 @@ CODE_TEXT_WARNING_PASTE     = "code_warning_paste"
 CODE_TEXT_CALC_SCORE        = "code_calc_score"
 CODE_TEXT_GAME_RESULT       = "code_game_result"
 
+#for mission
+CODE_TEXT_MISSION_RESULT_MIN_MEMBER       = "code_text_mission_result_min_member"
+CODE_TEXT_MISSION_RESULT_SUCCESS       = "code_text_mission_result_success"
+CODE_TEXT_MISSION_RESULT_FAIL       = "code_text_mission_result_fail"
 # load json lang file
 with open('../Common/lang.json', 'r') as f:
     lang = json.load(f)
