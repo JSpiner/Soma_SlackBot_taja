@@ -2,7 +2,7 @@
 import sys 
 sys.path.append("../")
 
-
+ 
 from sqlalchemy import exc
 
 
@@ -26,7 +26,7 @@ import random
 import threading
 import logging
 from celery.utils.log import get_task_logger
-
+ 
 with open('../conf.json') as conf_json:
     conf = json.load(conf_json)
 
@@ -70,6 +70,49 @@ def run(data):
     logger_celery.info(data)
     print("celery data : " + str(data))
 
+    teamId = data["team_id"]
+    channelId = data['channel']
+    teamLang = util.get_team_lang(teamId)
+
+    if teamLang is None:
+        redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+
+        slackApi = util.init_slackapi(teamId)
+
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text'  : static.getText(static.CODE_TEXT_CHOOSE_LANG, "en"),
+                'attachments'   : json.dumps(
+                    [
+                        {
+                            "text": "",
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#3AA3E3",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "lang_en",
+                                    "text": ":us: English",
+                                    "type": "button",
+                                    "value": "lang_en"
+                                },
+                                {
+                                    "name": "lang_kr",
+                                    "text": ":kr: 한국어",
+                                    "type": "button",
+                                    "value": "lang_kr"
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }
+        )
+        
+        return
+
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
         command_start(data)
     elif data["text"] == static.GAME_COMMAND_RANK:      # 해당 채널의 유저들의 랭크를 보여줌
@@ -80,11 +123,15 @@ def run(data):
         command_exit(data)
     elif data["text"] == static.GAME_COMMAND_MY_SCORE:  # 나의 기록들을 보여줌
         command_myscore(data)
+    elif data["text"] == static.GAME_COMMAND_KOK:       # King of the Keyboard 모드 
+        command_kok(data)
+    elif data["text"] == static.GAME_COMMAND_BADGE:     # badge 목록을 보여줌  
+        command_badge(data)
     else :                                              # typing 된 내용들
         command_typing(data)
 
 
-def command_start(data):
+def command_start(data, round = 0):
     teamId = data["team_id"]
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
@@ -99,8 +146,6 @@ def command_start(data):
             {
                 "channel" : channelId,
                 "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false',
                 "attachments": json.dumps(
                     [
@@ -195,7 +240,6 @@ def command_start(data):
         # print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
 
 
-
     titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
     response = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_COUNT_1, teamLang))
 
@@ -212,8 +256,6 @@ def command_start(data):
                 "ts" : text_ts,
                 "channel": channelId,
                 "text" : strs[i],
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
         )
@@ -231,8 +273,6 @@ def command_start(data):
             "ts" : text_ts,
             "channel": channelId,
             "text" : static.getText(static.CODE_TEXT_SUGGEST_PROBLEM, teamLang) % (static.CHAR_PASTE_ESCAPE.join(problem_text)),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
@@ -251,8 +291,6 @@ def command_start(data):
                 "ts" : title_ts,
                 "channel": channelId,
                 "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
-                'username'  : 'surfinger',
-                'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
                 'as_user'   : 'false'
             }
         )
@@ -264,12 +302,10 @@ def command_start(data):
             "ts" : title_ts,
             "channel": channelId,
             "text" : static.getText(static.CODE_TEXT_START_GAME_END, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
-    game_end(slackApi, teamId, channelId)
+    game_end(slackApi, data, round)
 
 def command_exit(data):
     teamId = data["team_id"]
@@ -279,7 +315,10 @@ def command_exit(data):
     slackApi = util.init_slackapi(teamId)
 
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+    redis_client.set("game_mode" + channelId, "0")
     sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
+
+    calc_badge(data)
 
 def command_myscore(data):
     teamId = data["team_id"]
@@ -328,8 +367,6 @@ def command_myscore(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_MY_SCORE, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -388,8 +425,6 @@ def command_score(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_SCORE, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -409,6 +444,21 @@ def command_typing(data):
     teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+
+    gamemode = redis_client.get('game_mode_'+channelId)
+    if gamemode == "kok":
+        game_id = redis_client.get('kokgame_id_'+channelId)
+        users = redis_client.hgetall('kokusers_'+game_id)
+
+        sw = False
+        for key, value in users.items():
+            if key == data['user'] and value == "1":
+                sw = True
+                break
+        
+        if sw == False:
+            print("=====================================")
+            return 0
 
     # 부정 복사 판단
     if static.CHAR_PASTE_ESCAPE in data['text']:
@@ -603,8 +653,6 @@ def command_rank(data):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_RANK, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -619,6 +667,234 @@ def command_rank(data):
         }
     )
 
+def command_kok(data):
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+    
+    if not is_channel_has_bot(slackApi, teamId, channelId):
+        redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+        
+        slackApi.chat.postMessage(
+            {
+                "channel" : channelId,
+                "text" : static.getText(static.CODE_TEXT_BOT_NOTFOUND, teamLang),
+                'as_user'   : 'false',
+                "attachments": json.dumps(
+                    [
+                        {
+                            "text": static.getText(static.CODE_TEXT_INVITE_BOT, teamLang),
+                            "fallback": "fallbacktext",
+                            "callback_id": "wopr_game",
+                            "color": "#FF2222",
+                            "attachment_type": "default",
+                            "actions": [
+                                {
+                                    "name": "invite_bot",
+                                    "text": static.getText(static.CODE_TEXT_INVITE, teamLang),
+                                    "type": "button",
+                                    "value": "invite_bot",
+                                    "confirm": {
+                                        "title": static.getText(static.CODE_TEXT_INVITE_ASK, teamLang),
+                                        "text": static.getText(static.CODE_TEXT_CAN_REMOVE, teamLang),
+                                        "ok_text": static.getText(static.CODE_TEXT_OPTION_INVITE, teamLang),
+                                        "dismiss_text": static.getText(static.CODE_TEXT_OPTION_LATER, teamLang),
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                )
+            }
+        )
+        return
+    
+    game_id = str(util.generate_game_id())
+
+    redis_client.hset("kokusers_"+game_id, data['user'], "1")
+    result = slackApi.chat.postMessage(
+        {
+            'channel'   : channelId,
+            'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in 20 s"
+        }
+    )
+    
+    result2 = slackApi.chat.postMessage(
+        {
+            'channel'   : channelId,
+            'text'      : "",
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % ("<@" + data['user'] + ">"),
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#FF2222",
+                        "attachment_type": "default",
+                        "actions": [
+                            {
+                                "name": "kok_join",
+                                "text": ":dagger_knife: Join",
+                                "type": "button",
+                                "value": "kok_join"
+                            }
+                        ]
+                    }
+                ]
+            )
+        }
+    )
+
+    redis_client.set('kokgame_id_'+channelId, game_id)
+    redis_client.set('game_mode_'+channelId, 'kok')
+    redis_client.set('kokmsg_'+channelId, result2['ts'])
+
+    for i in range(1,20):
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'ts'        : result['ts'],
+                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % (str(20-i))                
+            }
+        )
+        time.sleep(1)
+
+
+    slackApi.chat.update(
+        {
+            'channel'   : channelId,
+            'ts'        : result['ts'],
+            'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("timeout")
+        }
+    )
+    
+    users = redis_client.hgetall('kokusers_'+game_id)
+
+    print(users)
+    userString = ""
+    for key, value in users.items():
+        if value == "1":
+            userString += "<@" + key + ">  "
+    slackApi.chat.update(
+        {
+            'channel'   : channelId,
+            'text'      : "",
+            'ts'        : result2['ts'],
+            'attachments'   : json.dumps(
+                [   
+                    {
+                        "text": static.getText(static.CODE_TEXT_KOK_ENTRY, teamLang) % (userString),
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#FF2222",
+                        "attachment_type": "default",
+                    }
+                ]
+            )
+        }               
+    )
+
+    start_kok(data, 1)
+
+def command_badge(data):
+
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    rows = util.fetch_all_json(db_manager.query(
+        "SELECT * "
+        "FROM TEAM_BADGE "
+        "WHERE "
+        "team_id = %s ",
+        (
+            teamId,
+        )
+    ))
+
+    resultString = ""
+    for row in rows:
+        resultString += static.getText(static.CODE_TEXT_TEAM_BADGES[row['badge_id']], teamLang) + "\n"
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : 'TEAM BADGES',
+            'attachments'   : json.dumps(
+                [   
+                    {
+                        "text": resultString,
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#2f35a3",
+                        "attachment_type": "default",
+                    }
+                ]
+            )
+        }
+    )
+
+
+
+def start_kok(data, round):
+    
+    slackApi = util.init_slackapi(data['team_id'])
+    channelId = data['channel']
+    teamLang = util.get_team_lang(data['team_id'])
+
+    game_id = redis_client.get('kokgame_id_'+channelId)
+    users = redis_client.hgetall('kokusers_'+game_id)
+
+
+    print(users)
+    userString = ""
+    count = 0
+    for key, value in users.items():
+        if value == "1":
+            userString += "<@" + key + ">  "
+            count+=1
+
+    if count<=1:
+        slackApi.chat.postMessage(
+            {
+                'channel' : data['channel'],
+                'text' : "*King of the Keyboard* : :crown: " + userString + " :crown:"
+            }
+        )
+        redis_client.set('game_mode_'+channelId, "0")
+        return 
+
+    slackApi.chat.postMessage(
+        {
+            'channel' : data['channel'],
+            'text' : static.getText(static.CODE_TEXT_KOK_ROUND, teamLang) % (round, userString)
+        }
+    )
+
+    data['mode'] = "kok"
+
+    if round == 1:
+        time.sleep(2)
+    else:
+        time.sleep(4)
+    command_start(data, round)
+
+
+    
+    """
+    app.logger.info("rtm status : " + str(rtm_manager.is_socket_opened(teamId)))
+    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+        redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+        redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+
+        print('start')
+        worker.delay(data)
+    else:            
+        rtm_manager.open_new_socket(teamId, data)
+    """
+    return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
 def is_channel_has_bot(slackApi, teamId, channelId):
@@ -635,7 +911,10 @@ def is_channel_has_bot(slackApi, teamId, channelId):
         
 
 # 타이머 실행 함수(게임 종료시)
-def game_end(slackApi, teamId, channelId):
+def game_end(slackApi, data, round = 0):
+
+    teamId = data['team_id']
+    channelId = data['channel']
 
     teamLang = util.get_team_lang(teamId)
     sendMessage(slackApi, channelId, "Game End")
@@ -684,6 +963,13 @@ def game_end(slackApi, teamId, channelId):
  
     result_string = ""
     rank = 1
+    if data['mode'] == "kok":
+        kokgame_id = redis_client.get('kokgame_id_'+channelId)
+        users = redis_client.hgetall('kokusers_'+kokgame_id)
+
+        for key, value in users.items():
+            redis_client.hset("kokusers_"+kokgame_id, key, "0")
+
     for row in rows:
         result_string = result_string +(
             static.getText(static.CODE_TEXT_RANK_FORMAT_4, teamLang) %
@@ -696,6 +982,11 @@ def game_end(slackApi, teamId, channelId):
             )
         )
         rank = rank + 1
+        if data['mode'] == "kok":
+            if rank == len(rows) + 1:
+                redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "0")
+            else:
+                redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "1")
 
     sendResult = str(result_string)
     logger_celery.info(channelId)
@@ -704,8 +995,6 @@ def game_end(slackApi, teamId, channelId):
         {
             "channel" : channelId,
             "text" : static.getText(static.CODE_TEXT_GAME_RESULT, teamLang),
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false',
             "attachments" : json.dumps(
                 [
@@ -724,6 +1013,7 @@ def game_end(slackApi, teamId, channelId):
 
     
     #### 게임이 끝나고 미션 클리어했는지 판단해주는 로직이다.
+
 
     #none이아니면 미션이라는 이야기이다.
     if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
@@ -744,9 +1034,6 @@ def game_end(slackApi, teamId, channelId):
             logger_celery.info('[MISSION_RESULT]==> REVERSE MISSION END')
             # sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))    
             # mission_manager.mission_reverse_typing()
-	# elif(mission_result== static.GAME_MISSION_SUC):
-	# 	sendMessage(slackApi,channelId,"미 션 성 공!")
-
 
 
 
@@ -802,14 +1089,18 @@ def game_end(slackApi, teamId, channelId):
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
 
+    if data['mode'] == "kok":
+        print("start next round")
+        start_kok(data, round+1)
+    
+    calc_badge(data)
+
 
 def sendMessage(slackApi, channel, text):
     return slackApi.chat.postMessage(
         {
             'channel'   : channel,
             'text'      : text,
-            'username'  : 'surfinger',
-            'icon_url'  : 'http://icons.iconarchive.com/icons/vcferreira/firefox-os/256/keyboard-icon.png',
             'as_user'   : 'false'
         }
     )
@@ -889,3 +1180,128 @@ def pretty_rank(rank):
         print("ranks : " + str(num))
         result+=ranks[int(num)]
     return result
+
+def calc_badge(data):
+    
+    """
+    팀 뱃지
+
+    0 : '입문자' : 10판 플레이
+    1 : '세계정복' : 모든 채널에 봇이 초대됨
+    2 : '동작그만' : 게임취소 명령어를 1회 사용
+    3 : '게임중독' : 200판 플레이
+    4 : '만장일치' : 팀 내 모든 플레이어가 1회이상 게임 참여
+    
+    
+    개인 뱃지
+
+    0 : 'POTG' : 1등을 연속으로 3번 했을때
+    1 : '동반입대' : 특정플레이어와 2명이서 10판 이상 플레이
+    2 : '저승사자' : 연속 5번 1위
+    3 : '콩진호' : 22번 연속 2위
+    4 : '도와줘요 스피드웨건' : /help 명령어 1회 사용
+    """
+
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    badgeRows = util.fetch_all_json(db_manager.query(
+        "SELECT * "
+        "FROM TEAM_BADGE "
+        "WHERE "
+        "team_id = %s ",
+        (
+            teamId,
+        )
+    ))
+
+    if check_badge_exist(badgeRows, 0) == False:
+        rows = util.fetch_all_json(db_manager.query(
+            "SELECT COUNT(game_id) as game_num "
+            "FROM GAME_INFO "
+            "WHERE "
+            "team_id = %s",
+            (
+                teamId,
+            )
+        ))
+        if rows[0]['game_num'] >= 10:
+            reward_badge(data, 0)
+
+    if check_badge_exist(badgeRows, 2) == False:
+        if data['text'] == static.GAME_COMMAND_EXIT:       
+            reward_badge(data, 2)
+
+
+    if check_badge_exist(badgeRows, 3) == False:
+        rows = util.fetch_all_json(db_manager.query(
+            "SELECT COUNT(game_id) as game_num "
+            "FROM GAME_INFO "
+            "WHERE "
+            "team_id = %s",
+            (
+                teamId,
+            )
+        ))
+        if rows[0]['game_num'] >= 200:
+            reward_badge(data, 3)
+
+
+    return 0
+
+def check_badge_exist(rows, badge_id):
+
+    for row in rows:
+        if row['badge_id'] == badge_id:
+            return True
+
+    return False
+
+def reward_badge(data, badgeId):
+    teamId = data["team_id"]
+    teamLang = util.get_team_lang(teamId)
+    channelId = data['channel']
+    slackApi = util.init_slackapi(teamId)
+
+    db_manager.query(
+        "INSERT INTO TEAM_BADGE "
+        "(`team_id`, `badge_id`) "
+        "VALUES "
+        "(%s, %s)",
+        (
+            teamId,
+            badgeId
+        )
+    )
+
+    time.sleep(1)
+    slackApi.chat.postMessage(
+        {
+            'channel' : channelId,
+            'text' : static.getText(static.CODE_TEXT_NEW_BADGE, teamLang),
+            'attachments'   : json.dumps(
+                [
+                    {
+                        "text": static.getText(static.CODE_TEXT_TEAM_BADGES[badgeId], teamLang),
+                        "fallback": "fallbacktext",
+                        "callback_id": "wopr_game",
+                        "color": "#3AA3E3",
+                        "attachment_type": "default"
+                    }
+                ]
+            )
+        }
+    )
+
+    if badgeId == 0:
+        time.sleep(3)
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/'
+            }
+        )
+
+    return 0

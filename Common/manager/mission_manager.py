@@ -89,7 +89,12 @@ def pickUpGameEvent(channelId,teamId):
 		return static.GAME_TYPE_MISSION
 	#노말 모드이다.
 	else :
+<<<<<<< HEAD
 		logger_celery.info('[MISSION]==>NOPE! just Normal mode')
+=======
+		print('normal')
+		
+>>>>>>> 9ad170732f2e2c730486c94cb3c4a69ee9144447
 		return static.GAME_TYPE_NORMAL
 
 

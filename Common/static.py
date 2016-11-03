@@ -7,7 +7,9 @@ import json
 GAME_COMMAND_START      = "/start"
 GAME_COMMAND_SCORE      = "/score" 
 GAME_COMMAND_RANK       = "/rank"
+GAME_COMMAND_KOK        = "/kok"
 GAME_COMMAND_MY_SCORE   = "/myscore"
+GAME_COMMAND_BADGE      = "/badge"
 GAME_COMMAND_EXIT       = "/exit"
 
 # 0 = 게임이 실행중이지 않을 때
@@ -52,7 +54,7 @@ GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
 GAME_MISSION_REVERSE = 101
 
 # socket expire time
-SOCKET_EXPIRE_TIME = 30 #60*60
+SOCKET_EXPIRE_TIME = 60*60
 
 # current_milli_time = lambda: int(round(time.time() * 1000))
 TIME_CURRENT = lambda: int(round(time.time() * 1000))
@@ -95,6 +97,21 @@ CODE_TEXT_RANK              = "code_rank"
 CODE_TEXT_WARNING_PASTE     = "code_warning_paste"
 CODE_TEXT_CALC_SCORE        = "code_calc_score"
 CODE_TEXT_GAME_RESULT       = "code_game_result"
+CODE_TEXT_CHOOSE_LANG       = "code_choose_lang"
+CODE_TEXT_KOK_TITLE         = "code_kok_title"
+CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
+CODE_TEXT_KOK_ROUND         = "code_kok_round"
+CODE_TEXT_GAME_REVIEW       = "code_game_review"
+CODE_TEXT_NEW_BADGE         = "code_new_badge"
+
+
+CODE_TEXT_TEAM_BADGES = [
+    "code_team_badge_1",
+    "code_team_badge_2",
+    "code_team_badge_3",
+    "code_team_badge_4",
+    "code_team_badge_5"
+]
 
 #for mission
 CODE_TEXT_MISSION_RESULT_MIN_MEMBER      	 = "code_text_mission_result_min_member"
