@@ -346,8 +346,7 @@ def command_myscore(data):
     rows = util.fetch_all_json(result)
 
     # 출력할 텍스트 생성
-    result_string = "Game Result : \n"
-    result_string = result_string + "Name : " + user_name + "\n"
+    result_string = ""
     rank = 1
 
     for row in rows:
@@ -355,9 +354,9 @@ def command_myscore(data):
             static.getText(static.CODE_TEXT_RANK_FORMAT_1, teamLang) %
             (
                 pretty_rank(rank),
-                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
                 pretty_score(row["score"]),
                 pretty_accur(row["accuracy"]),
+                pretty_speed(row["speed"]),
                 pretty_speed(row["speed"])
             )
         )
@@ -406,7 +405,7 @@ def command_score(data):
 
     rows = util.fetch_all_json(result)
 
-    result_string = "Game Result : \n"
+    result_string = static.getText(static.CODE_TEXT_GAME_RESULT, teamLang)
     rank = 1
     for row in rows:
         logger_celery.info(row)
@@ -1282,7 +1281,7 @@ def reward_badge(data, badgeId):
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/'
+                'text' : static.getText(static.CODE_TEXT_GAME_REVIEW, teamLang)
             }
         )
 
