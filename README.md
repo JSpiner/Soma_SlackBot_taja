@@ -1,5 +1,7 @@
 ### SoftwareMaestro 7th SlackBot Project 
 
+![icon](./imgs/logo-square-512.png =200x200)
+
 **Surfinger** is Slack based keyboard typing game bot 
 
 ![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
