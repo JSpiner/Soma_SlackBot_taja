@@ -23,13 +23,11 @@ import base64
 import Common.static
 import datetime
 import logging
-import newrelic.agent
 
 # test before running flask
 # tester.run_unit_test()
 
 app = Flask(__name__)
-#newrelic.agent.initialize('../newrelic.ini', 'surfinger')
 
 # make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
@@ -62,7 +60,6 @@ for row in rows:
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-    raise NameError
     html = (
         "<html>"
         "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
