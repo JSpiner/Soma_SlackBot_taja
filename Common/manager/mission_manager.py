@@ -45,33 +45,57 @@ def pickUpGameEvent(channelId,teamId):
 	# redis_client.set(static.GAME_MISSION_ID + channelId, None)
 	redis_client.set(static.GAME_MISSION_NOTI + channelId, None)
 	redis_client.set(static.GAME_MISSION_CONDI + channelId, None)
+	redis_client.set(static.GAME_MISSION_TYPE + channelId, None)
+	redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,None)
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomValue(1,2) == 1 :
+	if util.getRandomValue(2,2) == 2 :
 
+		#다시 50% 확률로 general/special 한 미션이 나온다.
+		if util.getRandomValue(2,2) == 1 :
+			logger_celery.info('[MISSION]==> general Mission')
+			result = db_manager.query(
+				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
+				(teamLang,)
+			)
+			rows = util.fetch_all_json(result)
+			mission_noti_code = rows[0]['mission_noti_code']
+			mission_noti = rows[0]['mission_noti']
+			mission_condi = rows[0]['condi'];
+			mission_type = rows[0]['type'];
+
+			redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,mission_noti_code)
+			redis_client.set(static.GAME_MISSION_TYPE + channelId,mission_type)
+			redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
+			redis_client.set(static.GAME_MISSION_CONDI + channelId,mission_condi)
+
+		else:
+			logger_celery.info('[MISSION]==> special Mission')
+			result = db_manager.query(
+				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
+				(teamLang,)
+			)
+			rows = util.fetch_all_json(result)
+			mission_noti_code = rows[0]['mission_noti_code']
+			mission_noti = rows[0]['mission_noti']
+			mission_type = rows[0]['type'];
+			
+			redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,mission_noti_code)
+			redis_client.set(static.GAME_MISSION_TYPE + channelId,mission_type)
+			redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
 		
-		result = db_manager.query(
-			"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s  ORDER BY rand() LIMIT 1 ",
-			(teamLang,)
-		)
-		rows = util.fetch_all_json(result)
-		mission_id = rows[0]['mission_id']
-		mission_noti = rows[0]['mission_noti']
-		mission_condi = rows[0]['condi'];
-
-
-		# redis_client.set(static.GAME_MISSION_ID + channelId,mission_id)
-		redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
-		redis_client.set(static.GAME_MISSION_CONDI + channelId,mission_condi)
 
 		return static.GAME_TYPE_MISSION
 	#노말 모드이다.
 	else :
 		logger_celery.info('[MISSION]==>NOPE! just Normal mode')
-		redis_client.set(static.GAME_MISSION_NOTI + channelId, None)
-		redis_client.set(static.GAME_MISSION_CONDI + channelId, None)
 		return static.GAME_TYPE_NORMAL
+
+
+def mission_reverse_typing():
+	logger_celery.info('[MISSION_MODE]===>REVERSE_TYPING')
+
 
 
 def is_mission_clear(channel_id,game_id):

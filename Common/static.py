@@ -37,15 +37,19 @@ GAME_TYPE_NORMAL = "GAME_TYPE_NORMAL"
 GAME_TYPE_MISSION = "GAME_TYPE_MISSION"
 
 #게임미션 아이디를 Redis에서 관리할것이다(채널별로)
-GAME_MISSION_ID = "GAME_MISSION_ID_"
+GAME_MISSION_NOTI_CODE = "GAME_MISSION_NOTI_CODE_"
 GAME_MISSION_NOTI= "GAME_MISSION_NOTI_"
 GAME_MISSION_CONDI= "GAME_MISSION_CONDI_"
+GAME_MISSION_TYPE= "GAME_MISSION_TYPE_"
 
 
 #게임미션 엔드
 GAME_MISSION_FAILE = "MISSION FAILE!!!!!!"
 GAME_MISSION_SUC = "MISSION SUCCESS!!!!!"
 GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
+
+#미션게임 코드
+GAME_MISSION_REVERSE = 101
 
 # socket expire time
 SOCKET_EXPIRE_TIME = 30 #60*60
@@ -93,9 +97,12 @@ CODE_TEXT_CALC_SCORE        = "code_calc_score"
 CODE_TEXT_GAME_RESULT       = "code_game_result"
 
 #for mission
-CODE_TEXT_MISSION_RESULT_MIN_MEMBER       = "code_text_mission_result_min_member"
-CODE_TEXT_MISSION_RESULT_SUCCESS       = "code_text_mission_result_success"
-CODE_TEXT_MISSION_RESULT_FAIL       = "code_text_mission_result_fail"
+CODE_TEXT_MISSION_RESULT_MIN_MEMBER      	 = "code_text_mission_result_min_member"
+CODE_TEXT_MISSION_RESULT_SUCCESS       		 = "code_text_mission_result_success"
+CODE_TEXT_MISSION_RESULT_FAIL    	  	     = "code_text_mission_result_fail"
+
+
+
 # load json lang file
 with open('../Common/lang.json', 'r') as f:
     lang = json.load(f)

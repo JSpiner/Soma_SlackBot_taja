@@ -415,7 +415,21 @@ def command_typing(data):
         sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_WARNING_PASTE, teamLang))
         return  
 
-    distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
+    
+    #미션일경우.
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+        #리버스 미션일경우.
+        if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_REVERSE):
+            logger_celery.info('[MISSION_REVERESE]')
+            reverse_text = ''.join(reversed(data["text"]))
+            
+            logger_celery.info('[MISSION_REVERESE] ==> user:'+data["text"] +' problem'+redis_client.get("problem_text_" + channelId))
+
+            distance = util.get_edit_distance(reverse_text, redis_client.get("problem_text_" + channelId))
+
+    else:
+        distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
+    
 
     start_time = redis_client.get("start_time_" + channelId)
     current_time = time.time()*1000    
@@ -710,17 +724,26 @@ def game_end(slackApi, teamId, channelId):
 
     
     #### 게임이 끝나고 미션 클리어했는지 판단해주는 로직이다.
-    if(redis_client.get(static.GAME_MISSION_NOTI+ channelId)!=None):
-        mission_result = mission_manager.is_mission_clear(channelId,game_id)
-        if(mission_result == static.GAME_MISSION_ABSENT):
-            logger_celery.info('[MISSION_RESULT]==> notEnough member')
-            sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_MISSION_RESULT_MIN_MEMBER, teamLang))
-        elif(mission_result == static.GAME_MISSION_SUC):
-            logger_celery.info('[MISSION_RESULT]==> MISSION SUCCESS')
-            sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_SUCCESS, teamLang))
-        elif(mission_result == static.GAME_MISSION_FAILE):
-            logger_celery.info('[MISSION_RESULT]==> MISSION FAILE')
-            sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))
+
+    #none이아니면 미션이라는 이야기이다.
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+        #code가 100보다작을경우 => genral한 미션일경우다
+        if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))<100):
+            mission_result = mission_manager.is_mission_clear(channelId,game_id)
+            if(mission_result == static.GAME_MISSION_ABSENT):
+                logger_celery.info('[MISSION_RESULT]==> notEnough member')
+                sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_MISSION_RESULT_MIN_MEMBER, teamLang))
+            elif(mission_result == static.GAME_MISSION_SUC):
+                logger_celery.info('[MISSION_RESULT]==> MISSION SUCCESS')
+                sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_SUCCESS, teamLang))
+            elif(mission_result == static.GAME_MISSION_FAILE):
+                logger_celery.info('[MISSION_RESULT]==> MISSION FAILE')
+                sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))
+        #100보다 클경우 => special한 미션일 경우다.
+        elif(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_REVERSE):
+            logger_celery.info('[MISSION_RESULT]==> REVERSE MISSION END')
+            # sendMessage(slackApi,channelId,static.getText(static.CODE_TEXT_MISSION_RESULT_FAIL, teamLang))    
+            # mission_manager.mission_reverse_typing()
 	# elif(mission_result== static.GAME_MISSION_SUC):
 	# 	sendMessage(slackApi,channelId,"미 션 성 공!")
 
