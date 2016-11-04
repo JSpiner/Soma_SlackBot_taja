@@ -50,10 +50,10 @@ def pickUpGameEvent(channelId,teamId):
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomValue(2,2) == 2 :
+	if util.getRandomValue(1,2) == 2 :
 
 		#다시 50% 확률로 general/special 한 미션이 나온다.
-		if util.getRandomValue(2,2) == 1 :
+		if util.getRandomValue(1,2) == 1 :
 			logger_celery.info('[MISSION]==> general Mission')
 			result = db_manager.query(
 				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
@@ -89,12 +89,8 @@ def pickUpGameEvent(channelId,teamId):
 		return static.GAME_TYPE_MISSION
 	#노말 모드이다.
 	else :
-<<<<<<< HEAD
 		logger_celery.info('[MISSION]==>NOPE! just Normal mode')
-=======
-		print('normal')
-		
->>>>>>> 9ad170732f2e2c730486c94cb3c4a69ee9144447
+
 		return static.GAME_TYPE_NORMAL
 
 

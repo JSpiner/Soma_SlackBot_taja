@@ -50,8 +50,12 @@ GAME_MISSION_FAILE = "MISSION FAILE!!!!!!"
 GAME_MISSION_SUC = "MISSION SUCCESS!!!!!"
 GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
 
+#special한 게임에서 인원이부족할경우 이 flag를 가지고 game_end시 유저들에게 해당 상황을 공지한다.
+GAME_MISSION_FLG_MIN_MEMBER = "GAME_MISSION_FLG_MIN_MEMBER_"
+
 #미션게임 코드
 GAME_MISSION_REVERSE = 101
+GAME_MISSION_SENCONDORY = 102
 
 # socket expire time
 SOCKET_EXPIRE_TIME = 60*60
@@ -103,7 +107,8 @@ CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
 CODE_TEXT_KOK_ROUND         = "code_kok_round"
 CODE_TEXT_GAME_REVIEW       = "code_game_review"
 CODE_TEXT_NEW_BADGE         = "code_new_badge"
-
+CODE_TEXT_MISSION_RESULT_REVERSE = "code_text_mission_result_reverse"
+CODE_TEXT_MISSION_RESULT_SECONDORY = "code_text_mission_result_secondory"
 
 CODE_TEXT_TEAM_BADGES = [
     "code_team_badge_1",
