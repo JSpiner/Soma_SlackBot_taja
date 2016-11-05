@@ -364,7 +364,7 @@ def command_myscore(data):
                 pretty_score(row["score"]),
                 pretty_accur(row["accuracy"]),
                 pretty_speed(row["speed"]),
-                pretty_speed(row["rank"])
+                " " + pretty_speed(row["rank"]) + " " 
             )
         )
         rank = rank + 1
@@ -412,7 +412,7 @@ def command_score(data):
 
     rows = util.fetch_all_json(result)
 
-    result_string = static.getText(static.CODE_TEXT_GAME_RESULT, teamLang)
+    result_string = ""
     rank = 1
     for row in rows:
         logger_celery.info(row)
