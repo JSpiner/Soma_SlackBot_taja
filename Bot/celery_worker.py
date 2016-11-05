@@ -320,6 +320,7 @@ def command_exit(data):
 
     calc_badge(data)
 
+
 def command_myscore(data):
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
@@ -341,17 +342,40 @@ def command_myscore(data):
 
     rows = util.fetch_all_json(result)
 
+    # 해당 팀의 언어설정 가져오기
+    result_team_lang = db_manager.query(
+        "SELECT * FROM TEAM "
+        "WHERE "
+        "team_id = %s;",
+        (teamId,)
+    )
+
+    team_rows = util.fetch_all_json(result_team_lang)
+    teamLang = team_rows[0]['team_lang']
+
+    result_myscore_announcements = db_manager.query(
+        "SELECT * FROM slackbot.MY_SCORE_ANNOUNCEMENT "
+        "WHERE "
+        "language = %s;",
+        (teamLang,)
+    )
+
+    myscore_announcements = util.fetch_all_json(result_myscore_announcements)
+    myscore_announcement = myscore_announcements[int(len(myscore_announcements) * random.random())]['announcement']
+
     # 출력할 텍스트 생성
     result_string = "Game Result : \n"
-    result_string = result_string + "Name : " + user_name + "\n"
+    result_string = result_string + "Name : " + "*" +user_name + "*"+ "\n"
+    result_string = result_string + myscore_announcement + "\n"
     rank = 1
+
+
 
     for row in rows:
         result_string = result_string + (
             static.getText(static.CODE_TEXT_RANK_FORMAT_1, teamLang) %
             (
                 pretty_rank(rank),
-                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
                 pretty_score(row["score"]),
                 pretty_accur(row["accuracy"]),
                 pretty_speed(row["speed"])
