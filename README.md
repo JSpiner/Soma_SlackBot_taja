@@ -1,9 +1,12 @@
 ### SoftwareMaestro 7th SlackBot Project 
 
+<img src="https://github.com/JSpiner/Soma_SlackBot_taja/raw/develop/imgs/logo-circle-512.png" width="100" height="100" />
+
 **Surfinger** is Slack based keyboard typing game bot 
 
-![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
 You can install our app at [here](https://ssoma.xyz:20000)
+
+![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
 
 ## Slash Command
 
