@@ -248,8 +248,8 @@ def command_start(data, round = 0):
     title_ts = titleResponse['ts']
 
     time.sleep(1)
-    
     strs = [static.getText(static.CODE_TEXT_COUNT_2, teamLang), static.getText(static.CODE_TEXT_COUNT_3, teamLang)]
+    logger_celery.info('strs => '+str(strs))
     for i in range(0,2):
         slackApi.chat.update(
             {
@@ -491,7 +491,7 @@ def command_typing(data):
 
     
     #미션일경우.
-    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
         #리버스 미션일경우.
         if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_REVERSE):
             logger_celery.info('[MISSION_REVERESE]')
@@ -988,10 +988,15 @@ def game_end(slackApi, data, round = 0):
 
     #참여인원에대한 플래그는 하상 0 이다.
     redis_client.set(static.GAME_MISSION_FLG_MIN_MEMBER + channelId, 0)
-    
-    #none이아니면 미션이라는 이야기이다.
-    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
 
+    
+    # #none이아니면 미션이라는 이야기이다.
+    # logger_celery.info('isMission? '+redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))
+    # logger_celery.info(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None')
+    # logger_celery.info(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId) is not None)
+    
+
+    if(str(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)) !='None' ):
         # code가 102인경우 ==> 1등과 2등을 바꿔져야한다.
         # 단 로우가 2이상일경우에만..
         if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SENCONDORY and len(rows) > 1):            
@@ -1092,7 +1097,7 @@ def game_end(slackApi, data, round = 0):
 
 
     #none이아니면 미션이라는 이야기이다.
-    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!=None or redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
         #code가 100보다작을경우 => genral한 미션일경우다
         if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))<100):
             mission_result = mission_manager.is_mission_clear(channelId,game_id)
