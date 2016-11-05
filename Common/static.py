@@ -56,6 +56,10 @@ GAME_MISSION_FLG_MIN_MEMBER = "GAME_MISSION_FLG_MIN_MEMBER_"
 #미션게임 코드
 GAME_MISSION_REVERSE = 101
 GAME_MISSION_SENCONDORY = 102
+GAME_MISSION_SWAP = 103
+
+GAME_MISSION_SWAP_CHOSUNG = "GAME_MISSION_SWAP_CHOSUNG_"
+GAME_MISSION_SWAP_AFTER = "GAME_MISSION_SWAP_AFTER_"
 
 # socket expire time
 SOCKET_EXPIRE_TIME = 60*60
@@ -122,6 +126,8 @@ CODE_TEXT_TEAM_BADGES = [
 CODE_TEXT_MISSION_RESULT_MIN_MEMBER      	 = "code_text_mission_result_min_member"
 CODE_TEXT_MISSION_RESULT_SUCCESS       		 = "code_text_mission_result_success"
 CODE_TEXT_MISSION_RESULT_FAIL    	  	     = "code_text_mission_result_fail"
+
+CODE_TEXT_MISSION_SWAP_OPTIONS                = "code_text_mission_swap_options"
 
 
 

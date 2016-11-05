@@ -92,6 +92,47 @@ def get_edit_distance(string1, string2):
 
     return d[len(s1)][len(s2)]
 
+
+def splited_swap_char(string,pre,after):
+    splitedChar = split_character(string)
+    return splitedChar.replace(pre,after)
+
+
+def get_edit_distance_for_swap(string1, string2,pre,after):
+    # logger_celery.info('[MISSION_user]==> '+string1)
+    # logger_celery.info('[MISSION_SWAP]==> '+string2)
+    print('getEdit_dis')
+    print(pre)
+    print(after)
+    print(string1 )
+    print(string2 )
+    s1 = split_character(string1)
+    s2 = splited_swap_char(string2,pre,after)
+    print(s1 )
+    print(s2 )
+    
+    # logger_celery.info('[MISSION_user]==> '+s1)
+    # logger_celery.info('[MISSION_SWAP]==> '+s2)
+
+    d = [[0 for col in range(len(s2) + 1)] for row in range(len(s1) + 1)]
+
+    for i in range(0, len(s1) + 1):
+        d[i][0] = i
+
+    for i in range(0, len(s2) + 1):
+        d[0][i] = i
+
+    for i in range(1, len(s1) + 1):
+        for j in range(1, len(s2) + 1):
+            if s1[i - 1] == s2[j - 1]:
+                d[i][j] = d[i - 1][j - 1]
+            else:
+                d[i][j] = min([d[i - 1][j - 1] + 1, d[i][j - 1] + 1, d[i - 1][j] + 1])
+
+    return d[len(s1)][len(s2)]    
+
+
+
 def get_accuracy (s, distance):
     l = len(split_character(s))
     return ((l - distance) / l)

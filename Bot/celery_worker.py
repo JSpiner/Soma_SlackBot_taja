@@ -239,6 +239,24 @@ def command_start(data, round = 0):
         logger_celery.info('[MISSION_CONDI_inREDSI]==> '+static.GAME_MISSION_CONDI+data['channel'])
         # print(redis_client.get(static.GAME_MISSION_CONDI+data['channel']))
 
+        # 문제들 가져오기
+    texts = util.get_problems(teamLang)
+    logger_celery.info('[LANG_TEAM]==> '+teamLang)
+
+    # 문제 선택하기
+    problem_id = get_rand_game(data['channel'],teamLang) 
+    logger_celery.info('[problem_id]==> '+str(problem_id))    
+    problem_text = texts[problem_id]
+    #미션인지확인하고, 
+    if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
+        # 랜덤 초이스인경우엔
+
+        if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SWAP):
+            randomChar = mission_manager.mission_swap_get_Random_Chosung(problem_text,channelId,teamLang)
+            sendMessage(slackApi, channelId, mission_manager.mission_swap_get_options_centence(randomChar,channelId,teamLang))
+        
+
+
 
     titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
     response = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_COUNT_1, teamLang))
@@ -261,14 +279,7 @@ def command_start(data, round = 0):
         )
         time.sleep(1.0)
 
-    # 문제들 가져오기
-    texts = util.get_problems(teamLang)
-    logger_celery.info('[LANG_TEAM]==> '+teamLang)
 
-    # 문제 선택하기
-    problem_id = get_rand_game(data['channel'],teamLang) 
-    logger_celery.info('[problem_id]==> '+str(problem_id))    
-    problem_text = texts[problem_id]
 
     slackApi.chat.update(
         {
@@ -468,6 +479,8 @@ def command_typing(data):
         return  
 
     
+        
+    
     #미션일경우.
     if(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId)!='None' ):
         #리버스 미션일경우.
@@ -476,8 +489,20 @@ def command_typing(data):
             reverse_text = ''.join(reversed(data["text"]))
             logger_celery.info('[MISSION_REVERESE] ==> user:'+data["text"] +' problem'+redis_client.get("problem_text_" + channelId))
             distance = util.get_edit_distance(reverse_text, redis_client.get("problem_text_" + channelId))
+        
+        # 랜덤 swap일경우. 원래본문을 swap된것으로 바꿔서 비교한다.
+        elif(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SWAP):             
+            logger_celery.info('[MISSION_SWAP]')
+            pre = redis_client.get(static.GAME_MISSION_SWAP_CHOSUNG+channelId)
+            after =redis_client.get(static.GAME_MISSION_SWAP_AFTER+channelId)
+            distance = util.get_edit_distance_for_swap(data["text"], redis_client.get("problem_text_" + channelId),pre,after)            
+
+
         else:
             distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
+
+        
+
 
     else:
         distance = util.get_edit_distance(data["text"], redis_client.get("problem_text_" + channelId))
@@ -1197,9 +1222,10 @@ def get_rand_game(channel,teamLang):
         result = db_manager.query(
             "SELECT * "  
             "FROM PROBLEM "
+            "where problem_language = %s "
             "ORDER BY RAND() "
             "LIMIT 1",
-            ()
+            (teamLang,)
         )
         rows = util.fetch_all_json(result)
         return rows[0]["problem_id"]

@@ -26,8 +26,23 @@ import logging
 from flask import render_template
 from flask import redirect, url_for
 
+# def split_character(string):
+#     response = ""
+#     for char in string:
+#         if korean.hangul.is_hangul(char):
+#             response += ''.join(korean.hangul.split_char(char))
+#         else:
+#             response += char
+#     return response
+
+# print(split_character('안녕하세요'))
+# print(korean.hangul.get_initial('안'))
 
 
+# print(splitChar('안녕하세요'))    
+# print(random_chosung)
+# for ele in list_chosung:
+#     print(ele)
 # test before running flask
 # tester.run_unit_test()
 
