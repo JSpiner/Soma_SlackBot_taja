@@ -4,7 +4,7 @@ __pycache__/
 *.pyc 
 *.log 
 .DS_Store  
-newrelic.ini
+*.ini
 .idea/workspace.xml
 .idea/misc.xml
 .idea/Soma_SlackBot_taja.iml
@@ -16,3 +16,4 @@ newrelic.ini
 .idea/webServers.xml
 .idea/deployment.xml
 .idea/deployment.xml
+*.out

@@ -1,9 +1,13 @@
 
-from celery_test import worker
-import time
+import sys 
+sys.path.append("../")
+from Common import util
 
-for i in range(0,100):
-    print(i)
-    worker.delay(i)
-#    time.sleep(1.0 / 1000.0)
+text = "자랄 나무는 떡잎부터 알아본다"
+
+
+print(util.get_time(text))
+
+
+
  

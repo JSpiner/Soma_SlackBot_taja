@@ -297,13 +297,14 @@ def command_start(data, round = 0):
     redis_client.set("game_id_" + channelId, util.generate_game_id())       # 현재 게임의 ID
 
     #threading.Timer(10, game_end, [slackApi, teamId, channelId, title_ts]).start()
-    for i in range(1,10):
+    timeout = util.get_time(problem_text)
+    for i in range(1,timeout):
         stTime = time.time()
         slackApi.chat.update(
             {
                 "ts" : title_ts,
                 "channel": channelId,
-                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
+                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(timeout-i)),
                 'as_user'   : 'false'
             }
         )
@@ -333,6 +334,7 @@ def command_exit(data):
 
     calc_badge(data)
 
+
 def command_myscore(data):
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
@@ -346,7 +348,14 @@ def command_myscore(data):
 
     # 내 게임 결과들 가져오기
     result = db_manager.query(
-        "SELECT * FROM GAME_RESULT "
+        "SELECT * , ( "
+        "SELECT COUNT(*) + 1 "
+        "FROM GAME_RESULT "
+        "WHERE "
+        "score > a.score and "
+        "game_id = a.game_id"
+        ") as rank "
+        "FROM GAME_RESULT as a "
         "WHERE "
         "user_id = %s order by score desc;",
         (userId,)
@@ -354,20 +363,43 @@ def command_myscore(data):
 
     rows = util.fetch_all_json(result)
 
+    # 해당 팀의 언어설정 가져오기
+    result_team_lang = db_manager.query(
+        "SELECT * FROM TEAM "
+        "WHERE "
+        "team_id = %s;",
+        (teamId,)
+    )
+
+    team_rows = util.fetch_all_json(result_team_lang)
+    teamLang = team_rows[0]['team_lang']
+
+    result_myscore_announcements = db_manager.query(
+        "SELECT * FROM slackbot.MY_SCORE_ANNOUNCEMENT "
+        "WHERE "
+        "language = %s;",
+        (teamLang,)
+    )
+
+    myscore_announcements = util.fetch_all_json(result_myscore_announcements)
+    myscore_announcement = myscore_announcements[int(len(myscore_announcements) * random.random())]['announcement']
+
     # 출력할 텍스트 생성
-    result_string = "Game Result : \n"
-    result_string = result_string + "Name : " + user_name + "\n"
+    result_string = result_string + "Name : " + "*" +user_name + "*"+ "\n"
+    result_string = result_string + myscore_announcement + "\n"
     rank = 1
+
+
 
     for row in rows:
         result_string = result_string + (
             static.getText(static.CODE_TEXT_RANK_FORMAT_1, teamLang) %
             (
                 pretty_rank(rank),
-                "*"+str(get_user_info(slackApi, row["user_id"])["user"]["name"])+"*",
                 pretty_score(row["score"]),
                 pretty_accur(row["accuracy"]),
-                pretty_speed(row["speed"])
+                pretty_speed(row["speed"]),
+                " " + pretty_speed(row["rank"]) + " " 
             )
         )
         rank = rank + 1
@@ -415,7 +447,7 @@ def command_score(data):
 
     rows = util.fetch_all_json(result)
 
-    result_string = "Game Result : \n"
+    result_string = ""
     rank = 1
     for row in rows:
         logger_celery.info(row)
@@ -451,7 +483,7 @@ def command_score(data):
             )
         }
     )
-
+ 
 def command_typing(data):
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
@@ -1396,7 +1428,7 @@ def reward_badge(data, badgeId):
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/'
+                'text' : static.getText(static.CODE_TEXT_GAME_REVIEW, teamLang)
             }
         )
 

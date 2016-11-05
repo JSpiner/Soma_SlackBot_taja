@@ -50,6 +50,11 @@ GAME_MISSION_FAILE = "MISSION FAILE!!!!!!"
 GAME_MISSION_SUC = "MISSION SUCCESS!!!!!"
 GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
 
+# timeout Value
+default_time = 5
+kor_weight = 1 / 3
+eng_weight = 1 / 5
+
 #special한 게임에서 인원이부족할경우 이 flag를 가지고 game_end시 유저들에게 해당 상황을 공지한다.
 GAME_MISSION_FLG_MIN_MEMBER = "GAME_MISSION_FLG_MIN_MEMBER_"
 
@@ -111,6 +116,8 @@ CODE_TEXT_KOK_ENTRY         = "code_kok_entry"
 CODE_TEXT_KOK_ROUND         = "code_kok_round"
 CODE_TEXT_GAME_REVIEW       = "code_game_review"
 CODE_TEXT_NEW_BADGE         = "code_new_badge"
+CODE_TEXT_HELP              = "code_help"
+
 CODE_TEXT_MISSION_RESULT_REVERSE = "code_text_mission_result_reverse"
 CODE_TEXT_MISSION_RESULT_SECONDORY = "code_text_mission_result_secondory"
 

@@ -86,7 +86,6 @@ for row in rows:
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
-
     html = (
         "<html>"
         "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
@@ -469,11 +468,14 @@ def slack_game_help():
     payload = request.get_data().decode()
     print(payload)
 
+    teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
+
     response = Response(
         json.dumps(
             {
                 'response_type' : 'in_channel',
-                'text' : 'help texts'
+                'text' : static.getText(static.CODE_TEXT_HELP, teamLang)
             }
         )
     )
