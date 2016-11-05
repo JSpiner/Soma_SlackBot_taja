@@ -49,6 +49,11 @@ GAME_MISSION_FAILE = "MISSION FAILE!!!!!!"
 GAME_MISSION_SUC = "MISSION SUCCESS!!!!!"
 GAME_MISSION_ABSENT = "MISSION ABSENT!!!!!!"
 
+# timeout Value
+default_time = 5
+kor_weight = 1 / 3
+eng_weight = 1 / 5
+
 # socket expire time
 SOCKET_EXPIRE_TIME = 60*60
 

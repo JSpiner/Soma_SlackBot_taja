@@ -5,6 +5,7 @@ sys.path.append("../")
 import uuid
 import korean
 import threading
+from Common import static
 from functools import wraps
 from Common.slackapi import SlackApi
 from Common.manager import db_manager
@@ -113,6 +114,15 @@ def get_score(speed, accur):
 def generate_game_id ():
     return uuid.uuid4()
 
+def get_time(text):
+    sum = static.default_time
+    for char in text:
+        if(korean.hangul.is_hangul(char)):
+            sum+=static.kor_weight
+        else:
+            sum+=static.eng_weight
+    
+    return int(sum)
 
 def fetch_all_json(result):
   lis = []
