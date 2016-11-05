@@ -262,10 +262,12 @@ def command_start(data, round = 0):
         time.sleep(1.0)
 
     # 문제들 가져오기
-    texts = util.get_problems()
+    texts = util.get_problems(teamLang)
+    logger_celery.info('[LANG_TEAM]==> '+teamLang)
 
     # 문제 선택하기
-    problem_id = get_rand_game(data['channel']) 
+    problem_id = get_rand_game(data['channel'],teamLang) 
+    logger_celery.info('[problem_id]==> '+str(problem_id))    
     problem_text = texts[problem_id]
 
     slackApi.chat.update(
@@ -1195,23 +1197,25 @@ def sendMessage(slackApi, channel, text):
         }
     )
 
-def get_rand_game(channel):
+def get_rand_game(channel,teamLang):
     result = db_manager.query(
         "SELECT * "  
         "FROM CHANNEL_PROBLEM "
+        "INNER JOIN (select *from PROBLEM where problem_language = %s) as pb  on pb.problem_id = CHANNEL_PROBLEM.problem_id "
         "WHERE CHANNEL_PROBLEM.problem_cnt = ( "
         "SELECT MIN(CHANNEL_PROBLEM.problem_cnt) "
         "FROM CHANNEL_PROBLEM "
         "WHERE CHANNEL_PROBLEM.channel_id = %s "
         "LIMIT 1 "
         ") "
-        "AND CHANNEL_PROBLEM.channel_id = %s "
+        "AND CHANNEL_PROBLEM.channel_id = %s  "
         "ORDER BY RAND() "
         "LIMIT 1",
-        (channel, channel)
+        (teamLang,channel, channel)
     )
 
     rows = util.fetch_all_json(result)
+    logger_celery.info('[problem_id]==> '+str(rows))    
     if len(rows) == 0:
 
         result = db_manager.query(
