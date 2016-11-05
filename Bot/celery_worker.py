@@ -448,7 +448,7 @@ def command_score(data):
             )
         }
     )
-
+ 
 def command_typing(data):
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)

@@ -442,11 +442,14 @@ def slack_game_help():
     payload = request.get_data().decode()
     print(payload)
 
+    teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
+
     response = Response(
         json.dumps(
             {
                 'response_type' : 'in_channel',
-                'text' : 'help texts'
+                'text' : static.getText(static.CODE_TEXT_HELP, teamLang)
             }
         )
     )
