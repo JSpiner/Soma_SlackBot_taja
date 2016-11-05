@@ -288,13 +288,14 @@ def command_start(data, round = 0):
     redis_client.set("game_id_" + channelId, util.generate_game_id())       # 현재 게임의 ID
 
     #threading.Timer(10, game_end, [slackApi, teamId, channelId, title_ts]).start()
-    for i in range(1,10):
+    timeout = util.get_time(problem_text)
+    for i in range(1,timeout):
         stTime = time.time()
         slackApi.chat.update(
             {
                 "ts" : title_ts,
                 "channel": channelId,
-                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(10-i)),
+                "text" : static.getText(static.CODE_TEXT_START_GAME_COUNT, teamLang) % (str(timeout-i)),
                 'as_user'   : 'false'
             }
         )
