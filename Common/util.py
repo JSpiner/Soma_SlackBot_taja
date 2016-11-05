@@ -144,7 +144,7 @@ def fetch_all_json(result):
   return lis
 
 
-def get_problems():
+def get_problems(temaLang):
 
     # 우선 문제 Set들을 가져와서 Validity가 1인 문제 하나를 랜던하게 id를 반환
 
@@ -153,8 +153,9 @@ def get_problems():
     result = db_manager.engine.connect().execute(
         "SELECT problem_id, problem_text, difficulty "
         "FROM PROBLEM "
-        "WHERE validity = %s",
-        1
+        "WHERE validity = %s "
+        "and problem_language = %s",
+        (1,temaLang)
     )
 
     rows = fetch_all_json(result)

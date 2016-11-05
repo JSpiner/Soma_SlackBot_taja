@@ -11,87 +11,133 @@ from Common.manager import db_manager
 from Common import util
 from Common import static
 import json
+import logging
+
+from celery.utils.log import get_task_logger
+
+
 
 
 #게임 이벤트를 뽑는다.
+# get logger
+logger_celery = get_task_logger(__name__)
 
-def pickUpGameEvent(channelId):
-	print('pickUp GameEvent')
+# make log format
+formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
+
+# set handler
+fileHandler = logging.FileHandler('./logs/Bot_celery_worker.log')
+fileHandler.setFormatter(formatter)
+streamHandler = logging.StreamHandler()
+
+logger_celery.addHandler(fileHandler)
+logger_celery.addHandler(streamHandler)
+
+# set log level
+logger_celery.setLevel(logging.DEBUG)
+
+def pickUpGameEvent(channelId,teamId):
 	
+	logger_celery.info('[MISSION]==>pickUp GameEvent')
+	teamLang = util.get_team_lang(teamId)
+
 	#기존 레디스정보가있다면 None 로 초기화시켜라 ==> None 은 없는것이나 마찬가지
 	# redis_client.set(static.GAME_MISSION_ID + channelId, None)
-	
-	redis_client.set(static.GAME_MISSION_NOTI + channelId,0)
-	redis_client.set(static.GAME_MISSION_CONDI + channelId,0)
+	redis_client.set(static.GAME_MISSION_NOTI + channelId, 'None')
+	redis_client.set(static.GAME_MISSION_CONDI + channelId, 'None')
+	redis_client.set(static.GAME_MISSION_TYPE + channelId, 'None')
+	redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,'None')
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomValue(1,20) == 1 :
-		print('mission start')
-		result = db_manager.query(
-			"SELECT * FROM GAME_MISSION WHERE validity = 1 ORDER BY rand() LIMIT 1 "
-		)
-		rows = util.fetch_all_json(result)
-		mission_id = rows[0]['mission_id']
-		mission_noti = rows[0]['mission_noti']
-		mission_condi = rows[0]['condi'];
+	if util.getRandomValue(2,2) == 1 :
 
+		#다시 50% 확률로 general/special 한 미션이 나온다.
+		if util.getRandomValue(1,2) == 1 :
+			logger_celery.info('[MISSION]==> general Mission')
+			result = db_manager.query(
+				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
+				(teamLang,)
+			)
+			rows = util.fetch_all_json(result)
+			mission_noti_code = rows[0]['mission_noti_code']
+			mission_noti = rows[0]['mission_noti']
+			mission_condi = rows[0]['condi'];
+			mission_type = rows[0]['type'];
 
-		# redis_client.set(static.GAME_MISSION_ID + channelId,mission_id)
-		redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
-		redis_client.set(static.GAME_MISSION_CONDI + channelId,mission_condi)
+			redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,mission_noti_code)
+			redis_client.set(static.GAME_MISSION_TYPE + channelId,mission_type)
+			redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
+			redis_client.set(static.GAME_MISSION_CONDI + channelId,mission_condi)
+
+		else:
+			logger_celery.info('[MISSION]==> special Mission')
+			result = db_manager.query(
+				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
+				(teamLang,)
+			)
+			rows = util.fetch_all_json(result)
+			mission_noti_code = rows[0]['mission_noti_code']
+			mission_noti = rows[0]['mission_noti']
+			mission_type = rows[0]['type'];
+			
+			redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,mission_noti_code)
+			redis_client.set(static.GAME_MISSION_TYPE + channelId,mission_type)
+			redis_client.set(static.GAME_MISSION_NOTI + channelId,mission_noti)
+		
 
 		return static.GAME_TYPE_MISSION
 	#노말 모드이다.
 	else :
-		print('normal')
-		
+		logger_celery.info('[MISSION]==>NOPE! just Normal mode')
+
 		return static.GAME_TYPE_NORMAL
 
 
+def mission_reverse_typing():
+	logger_celery.info('[MISSION_MODE]===>REVERSE_TYPING')
+
+
+
 def is_mission_clear(channel_id,game_id):
-	print('isMiission clear')
-	print(channel_id)
-	print(game_id)
+	logger_celery.info('[MISSION]==>mission clear check')
+	logger_celery.info('[MISSION_channel_id]==>'+channel_id)
+	logger_celery.info('[MISSION_game_id]==>'+game_id)
+	
 	global arr_cond_oper 
 	arr_cond_oper = []
-	print(redis_client.get(static.GAME_MISSION_CONDI+channel_id))
+	
 	mission_condi = json.loads(redis_client.get(static.GAME_MISSION_CONDI+channel_id));
-	print(mission_condi)
+	logger_celery.info('[MISSION_CONDI]==>'+str(mission_condi))
 	result = db_manager.query(
 		"select * from GAME_INFO as gi inner join GAME_RESULT as gr on gi.game_id = gr.game_id where  gi.game_id = %s",
 		(game_id,)
 	)
 	rows = util.fetch_all_json(result)
 
-	print('mission COidn ==> '+str(mission_condi));
-	print('game id ==> '+game_id)
-	print('rows ==> '+str(rows))
+	
 	user_num = len(rows)
-
-
-
 	mission_success_num = 0
 
 	#총 참여인원이 모자라라서 미션을 하지못하였다
 	if(check_enter_member(mission_condi,user_num)==False):
-		print('인원이 부족하여 미션을 참여 못하였습니다.')
+		
 		return static.GAME_MISSION_ABSENT
 	else:
-		print('인원은 충분합니다.')
+		logger_celery.info('[MISSION_RESULT]==> Enough member')
 		#미션조건으로부터 연산 조건을 뽑아와 arr_cond_oper에 넣는다.
 		check_conditions(mission_condi)
 		for oper in arr_cond_oper:
-			print('added operations==> '+oper)
-
+			
+			logger_celery.info('[MISSION_RESULT_oper]==> '+oper)
 		for row in rows:
 			chcked_user = checking_user(row,mission_condi)
 			
 			#미션성공시+1 을 해준다.
 			if(chcked_user == True):
 				mission_success_num = mission_success_num + 1
-
-		print('mission sucess Num ===>',mission_success_num)
+		
+		logger_celery.info('[MISSION_RESULT_success_num]==> '+mission_success_num)
 		
 		if(check_nec_member(mission_condi,mission_success_num,user_num)==True):
 			return static.GAME_MISSION_SUC
@@ -138,9 +184,11 @@ def checking_user(row,mission_condi):
 	#여기서 해당유저가 조건에 모두 맞게 랭킹을 먹었는지를 확인한다.
 	if(is_score_suc == True and is_speed_suc == True and is_accur_suc == True):
 		print(row['user_id']+'==> 미션 성공!!')
+		logger_celery.info('[MISSION_RESULT]==> '+row['user_id']+'==> missino success')
 		return True
 	else:
 		print(row['user_id']+'==> 미션실패!!!')
+		logger_celery.info('[MISSION_RESULT]==> '+row['user_id']+'==> missino fail')
 		return False
 
 #비교해보는 로직.
@@ -189,19 +237,20 @@ def check_nec_member(mission_condi,checked_user,user_num):
 	nec_member = options['nec_member']
 
 	if(nec_member == "all"):
-		print("미션을 모두 참여자가 모두 만족해야합니다.")
-		if(checked_user == user_num):
-			print("모든유저가 모두 성공했습니다."+str(user_num)+"명")
+		# print("미션을 모두 참여자가 모두 만족해야합니다.")
+		logger_celery.info('[MISSION_RESULT]==> '+'all member necc')
+		if(checked_user == user_num):			
+			logger_celery.info('[MISSION_RESULT]==> all Member sucess '+str(user_num)+"명");
 			return True
-		else:
-			print("모든유저가 성공하지 못했습니다"+str(user_num)+"명")
+		else:			
+			logger_celery.info('[MISSION_RESULT]==> all Member faile'+str(user_num)+"명");
 			return False
 	else:
 		if(checked_user>=nec_member):
-			print(str(nec_member)+ "성공멤버 수 채웠습니다")
+			logger_celery.info('[MISSION_RESULT]==> necc Member success'+str(user_num)+"/"+str(nec_member));			
 			return True
 		else:
-			print(checked_user+"/"+str(nec_member)+ "성공멤버 수 를 채우지 못했습니다")
+			logger_celery.info('[MISSION_RESULT]==> necc Member fail'+str(user_num)+"/"+str(nec_member));
 			return False
 
 # [2016-10-30 02:08:54,187: WARNING/Worker-5] mission COidn ==> {'enter_members': 2, 'enter_members_opt': 'upper', 'codition': {'options': {'speed_opt': 'dc', 'nec_member': 'all', 'accuracy_opt': 'same', 'score_opt': 'dc'}, 'value': {'accuracy': 100}}, 'mission_id': 1}
