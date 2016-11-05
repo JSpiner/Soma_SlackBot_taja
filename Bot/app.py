@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 import sys 
 sys.path.append("../")
-
+import static
 from celery_worker import worker
 import Common.test as tester
 from flask import Flask
@@ -23,11 +23,15 @@ import base64
 import Common.static
 import datetime
 import logging
+from flask import render_template
+from flask import redirect, url_for
+
+
 
 # test before running flask
 # tester.run_unit_test()
 
-app = Flask(__name__)
+app = Flask(__name__,static_url_path='')
 
 # make log format
 formatter = logging.Formatter('[ %(levelname)s | %(filename)s:%(lineno)s ] %(asctime)s > %(message)s')
@@ -57,6 +61,13 @@ rows = util.fetch_all_json(result)
 for row in rows:    
     redis_manager.redis_client.hset('rtm_status_'+row['team_id'], 'status', static.SOCKET_STATUS_IDLE)
 
+# @app.route('/success', methods=['GET'])
+# def redirect_to_index():
+#     return redirect(url_for('static', filename='index2.html'))
+
+# @app.route('/success')
+# def hello(name=None):
+#     return render_template('index2.html', name=name)
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
@@ -267,7 +278,7 @@ def slack_oauth():
             }
         )
     """
-    return 'auth success' + response['access_token']
+    return redirect(url_for('static', filename='successView.html'))
 
 @app.route('/slack/start', methods = ['POST'])
 def slack_game_start():
