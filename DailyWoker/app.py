@@ -319,6 +319,7 @@ def updateProblemLevel():
         level = 1
         count = 1
 
+        # 문제 하나하나 업데이트
         for row in rows:
             conn.execute("UPDATE `slackbot`.`PROBLEM` SET `difficulty`=%s WHERE `problem_id`=%s;", level ,row['problem_id'])
             count = count + 1
@@ -336,6 +337,8 @@ def updateProblemLevel():
 def job():
     updateUserActive()
     updateTeamActive()
+
+def week_job():
     updateProblemLevel()
 
 # updateUserActive()
@@ -350,6 +353,7 @@ def job():
 # 매일 특정 시간에
 #schedule.every().day.at("00:00").do(job)
 schedule.every().day.at("00:00").do(job)
+schedule.every().monday.do(week_job())
 
 while 1:
     schedule.run_pending()
