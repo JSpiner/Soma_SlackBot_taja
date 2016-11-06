@@ -775,7 +775,7 @@ def command_kok(data):
     result = slackApi.chat.postMessage(
         {
             'channel'   : channelId,
-            'text'      : ":crown: *King of the Keyboard* :crown: \nThis is survival until some one left. Enjoy? Closing in 20 s"
+            'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("")  
         }
     )
     
@@ -814,20 +814,29 @@ def command_kok(data):
             {
                 'channel'   : channelId,
                 'ts'        : result['ts'],
-                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % (str(20-i))                
+                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % (str(20-i) +"s")                
             }
         )
         time.sleep(1)
 
 
-    slackApi.chat.update(
-        {
-            'channel'   : channelId,
-            'ts'        : result['ts'],
-            'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("timeout")
-        }
-    )
-    
+    if teamLang == "kr":
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'ts'        : result['ts'],
+                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("timeout!")
+            }
+        )
+    else:
+        slackApi.chat.update(
+            {
+                'channel'   : channelId,
+                'ts'        : result['ts'],
+                'text'      : static.getText(static.CODE_TEXT_KOK_TITLE, teamLang) % ("게임 끝!")
+            }
+        )
+
     users = redis_client.hgetall('kokusers_'+game_id)
 
     print(users)
@@ -976,7 +985,7 @@ def game_end(slackApi, data, round = 0):
     channelId = data['channel']
 
     teamLang = util.get_team_lang(teamId)
-    sendMessage(slackApi, channelId, "Game End")
+    sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
     
     start_time = redis_client.get("start_time_" + channelId)
     game_id = redis_client.get("game_id_" + channelId)
