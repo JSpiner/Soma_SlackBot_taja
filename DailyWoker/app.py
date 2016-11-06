@@ -296,11 +296,47 @@ def updateUserActive():
     except Exception as e:
         daily_worker_logger.error(str(e))
 
+def updateProblemLevel():
+
+    try:
+        conn = engine.connect()
+        trans = conn.begin()
+        result = conn.execute(
+            "SELECT slackbot.PROBLEM.problem_id, avg(accuracy) "
+            "FROM slackbot.PROBLEM INNER JOIN slackbot.GAME_INFO "
+            "ON slackbot.PROBLEM.problem_id = slackbot.GAME_INFO.problem_id "
+            "INNER JOIN slackbot.GAME_RESULT "
+            "ON slackbot.GAME_RESULT.game_id = slackbot.GAME_INFO.game_id "
+            "GROUP BY slackbot.PROBLEM.problem_id "
+            "ORDER BY avg(accuracy) DESC;"
+        )
+
+        rows = fetch_all_json(result)
+
+        # 가져온 결과들을 update
+        num_of_problems = len(rows)
+        quotient = int(num_of_problems / 5)
+        level = 1
+        count = 1
+
+        for row in rows:
+            conn.execute("UPDATE `slackbot`.`PROBLEM` SET `difficulty`=%s WHERE `problem_id`=%s;", level ,row['problem_id'])
+            count = count + 1
+            if count == quotient:
+                count = 1
+                level = level + 1
+
+        trans.commit()
+        conn.close()
+
+    except Exception as e:
+        daily_worker_logger.error(str(e))
+
 
 def job():
     updateUserActive()
     updateTeamActive()
-
+    updateProblemLevel()
 
 # updateUserActive()
 
@@ -313,7 +349,7 @@ def job():
 # schedule.every().hour.do(job)
 # 매일 특정 시간에
 #schedule.every().day.at("00:00").do(job)
-schedule.every(20).seconds.do(job)
+schedule.every().day.at("00:00").do(job)
 
 while 1:
     schedule.run_pending()
