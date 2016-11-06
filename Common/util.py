@@ -212,3 +212,5 @@ def get_problems(temaLang):
 def getRandomValue(to,frm):
     return random.randrange(to,frm+1)
 
+def getRandomPercent(percent):
+    return random.randrange(100) < percent

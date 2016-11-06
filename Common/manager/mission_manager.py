@@ -50,10 +50,10 @@ def pickUpGameEvent(channelId,teamId):
 
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomValue(2,2) == 2 :
+	if util.getRandomPercent(80) :
 
 		#다시 50% 확률로 general/special 한 미션이 나온다.
-		if util.getRandomValue(2,2) == 1 :
+		if util.getRandomPercent(30) :
 			logger_celery.info('[MISSION]==> general Mission')
 			result = db_manager.query(
 				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
@@ -73,8 +73,8 @@ def pickUpGameEvent(channelId,teamId):
 		else:
 			logger_celery.info('[MISSION]==> special Mission')
 			result = db_manager.query(
-				# "select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
-				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo   on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  and mission_noti_code =103",
+				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
+				# "select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo   on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  and mission_noti_code =103",
 				(teamLang,)
 			)
 			rows = util.fetch_all_json(result)
@@ -111,7 +111,8 @@ def mission_swap_get_Random_Chosung(string,channelId,teamLang):
 		list_chosung = []
 
 		# logger_celery.info('[MISSION]==>',string)
-		logger_celery.info('[MISSION_string]==> '+string)
+		logger_celery.info('[MISSION_string]==> '+str(string))
+
 
 
 		for pice in splitedChars:
@@ -123,14 +124,14 @@ def mission_swap_get_Random_Chosung(string,channelId,teamLang):
 		
 		random_chosung =list_chosung[util.getRandomValue(0,len(list_chosung)-1)]
 		redis_client.set(static.GAME_MISSION_SWAP_CHOSUNG+channelId,random_chosung)
-		logger_celery.info('[MISSION_pre]==> ',random_chosung)
+		logger_celery.info('[MISSION_pre]==> ',str(random_chosung))
 		return random_chosung
 	else:
 		splitedChars= list(string)
 		
 		random_chosung =splitedChars[util.getRandomValue(0,len(splitedChars)-1)]
 		redis_client.set(static.GAME_MISSION_SWAP_CHOSUNG+channelId,random_chosung)
-		logger_celery.info('[MISSION_pre]==> ',random_chosung)
+		logger_celery.info('[MISSION_pre]==> ',str(random_chosung))
 		return random_chosung
 
 
@@ -155,7 +156,7 @@ def mission_swap_get_options_centence(randomChar,channelId,teamLang):
 		
 		)
 	)
-	logger_celery.info('[MISSION_afte]==> ',after_char)
+	logger_celery.info('[MISSION_afte]==> ',str(after_char))
 	return options_centencs	
 
 
@@ -167,8 +168,8 @@ def mission_reverse_typing():
 
 def is_mission_clear(channel_id,game_id):
 	logger_celery.info('[MISSION]==>mission clear check')
-	logger_celery.info('[MISSION_channel_id]==>'+channel_id)
-	logger_celery.info('[MISSION_game_id]==>'+game_id)
+	logger_celery.info('[MISSION_channel_id]==>'+str(channel_id))
+	logger_celery.info('[MISSION_game_id]==>'+str(game_id))
 	
 	global arr_cond_oper 
 	arr_cond_oper = []
@@ -195,7 +196,7 @@ def is_mission_clear(channel_id,game_id):
 		check_conditions(mission_condi)
 		for oper in arr_cond_oper:
 			
-			logger_celery.info('[MISSION_RESULT_oper]==> '+oper)
+			logger_celery.info('[MISSION_RESULT_oper]==> '+str(oper))
 		for row in rows:
 			chcked_user = checking_user(row,mission_condi)
 			
@@ -203,7 +204,7 @@ def is_mission_clear(channel_id,game_id):
 			if(chcked_user == True):
 				mission_success_num = mission_success_num + 1
 		
-		logger_celery.info('[MISSION_RESULT_success_num]==> '+mission_success_num)
+		logger_celery.info('[MISSION_RESULT_success_num]==> '+str(mission_success_num))
 		
 		if(check_nec_member(mission_condi,mission_success_num,user_num)==True):
 			return static.GAME_MISSION_SUC
@@ -250,11 +251,11 @@ def checking_user(row,mission_condi):
 	#여기서 해당유저가 조건에 모두 맞게 랭킹을 먹었는지를 확인한다.
 	if(is_score_suc == True and is_speed_suc == True and is_accur_suc == True):
 		
-		logger_celery.info('[MISSION_RESULT]==> '+row['user_id']+'==> missino success')
+		logger_celery.info('[MISSION_RESULT]==> '+str(row['user_id'])+'==> missino success')
 		return True
 	else:
 		
-		logger_celery.info('[MISSION_RESULT]==> '+row['user_id']+'==> missino fail')
+		logger_celery.info('[MISSION_RESULT]==> '+str(row['user_id'])+'==> missino fail')
 		return False
 
 #비교해보는 로직.
