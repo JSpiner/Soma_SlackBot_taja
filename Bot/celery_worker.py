@@ -385,7 +385,7 @@ def command_myscore(data):
     myscore_announcement = myscore_announcements[int(len(myscore_announcements) * random.random())]['announcement']
 
     # 출력할 텍스트 생성
-    result_string = result_string + "Name : " + "*" +user_name + "*"+ "\n"
+    result_string = "Name : " + "*" +user_name + "*"+ "\n"
     result_string = result_string + myscore_announcement + "\n"
     rank = 1
 
