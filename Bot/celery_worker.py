@@ -259,7 +259,10 @@ def command_start(data, round = 0):
 
 
 
-    titleResponse = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_START_GAME, teamLang))
+    titleResponse = sendMessage(slackApi, channelId, util.get_start_centence(teamLang))
+    # sendMessage(slackApi, channelId, util.get_start_centence(teamLang))
+
+
     response = sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_COUNT_1, teamLang))
 
 
