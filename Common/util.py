@@ -184,6 +184,17 @@ def fetch_all_json(result):
       i=i+1
   return lis
 
+def get_start_centence(temaLang):
+    result = db_manager.engine.connect().execute(
+        "select *from MENT_START where validity = %s and lang = %s  order by rand() limit 1",
+        (1,temaLang)
+    )
+
+    rows = fetch_all_json(result)
+
+
+    return rows[0]['contents']
+
 
 def get_problems(temaLang):
 
