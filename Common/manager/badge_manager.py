@@ -5,7 +5,7 @@ from Common import util
 from Common import static
 import json
 import logging
-
+import time
 from celery.utils.log import get_task_logger
 
 def calc_badge(data):

@@ -669,10 +669,14 @@ def command_typing(data):
             logger_celery.error("[DB] err==>"+str(e))
 
 def command_rank(data):
+	
+
+
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
+    print('rank_data'+str(data))
 
 
     # 내 게임 결과들 가져오기
@@ -683,10 +687,11 @@ def command_rank(data):
 	    "SELECT GAME_INFO.game_id "
         "FROM GAME_INFO "
         "WHERE "
-        "GAME_INFO.channel_id = 'C2L1UBLM7' "
+        "GAME_INFO.channel_id = %s "
         ") "
         "GROUP BY GAME_RESULT.user_id "
-        "order by avg_score DESC; "
+        "order by avg_score DESC; ",
+        (channelId,)
     )
 
     rows = util.fetch_all_json(result)

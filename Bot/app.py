@@ -608,6 +608,23 @@ def slack_game_exit():
     response.headers['Content-type'] = 'application/json'
     return response
 
+@app.route('/slack/review', methods = ['POST'])
+def slack_send_review():
+    payload = request.get_data().decode()
+    app.logger.info(payload)
+    
+
+    response = Response(
+        json.dumps(
+            {
+                'channel' : request.form.get('channel_id'),
+                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://surfinger.xyz/review'
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response    
+
 
 @app.route('/slack/event', methods = ['POST'])
 def slack_event():
