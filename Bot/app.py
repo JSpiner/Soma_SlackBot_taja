@@ -501,25 +501,40 @@ def slack_game_kok():
     data['user'] = request.form.get('user_id')
 
     teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
 
-    if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
-        redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
-        redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+    if redis_manager.redis_client.get('kokstatus_'+data["channel"]) == "1":
 
-        print('start')
-        worker.delay(data)
-    else:            
-        rtm_manager.open_new_socket(teamId, data)
-
-    response = Response(
-        json.dumps(
-            {
-                'response_type' : 'in_channel',
-                'text' : ''
-            }
+        response = Response(
+            json.dumps(
+                {
+                    'response_type' : 'in_channel',
+                    'text' : static.getText(static.CODE_TEXT_ALREADY_STARTED, teamLang)
+                }
+            )
         )
-    )
-    response.headers['Content-type'] = 'application/json'
+        response.headers['Content-type'] = 'application/json'
+    else:
+
+        if rtm_manager.is_socket_opened(teamId) != static.SOCKET_STATUS_IDLE:
+            redis_manager.redis_client.hset('rtm_status_'+teamId, 'expire_time', time.time() + static.SOCKET_EXPIRE_TIME)
+            redis_manager.redis_client.set("status_" + data["channel"], static.GAME_STATE_LOADING),
+
+            redis_manager.redis_client.set('kokstatus_'+data["channel"], "1")
+            print('start')
+            worker.delay(data)
+        else:            
+            rtm_manager.open_new_socket(teamId, data)
+
+        response = Response(
+            json.dumps(
+                {
+                    'response_type' : 'in_channel',
+                    'text' : ''
+                }
+            )
+        )
+        response.headers['Content-type'] = 'application/json'
     return response  
 
 @app.route('/slack/rank', methods = ['POST'])
