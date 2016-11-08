@@ -137,6 +137,17 @@ def command_start(data, round = 0):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
     teamLang = util.get_team_lang(teamId)
+    
+    result = db_manager.query(
+        "select *from GAME_INFO where channel_id = %s",
+        (channelId,)
+    )
+    rows = util.fetch_all_json(result)
+
+    if len(rows)==0:
+       #게임 카운터를 1로 설정한다.
+        redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, '1')
+
 
     logger_celery.info('start')
 
@@ -990,16 +1001,21 @@ def is_channel_has_bot(teamId, channelId):
                 'channel' : channelId
             }
         )['groups']
+
+        for channel in channelList:
+            if channel['id'] == channelId:
+                return True 
     else:                           #public channel 
-        channelList = slackApi.channels.list(
+        memberList = slackApi.channels.info(
             {
                 'channel' : channelId
             }
-        )['channels']
+        )['channel']['members']
 
-    for channel in channelList:
-        if channel['id'] == channelId:
-            return True 
+        for member in memberList:
+            if member == bot_id:
+                return True
+
     return False
 #    return bot_id in channelInfo['channel']['members']
         
@@ -1019,7 +1035,7 @@ def game_end(slackApi, data, round = 0):
     
     logger_celery.info(start_time)
 
-    start_time_to_time_tamp = datetime.datetime.utcfromtimestamp(float(start_time)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
+    start_time_to_time_tamp = datetime.datetime.utcfromtimestamp((float(start_time)/1000)+(9*3600)).strftime('%Y-%m-%d %H:%M:%S.%f')
 
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_CALCULATING)
@@ -1267,6 +1283,7 @@ def game_end(slackApi, data, round = 0):
         redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, str(game_cnt+1))
         #6이면 마지막이니까 kok알림.
     elif(game_cnt == 7):
+        time.sleep(3)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
