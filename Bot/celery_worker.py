@@ -350,6 +350,7 @@ def command_exit(data):
 
     redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
     redis_client.set("game_mode" + channelId, "0")
+    redis_client.set('kokstatus_'+data["channel"], "0")
     sendMessage(slackApi, channelId, static.getText(static.CODE_TEXT_GAME_DONE, teamLang))
 
     badge_manager.calc_badge(data)
@@ -956,6 +957,8 @@ def start_kok(data, round):
                 'text' : "*King of the Keyboard* : :crown: " + userString + " :crown:"
             }
         )
+
+        redis_client.set('kokstatus_'+data["channel"], "0")
         redis_client.set('game_mode_'+channelId, "0")
         return 
 
