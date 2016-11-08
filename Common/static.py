@@ -66,6 +66,10 @@ GAME_MISSION_SWAP = 103
 GAME_MISSION_SWAP_CHOSUNG = "GAME_MISSION_SWAP_CHOSUNG_"
 GAME_MISSION_SWAP_AFTER = "GAME_MISSION_SWAP_AFTER_"
 
+# 게임 최초실행시 몇번의 정해진 가이드대로 게임을 해야한다. 
+# 일반게임 2버 랜덤게임 스페셜 3 번 일반 2번
+GAME_MANAGER_PLAY_COUNTER = "GAME_MANAGER_PLAY_COUNTER_"
+
 # socket expire time
 SOCKET_EXPIRE_TIME = 60*60
 
@@ -117,6 +121,7 @@ CODE_TEXT_KOK_ROUND         = "code_kok_round"
 CODE_TEXT_GAME_REVIEW       = "code_game_review"
 CODE_TEXT_NEW_BADGE         = "code_new_badge"
 CODE_TEXT_HELP              = "code_help"
+CODE_TEXT_GUID_KOK          = "code_guid_kok"
 
 CODE_TEXT_MISSION_RESULT_REVERSE = "code_text_mission_result_reverse"
 CODE_TEXT_MISSION_RESULT_SECONDORY = "code_text_mission_result_secondory"
