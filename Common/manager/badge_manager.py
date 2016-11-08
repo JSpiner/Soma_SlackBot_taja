@@ -127,7 +127,7 @@ def reward_badge(data, badgeId):
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
-                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://ssoma.xyz/wordpress/'
+                'text' : static.getText(static.CODE_TEXT_GAME_REVIEW, teamLang)
             }
         )
 

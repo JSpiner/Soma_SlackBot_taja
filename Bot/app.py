@@ -621,12 +621,15 @@ def slack_send_review():
     payload = request.get_data().decode()
     app.logger.info(payload)
     
+    teamId = request.form.get('team_id')
+    teamLang = util.get_team_lang(teamId)
 
     response = Response(
         json.dumps(
             {
+                'response_type' : 'in_channel',
                 'channel' : request.form.get('channel_id'),
-                'text' : '게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://surfinger.xyz/review'
+                'text' : static.getText(static.CODE_TEXT_GAME_REVIEW, teamLang)
             }
         )
     )
