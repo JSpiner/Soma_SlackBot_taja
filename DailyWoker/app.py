@@ -353,7 +353,7 @@ def week_job():
 # 매일 특정 시간에
 #schedule.every().day.at("00:00").do(job)
 schedule.every().day.at("00:00").do(job)
-schedule.every().monday.do(week_job())
+schedule.every().monday.do(week_job)
 
 while 1:
     schedule.run_pending()
