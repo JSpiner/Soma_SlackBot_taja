@@ -76,8 +76,8 @@ def pickUpGameEvent(channelId,teamId):
 		play_mission_general = 100
 		play_mission_id = 2							
 	else:
-		play_mission_per = 80
-		play_mission_general = 30
+		play_mission_per = 50
+		play_mission_general = 50
 		play_mission_id = 'None'
 
 
