@@ -15,7 +15,6 @@ import random
 # 팀별 SlackApi 객체 생성
 def init_slackapi(teamId):
 
-#    #conn = db_manager.session.connection()
     result = fetch_all_json(db_manager.query(
             "SELECT team_access_token FROM TEAM "
             "WHERE `team_id`   =  %s " 
@@ -24,9 +23,24 @@ def init_slackapi(teamId):
             (teamId,)
         ) 
     )
-#    #conn.close()
+    
     print(result)
     slackApi = SlackApi(result[0]['team_access_token'])
+    return slackApi
+
+def init_slackapi_bot(teamId):
+
+    result = fetch_all_json(db_manager.query(
+            "SELECT team_bot_access_token FROM TEAM "
+            "WHERE `team_id`   =  %s " 
+            "LIMIT 1"
+            ,
+            (teamId,)
+        ) 
+    )
+    
+    print(result)
+    slackApi = SlackApi(result[0]['team_bot_access_token'])
     return slackApi
 
 def get_bot_id(teamId):
