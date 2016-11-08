@@ -48,17 +48,60 @@ def pickUpGameEvent(channelId,teamId):
 	redis_client.set(static.GAME_MISSION_TYPE + channelId, 'None')
 	redis_client.set(static.GAME_MISSION_NOTI_CODE + channelId,'None')
 
+	#첫판일경우 100
+	play_cnt = redis_client.get(static.GAME_MANAGER_PLAY_COUNTER+channelId)
+
+	if( play_cnt == '1' or play_cnt == '2'):
+		play_mission_per = 0
+		play_mission_general = 'None'
+		play_mission_id = 'None'
+	elif(play_cnt == '3'):
+		play_mission_per = 100
+		play_mission_general = 0
+		play_mission_id = 101
+	elif(play_cnt == '4'):
+		play_mission_per = 100
+		play_mission_general = 0
+		play_mission_id = 103
+	elif(play_cnt == '5'):
+		play_mission_per = 100
+		play_mission_general = 0
+		play_mission_id = 102
+	elif(play_cnt == '6'):
+		play_mission_per = 100
+		play_mission_general = 100
+		play_mission_id = 1
+	elif(play_cnt == '7'):
+		play_mission_per = 100
+		play_mission_general = 100
+		play_mission_id = 2							
+	else:
+		play_mission_per = 80
+		play_mission_general = 30
+		play_mission_id = 'None'
+
+
+	print(' playCnt => ' +str(play_cnt)+' missionper => '+str(play_mission_per)+ ' play_general=> '+str(play_mission_general)+' play_di => '+str(play_mission_id))
+
 	#미션실행 모드이다. 
 	#현재 테스트용으로 50% 확률로 미션게임이 나오도록 작업하였다.
-	if util.getRandomPercent(80) :
+	if util.getRandomPercent(play_mission_per) :
 
 		#다시 50% 확률로 general/special 한 미션이 나온다.
-		if util.getRandomPercent(30) :
+		if util.getRandomPercent(play_mission_general) :
 			logger_celery.info('[MISSION]==> general Mission')
-			result = db_manager.query(
-				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
-				(teamLang,)
-			)
+
+			if(play_cnt=='6' or play_cnt=='7'):
+				result = db_manager.query(
+					"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  and mission_noti_code =%s",
+					(teamLang,play_mission_id)
+				)
+			else:
+				result = db_manager.query(
+					"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='general'  ORDER BY rand() LIMIT 1 ",
+					(teamLang,)
+				)
+
 			rows = util.fetch_all_json(result)
 			mission_noti_code = rows[0]['mission_noti_code']
 			mission_noti = rows[0]['mission_noti']
@@ -72,11 +115,20 @@ def pickUpGameEvent(channelId,teamId):
 
 		else:
 			logger_celery.info('[MISSION]==> special Mission')
-			result = db_manager.query(
-				"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
-				# "select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo   on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  and mission_noti_code =103",
-				(teamLang,)
-			)
+			
+			if(play_cnt=='3' or play_cnt=='4' or play_cnt=='5'):
+				result = db_manager.query(
+					# "select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
+					"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo   on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  and mission_noti_code =%s",
+					(teamLang,play_mission_id)
+				)
+			else:
+				result = db_manager.query(
+					"select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  ORDER BY rand() LIMIT 1 ",
+					# "select *from GAME_MISSION_NOTI as gnoti inner join GAME_MISSION_INFO as ginfo   on gnoti.id = ginfo.mission_noti_code where ginfo.validity = 1 and gnoti.lang =%s and type ='special'  and mission_noti_code =103",
+					(teamLang,)
+				)			
+
 			rows = util.fetch_all_json(result)
 			print(rows)
 			mission_noti_code = rows[0]['mission_noti_code']

@@ -142,6 +142,9 @@ def command_start(data, round = 0):
 
     if not is_channel_has_bot(slackApi, teamId, channelId):
         redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
+        #게임 카운터를 1로 설정한다.
+        redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, '1')
+        print("First !! =>"+redis_client.get(static.GAME_MANAGER_PLAY_COUNTER + channelId));
         
         slackApi.chat.postMessage(
             {
@@ -188,6 +191,8 @@ def command_start(data, round = 0):
 
     # DB에 채널 정보가 없다면
     if(result.fetchone() is None):
+        
+
 
         ctime = datetime.datetime.now()
 
@@ -1142,6 +1147,8 @@ def game_end(slackApi, data, round = 0):
             )
         }
     )
+
+    
     
 
 
@@ -1237,6 +1244,33 @@ def game_end(slackApi, data, round = 0):
         start_kok(data, round+1)
     
     badge_manager.calc_badge(data)
+
+
+    
+    # if(redis_client.get(static.GAME_MANAGER_PLAY_COUNTER+channelId) is not None):
+	
+    game_cnt = int(redis_client.get(static.GAME_MANAGER_PLAY_COUNTER+channelId))
+    #6보다 카운트가작으면 ++	
+    if(game_cnt < 7):
+        redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, str(game_cnt+1))
+        #6이면 마지막이니까 kok알림.
+    elif(game_cnt == 7):
+        slackApi.chat.postMessage(
+            {
+                'channel' : channelId,
+                'text' : static.getText(static.CODE_TEXT_GUID_KOK, teamLang)
+            }
+        )
+        redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, str(game_cnt+1))
+        
+    
+		
+	
+
+
+        
+
+
 
 
 def sendMessage(slackApi, channel, text):
