@@ -137,6 +137,17 @@ def command_start(data, round = 0):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
     teamLang = util.get_team_lang(teamId)
+    
+    result = db_manager.query(
+        "select *from GAME_INFO where channel_id = %s",
+        (channelId,)
+    )
+    rows = util.fetch_all_json(result)
+
+    if len(rows)==0:
+       #게임 카운터를 1로 설정한다.
+        redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, '1')
+
 
     logger_celery.info('start')
 
@@ -1024,7 +1035,7 @@ def game_end(slackApi, data, round = 0):
     
     logger_celery.info(start_time)
 
-    start_time_to_time_tamp = datetime.datetime.utcfromtimestamp(float(start_time)/1000).strftime('%Y-%m-%d %H:%M:%S.%f')
+    start_time_to_time_tamp = datetime.datetime.utcfromtimestamp((float(start_time)/1000)+(9*3600)).strftime('%Y-%m-%d %H:%M:%S.%f')
 
     # 현재 상태 변경
     redis_client.set("status_" + channelId, static.GAME_STATE_CALCULATING)
