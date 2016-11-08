@@ -140,7 +140,7 @@ def command_start(data, round = 0):
 
     logger_celery.info('start')
 
-    if not is_channel_has_bot(slackApi, teamId, channelId):
+    if not is_channel_has_bot(teamId, channelId):
         redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
         #게임 카운터를 1로 설정한다.
         redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, '1')
@@ -746,7 +746,7 @@ def command_kok(data):
     channelId = data['channel']
     slackApi = util.init_slackapi(teamId)
     
-    if not is_channel_has_bot(slackApi, teamId, channelId):
+    if not is_channel_has_bot(teamId, channelId):
         redis_client.set("status_" + channelId, static.GAME_STATE_IDLE)
         
         slackApi.chat.postMessage(
@@ -979,17 +979,29 @@ def start_kok(data, round):
     return 0
 
 # 해당 채널 내에 봇이 추가되어 있나 확인
-def is_channel_has_bot(slackApi, teamId, channelId):
+def is_channel_has_bot(teamId, channelId):
     bot_id = util.get_bot_id(teamId)
     
-    channelInfo = slackApi.channels.info(
-        {
-            'channel' : channelId
-        }
-    )
-    logger_celery.info(channelInfo)
+    slackApi = util.init_slackapi_bot(teamId)
 
-    return bot_id in channelInfo['channel']['members']
+    if channelId[0] == "G":         #private channel 
+        channelList = slackApi.groups.list(
+            {
+                'channel' : channelId
+            }
+        )['groups']
+    else:                           #public channel 
+        channelList = slackApi.channels.list(
+            {
+                'channel' : channelId
+            }
+        )['channels']
+
+    for channel in channelList:
+        if channel['id'] == channelId:
+            return True 
+    return False
+#    return bot_id in channelInfo['channel']['members']
         
 
 # 타이머 실행 함수(게임 종료시)

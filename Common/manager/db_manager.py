@@ -47,6 +47,7 @@ session = scoped_session(sessionmaker(autocommit=True,
                                          bind=engine))
 
 # query with args
+"""
 def query(queryString, params = None):
     db_manager_logger.info("query : " + queryString)
     if params != None:
@@ -61,4 +62,27 @@ def query(queryString, params = None):
         queryString = queryString % params
 
     result = session.execute(queryString)
+    return result
+"""
+
+def query(queryString, params = None):
+    db_manager_logger.info("query : " + queryString)
+
+    i=0
+    while '%s' in queryString:
+        queryString = queryString.replace('%s', ':p'+str(i), 1)
+        i+=1
+
+    if params != None:
+        params = list(params)
+        db_manager_logger.info("params : " + str(params))
+        args = {}
+        for idx, arg in enumerate(params):
+            key = 'p'+str(idx)
+            args[key] = arg
+
+        result = session.execute(queryString, args)
+    else:
+        result = session.execute(queryString)
+
     return result
