@@ -990,16 +990,21 @@ def is_channel_has_bot(teamId, channelId):
                 'channel' : channelId
             }
         )['groups']
+
+        for channel in channelList:
+            if channel['id'] == channelId:
+                return True 
     else:                           #public channel 
-        channelList = slackApi.channels.list(
+        memberList = slackApi.channels.info(
             {
                 'channel' : channelId
             }
-        )['channels']
+        )['channel']['members']
 
-    for channel in channelList:
-        if channel['id'] == channelId:
-            return True 
+        for member in memberList:
+            if member == bot_id:
+                return True
+
     return False
 #    return bot_id in channelInfo['channel']['members']
         
