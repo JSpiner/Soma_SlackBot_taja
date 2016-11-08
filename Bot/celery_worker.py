@@ -1283,6 +1283,7 @@ def game_end(slackApi, data, round = 0):
         redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, str(game_cnt+1))
         #6이면 마지막이니까 kok알림.
     elif(game_cnt == 7):
+        time.sleep(3)
         slackApi.chat.postMessage(
             {
                 'channel' : channelId,
