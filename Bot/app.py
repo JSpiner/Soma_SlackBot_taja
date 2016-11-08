@@ -88,7 +88,7 @@ for row in rows:
 def home():
     html = (
         "<html>"
-        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
+        "<a href='https://slack.com/oauth/authorize?scope=channels:write+commands+bot+chat:write:bot+users:read+channels:read+im:read+groups:read+groups:write&client_id="+key['slackapp']['client_id']+"'><img alt='Add to Slack' "
         "height='40' width='139' src='https://platform.slack-edge.com/img/add_to_slack.png' "
         "srcset='https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x' /></a>"
         "</html>"
@@ -109,12 +109,20 @@ def slack_event_btn():
     
     if payload['actions'][0]['name'] == 'invite_bot':
 
-        slackApi.channels.invite(
-            {
-                'channel' : channelId,
-                'user' : util.get_bot_id(teamId)
-            }
-        )
+        if channelId[0] == "G":             # private channel
+            slackApi.groups.invite(
+                {
+                    'channel' : channelId,
+                    'user' : util.get_bot_id(teamId)
+                }
+            )
+        else:                               # public channel
+            slackApi.channels.invite(
+                {
+                    'channel' : channelId,
+                    'user' : util.get_bot_id(teamId)
+                }
+            )
     elif payload['actions'][0]['name'] == 'lang_en':
 
         db_manager.query(
