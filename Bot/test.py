@@ -1,50 +1,36 @@
 
-import sys 
-sys.path.append("../")
-from Common.manager import db_manager
-from Common import util
+from slackclient import SlackClient
+import websocket
+#from slackclient import SlackNotConnected
 
-db_manager.query(
-    "INSERT INTO TEAM " 
-    "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`, `bot_id`)"
-    "VALUES"
-    "(%s, %s, %s, %s, %s, %s)",
-    ( 
-        "ff",
-        "ff`3!@#$%^안녕하세요 dfdfdf",
-        "2016-01-01",
-        "fdfdf",
-        "ffff",
-        "fff"
-    )
-)
+sc = SlackClient('xoxb-91817198689-6Ps1Hv9vgp2qn5agD06nkuRB')
 
-"""
-result = db_manager.session.execute(
-    "SELECT * FROM TEAM WHERE team_id = :t1",
-    {"t1":"1 or '1'='1'"}
-)
-rows = util.fetch_all_json(result)
-print(rows)
 
-db_manager.session.execute(
-    "INSERT INTO TEAM " 
-    "(`team_id`, `team_name`, `team_joined_time`, `team_access_token`, `team_bot_access_token`, `bot_id`)"
-    "VALUES"
-    "(:v1, :v2, :v3, :v4, :v5, :v6)",
-    { 
-        "v1":"ddd3",
-        "v2":"ddd, 34` !@#$%^&* '2' \"435",
-        "v3":"2016-01-01",
-        "v4":"ddd",
-        "v5":"ddd",
-        "v6":"ddd"
-    }
-)
+if sc.rtm_connect():
+    print("connected! : ")
 
-result = db_manager.session.execute(
-    "SELECT * FROM TEAM WHERE team_id = 1 or '1'='1'"
-)
-rows = util.fetch_all_json(result)
-print(rows)
-"""
+    while True:
+        
+        try:
+            response = sc.rtm_read()
+        except websocket.WebSocketConnectionClosedException as e:
+            break
+        except Exception as e:
+            print(e)
+            print(type(e))
+            if str(e) == "Connection is already closed.":
+                break
+            if str(type(e)) == "websocket._exceptions.WebSocketConnectionClosedException":
+                break
+            if type(e) == "websocket._exceptions.WebSocketConnectionClosedException":
+                break
+            raise Exception
+
+
+        if len(response) == 0:  
+            continue
+
+        # response는 배열로, 여러개가 담겨올수 있음
+        for data in response:
+            print(data)
+print("disconnected")
