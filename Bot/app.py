@@ -259,6 +259,11 @@ def slack_oauth():
     
     accessToken = response['access_token']
     teamLang = util.get_team_lang(response['team_id'])
+    redis_manager.redis_client.hset('rtm_status_'+response['team_id'], 'status', static.SOCKET_STATUS_IDLE)
+
+    requests.post("https://ssoma.xyz:40000/logging", data={
+        "text" : response['team_name']
+    })
 
     """
     slackApi = SlackApi(accessToken)

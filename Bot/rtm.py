@@ -66,7 +66,13 @@ def _connect(teamId, bot_token, data):
         worker.delay(data)
 
         while isRemainTime:
-            response = sc.rtm_read()
+            try:
+                response = sc.rtm_read()
+            except websocket.WebSocketConnectionClosedException as e:
+                break
+            except Exception as e:
+                
+                raise Exception
 
             if len(response) == 0:  
                 continue

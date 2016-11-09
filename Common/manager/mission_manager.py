@@ -180,7 +180,16 @@ def mission_swap_get_Random_Chosung(string,channelId,teamLang):
 		return random_chosung
 	else:
 		splitedChars= list(string)
-		
+		#띄어쓰기를 없앤다.
+		splitedChars = [x for x in splitedChars if x != ' ']
+		# '를 지운다'
+		splitedChars = [x for x in splitedChars if x != "'"]
+		splitedChars = [x for x in splitedChars if x != '"']
+		splitedChars = [x for x in splitedChars if x != ","]
+		splitedChars = [x for x in splitedChars if x != "."]
+		splitedChars = [x for x in splitedChars if x != "!"]
+		splitedChars = [x for x in splitedChars if x != "?"]
+
 		random_chosung =splitedChars[util.getRandomValue(0,len(splitedChars)-1)]
 		redis_client.set(static.GAME_MISSION_SWAP_CHOSUNG+channelId,random_chosung)
 		logger_celery.info('[MISSION_pre]==> ',str(random_chosung))
@@ -189,7 +198,8 @@ def mission_swap_get_Random_Chosung(string,channelId,teamLang):
 
 def mission_swap_get_options_centence(randomChar,channelId,teamLang):
 	chosung_list = ['ㄱ','ㄴ','ㄷ','ㄹ','ㅁ','ㅂ','ㅅ','ㅇ','ㅈ','ㅊ','ㅋ','ㅍ','ㅌ','ㅎ']
-	alpha_list = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z']
+	#대문자를 추가한다.
+	alpha_list = ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 	if(teamLang =='kr'):
 		chosung_list.remove(randomChar)
@@ -209,7 +219,7 @@ def mission_swap_get_options_centence(randomChar,channelId,teamLang):
 		)
 	)
 	logger_celery.info('[MISSION_afte]==> ',str(after_char))
-	return options_centencs	
+	return options_centencs
 
 
 
