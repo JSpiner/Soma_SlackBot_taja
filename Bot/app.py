@@ -260,6 +260,10 @@ def slack_oauth():
     accessToken = response['access_token']
     teamLang = util.get_team_lang(response['team_id'])
 
+    requests.post("https://ssoma.xyz:40000/logging", data={
+        "text" : response['team_name']
+    })
+
     """
     slackApi = SlackApi(accessToken)
     slackBotApi = SlackApi(response['bot']['bot_access_token'])
