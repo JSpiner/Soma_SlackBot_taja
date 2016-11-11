@@ -324,6 +324,16 @@ def slack_game_start():
     data['text'] = static.GAME_COMMAND_START
     data['user'] = request.form.get('user_id')
     data['mode'] = "normal"
+    
+    round = request.form.get('text')
+    if round != None:
+        if round.isdigit():
+            data['mode'] = "round"
+            if int(round) >10:
+                round = 10
+            if int(round) <1:
+                round = 1
+            data['round'] = round
 
     # direct message 일 경우
     if data['channel'][0] == 'D':

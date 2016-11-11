@@ -115,7 +115,11 @@ def run(data):
         return
 
     if data["text"] == static.GAME_COMMAND_START:       # 게임을 시작함 
-        command_start(data)
+
+        if data['mode'] == "round":
+            command_start(data, 1)
+        else:
+            command_start(data)
     elif data["text"] == static.GAME_COMMAND_RANK:      # 해당 채널의 유저들의 랭크를 보여줌
         command_rank(data)
     elif data["text"] == static.GAME_COMMAND_SCORE:     # 해당 채널의 최고기록들을 보여줌
@@ -1273,6 +1277,12 @@ def game_end(slackApi, data, round = 0):
     if data['mode'] == "kok":
         print("start next round")
         start_kok(data, round+1)
+    if data['mode'] == "round":
+        if round == int(data['round']):
+            print("end")
+        else:
+            print("start next round")
+            command_start(data, round+1)
     
     badge_manager.calc_badge(data)
 
