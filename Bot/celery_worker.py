@@ -1280,8 +1280,80 @@ def game_end(slackApi, data, round = 0):
     if data['mode'] == "round":
         if round == int(data['round']):
             print("end")
+            
+            result = db_manager.query(
+                "SELECT user_id, sum(score) as score, sum(speed) as speed, sum(accuracy) as accuracy "
+                "FROM ( "
+                "SELECT * "
+                "FROM GAME_RESULT "
+                ") as A "
+                "WHERE "
+                "A.game_id in ( "
+                "SELECT * FROM ( "
+                "SELECT GAME_INFO.game_id "
+                "FROM GAME_INFO "
+                "WHERE "
+                "GAME_INFO.channel_id = %s "
+                "order by start_time DESC "
+                "LIMIT %s "
+                ") AS B "
+                ") "
+                "GROUP BY A.user_id",
+                (channelId, round)
+            )
+            rows =util.fetch_all_json(result)
+
+
+            result_string = ""
+            rank = 1
+            if data['mode'] == "kok":
+                kokgame_id = redis_client.get('kokgame_id_'+channelId)
+                users = redis_client.hgetall('kokusers_'+kokgame_id)
+
+                for key, value in users.items():
+                    redis_client.hset("kokusers_"+kokgame_id, key, "0")
+
+            for row in rows:
+                result_string = result_string +(
+                    static.getText(static.CODE_TEXT_RANK_FORMAT_4, teamLang) %
+                    (
+                        pretty_rank(rank),
+                        str(get_user_info(slackApi, row["user_id"])["user"]["name"]),
+                        str(int(row["score"] / round)),
+                        pretty_accur(row["accuracy"] / round),
+                        str(int(row["speed"] / round))
+                    )
+                )
+                rank = rank + 1
+                if data['mode'] == "kok":
+                    if rank == len(rows) + 1:
+                        redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "0")
+                    else:
+                        redis_client.hset("kokusers_"+kokgame_id, row["user_id"], "1")
+
+            sendResult = str(result_string)
+            logger_celery.info(channelId)
+            
+            slackApi.chat.postMessage(
+                {
+                    "channel" : channelId,
+                    "text" : static.getText(static.CODE_TEXT_GAME_RESULT, teamLang),
+                    'as_user'   : 'false',
+                    "attachments" : json.dumps(
+                        [
+                            {
+                                "title":static.getText(static.CODE_TEXT_RECORD, teamLang),
+                                "text": sendResult,
+                                "mrkdwn_in": ["text", "pretext"],
+                                "color": "#18fa21"
+                            }   
+                        ]
+                    )
+                }
+            )
         else:
             print("start next round")
+            time.sleep(2)
             command_start(data, round+1)
     
     badge_manager.calc_badge(data)
