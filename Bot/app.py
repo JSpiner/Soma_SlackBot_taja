@@ -720,7 +720,7 @@ def wordpress_demo():
 
     problem_text = request.form.get('problem_text')
     answer_text = request.form.get('answer_text')
-    elapsed_time = float(request.form.get('elapsed_time'))
+    elapsed_time = float(str(request.form.get('elapsed_time')))
 
     accuracy = round(util.get_accuracy(max([answer_text, problem_text], key=len), util.get_edit_distance(answer_text, problem_text)), 3)
     speed = round(util.get_speed(answer_text, elapsed_time), 3)
