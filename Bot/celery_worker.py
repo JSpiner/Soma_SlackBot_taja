@@ -688,7 +688,7 @@ def command_typing(data):
 
 def command_rank(data):
 	
-
+    raise NameError
 
     teamId = data["team_id"]
     teamLang = util.get_team_lang(teamId)
