@@ -25,6 +25,7 @@ import datetime
 import logging
 from flask import render_template
 from flask import redirect, url_for
+import random
 
 # def split_character(string):
 #     response = ""
@@ -913,6 +914,56 @@ def slack_event():
                     worker.delay(eventData)
     app.logger.info( json.dumps(response))
     return json.dumps(response)
+
+@app.route('/wordpress/problem', methods=['GET'])
+def wordpress_get_problem():
+
+    result = db_manager.engine.connect().execute(
+        "SELECT problem_id, problem_text, difficulty "
+        "FROM PROBLEM "
+        "WHERE validity = %s "
+        "and problem_language = %s",
+        (1, "kr")
+    )
+
+    rows = util.fetch_all_json(result)
+
+    problem_text = rows[int(random.random() * len(rows))]['problem_text']
+
+
+    response = Response(
+        json.dumps(
+            {
+                'problem_text': problem_text
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
+
+@app.route('/wordpress/demoResult', methods=['POST'])
+def wordpress_demo():
+
+
+    problem_text = request.form['problem_text']
+    answer_text = request.form['answer_text']
+    elapsed_time = float(request.form['elapsed_time'])
+
+    accuracy = round(util.get_accuracy(max([answer_text, problem_text], key=len), util.get_edit_distance(answer_text, problem_text)), 3)
+    speed = round(util.get_speed(answer_text, elapsed_time), 3)
+    score = util.get_score(speed, accuracy)
+
+    response = Response(
+        json.dumps(
+            {
+                'speed' : speed,
+                'accuracy' : accuracy,
+                'score' : score
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
 
 if __name__ == '__main__':
 #    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')
