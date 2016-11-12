@@ -1,6 +1,6 @@
 {
     "kr":{
-        "code_lang_changed"     : "언어가 변경되었습니다.",
+        "code_lang_changed"     : "언어가 한국어로 변경되었습니다.",
         "code_join_bot"         : "반갑습니다! \n :musical_note: *Surfinger* 을 설치해주셔서 감사합니다 :musical_note: \n\n아래 버튼을 눌러 언어를 바꿀수도 있고 `/helpgame` 명령어를 입력하시면 게임에 대한 상세한 정보를 보실 수 있습니다.",
         "code_already_started"  : "이미 게임이 동작 중 입니다",
         "code_button_lang"      : "아래 버튼을 눌러 언어를 변경 할 수 있습니다.",
@@ -48,10 +48,11 @@
         "code_team_badge_5"     : ":sports_medal: 만장일치 : 팀 내의 모든 플레이어가 1회이상 게임에 참여",
         "code_game_review"      : "게임은 즐거우신가요? :grin: \n 더 재밌는 게임을 위해 게임을 평가해주세요 \n http://surfinger.xyz/review/",
         "code_new_badge"        : ":fireworks: 새로운 `뱃지`를 수집했습니다!",
-        "code_help"             : ":grinning: <@surfinger> 입니다. :grinning:\n\n`/start` 명령으로 채널 내에서 게임을 진행하실 수 있습니다.\n`/kok` 명령으로 King of the Keyboard 모드를 하실 수 있어용\n`/lang` 명령으로는 언어를 바꿀수있습니다! 영어와 한국어가 지원됩니다\n`/rank` 명령으로 유저들의 순위를 비교하며 경쟁할수\n있습니다.\n`/score` 명령으로 채널 내의 최고 기록들을 볼 수 있어요\n`/myscore` 명령으로 내 점수를 비교해 볼 수 있습니다\n`/exit` 명령으로 문제가 생겼을땐 중단할수 있어요\n`/badge` 명령으로 우리팀이 얻은 뱃지를 볼 수 있습니다\n\n언제든지 궁금한게 생기면 `/helpgame`을 불러주세요!\n\n즐거운 게임 되길! :+1:"    
+        "code_help"             : ":grinning: <@surfinger> 입니다. :grinning:\n\n`/start` 명령으로 채널 내에서 게임을 진행하실 수 있습니다.\n`/kok` 명령으로 King of the Keyboard 모드를 하실 수 있어용\n`/lang` 명령으로는 언어를 바꿀수있습니다! 영어와 한국어가 지원됩니다\n`/rank` 명령으로 유저들의 순위를 비교하며 경쟁할수\n있습니다.\n`/score` 명령으로 채널 내의 최고 기록들을 볼 수 있어요\n`/myscore` 명령으로 내 점수를 비교해 볼 수 있습니다\n`/exit` 명령으로 문제가 생겼을땐 중단할수 있어요\n`/badge` 명령으로 우리팀이 얻은 뱃지를 볼 수 있습니다\n\n언제든지 궁금한게 생기면 `/helpgame`을 불러주세요!\n\n즐거운 게임 되길! :+1:",
+        "code_guid_dm"          : ":exclamation: [알림] :exclamation: \nDiret Message로는 게임 및 관련 명령어를 사용하실 수 없습니다. \n 다른 채널에서 친구들과 함께 게임을 즐겨보세요!"    
     },
     "en":{ 
-        "code_lang_changed"     : "Language has been changed.",
+        "code_lang_changed"     : "Language has been changed to English.",
         "code_join_bot"         : "Hi there! \n :musical_note: Thanks for installing *Surfinger*  :musical_note: \n\nClick the button below and you can change the language. When you enter `/helpgame` command, you can see the detailed information about game.",
         "code_already_started"  : "The game is already started.",
         "code_button_lang"      : "You can click on the button below to change the language.",
@@ -99,6 +100,7 @@
         "code_team_badge_5"     : ":sports_medal: Unanimous : Everyone in the team plays more than once",
         "code_game_review"      : "Is it funny? :grin: \n Leave a review for more fun games! \n http://surfinger.xyz/review/",
         "code_new_badge"        : ":fireworks: Your team get `new badge`!",
-        "code_help"             : ":grinning: It's me, <@surfinger>! :grinning:\n\n`/start` commands, you can play game with your members.\n`/kok` commands, you can play survival game mode in channel!\n`/lang` commands, it supports korean, english. We will support others asap!\n`/rank` commands,\nyou can compare ranks in channel.\n`/score` commands, can see best scores in channel.\n`/myscore` commands, you can see your scores!\n`/exit` commands, can stop game when a problem occurs.\n`/badge` cammnds show our team's badges!\n\nPlease call me `/helpgame` if you have any problems!\n\nHave enjoy! :+1:"
+        "code_help"             : ":grinning: It's me, <@surfinger>! :grinning:\n\n`/start` commands, you can play game with your members.\n`/kok` commands, you can play survival game mode in channel!\n`/lang` commands, it supports korean, english. We will support others asap!\n`/rank` commands,\nyou can compare ranks in channel.\n`/score` commands, can see best scores in channel.\n`/myscore` commands, you can see your scores!\n`/exit` commands, can stop game when a problem occurs.\n`/badge` cammnds show our team's badges!\n\nPlease call me `/helpgame` if you have any problems!\n\nHave enjoy! :+1:",
+        "code_guid_dm"          : ":exclamation: [NOTI] :exclamation: \nYou can not use the game and related commands. \n Enjoy the game with your friends on other channels!"    
     }
 } 

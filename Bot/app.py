@@ -25,6 +25,7 @@ import datetime
 import logging
 from flask import render_template
 from flask import redirect, url_for
+import random
 
 # def split_character(string):
 #     response = ""
@@ -324,6 +325,32 @@ def slack_game_start():
     data['text'] = static.GAME_COMMAND_START
     data['user'] = request.form.get('user_id')
     data['mode'] = "normal"
+    
+    round = request.form.get('text')
+    if round != None:
+        if round.isdigit():
+            data['mode'] = "round"
+            if int(round) >10:
+                round = 10
+            if int(round) <1:
+                round = 1
+            data['round'] = round
+
+    # direct message 일 경우
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response            
+
+
     redis_manager.redis_client.set('game_mode_'+request.form.get('channel_id'), "normal")
 
     game_state = redis_manager.redis_client.get("status_"+data['channel'])
@@ -378,6 +405,22 @@ def slack_game_badge():
     data['channel'] = request.form.get('channel_id')
     data['text'] = static.GAME_COMMAND_BADGE
     data['user'] = request.form.get('user_id')
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
 
     worker.delay(data)
 
@@ -397,11 +440,32 @@ def slack_game_badge():
 def slack_game_pvp():
     payload = request.get_data().decode()
     print(payload)
+    data = {}
 
     slackApi = util.init_slackapi(request.form.get('team_id'))
     teamLang = util.get_team_lang(request.form.get('team_id'))
 
     channelId = request.form.get('channel_id')
+    data['team_id'] = request.form.get('team_id')
+
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+
+    if channelId[0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
     text = request.form.get('text')
     text = text.replace('@', '')
 
@@ -428,10 +492,30 @@ def slack_game_pvp():
 @app.route('/slack/lang', methods = ['POST'])
 def slack_game_lang():
     payload = request.get_data().decode()
+    data = {}
     print(payload)
 
     slackApi = util.init_slackapi(request.form.get('team_id'))
-    teamLang = util.get_team_lang(request.form.get('team_id'))
+
+    data['team_id'] = request.form.get('team_id')
+    teamLang = util.get_team_lang(data['team_id'])
+
+    data['channel'] = request.form.get('channel_id')
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
 
     slackApi.chat.postMessage(
         {
@@ -480,9 +564,26 @@ def slack_game_lang():
 def slack_game_help():
     payload = request.get_data().decode()
     print(payload)
-
+    data = {}
     teamId = request.form.get('team_id')
     teamLang = util.get_team_lang(teamId)
+
+    data['channel'] = request.form.get('channel_id')
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
 
     response = Response(
         json.dumps(
@@ -504,6 +605,23 @@ def slack_game_kok():
     data['channel'] = request.form.get('channel_id')
     data['text'] = static.GAME_COMMAND_KOK
     data['user'] = request.form.get('user_id')
+
+    teamLang = util.get_team_lang(data['team_id'])
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
 
     teamId = request.form.get('team_id')
     teamLang = util.get_team_lang(teamId)
@@ -552,6 +670,23 @@ def slack_game_rank():
     data['text'] = static.GAME_COMMAND_RANK
     data['user'] = request.form.get('user_id')
 
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
     worker.delay(data)
 
 
@@ -576,6 +711,24 @@ def slack_game_myscore():
     data['text'] = static.GAME_COMMAND_MY_SCORE
     data['user'] = request.form.get('user_id')
 
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
     worker.delay(data)
 
 
@@ -599,6 +752,24 @@ def slack_game_score():
     data['channel'] = request.form.get('channel_id')
     data['text'] = static.GAME_COMMAND_SCORE
     data['user'] = request.form.get('user_id')
+    
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
 
     worker.delay(data)
 
@@ -623,6 +794,26 @@ def slack_game_exit():
     data['text'] = static.GAME_COMMAND_EXIT
     data['user'] = request.form.get('user_id')
 
+    data['team_id'] = request.form.get('team_id')
+    teamLang = util.get_team_lang(data['team_id'])
+
+
+
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
     worker.delay(data)
 
     response = Response(
@@ -643,6 +834,24 @@ def slack_send_review():
     
     teamId = request.form.get('team_id')
     teamLang = util.get_team_lang(teamId)
+
+    data = {}
+    data['channel'] = request.form.get('channel_id')
+
+    if data['channel'][0] == 'D':
+        response = Response(
+            json.dumps(
+                { 
+                    'response_type' : 'in_channel',                
+                    'text' : static.getText(static.CODE_TEXT_GUID_DM, teamLang),
+                    'as_user'   : 'false'
+                } 
+            )
+        )
+        response.headers['Content-type'] = 'application/json'        
+        return response
+
+
 
     response = Response(
         json.dumps(
@@ -715,6 +924,56 @@ def slack_event():
                     worker.delay(eventData)
     app.logger.info( json.dumps(response))
     return json.dumps(response)
+
+@app.route('/wordpress/problem', methods=['GET'])
+def wordpress_get_problem():
+
+    result = db_manager.engine.connect().execute(
+        "SELECT problem_id, problem_text, difficulty "
+        "FROM PROBLEM "
+        "WHERE validity = %s "
+        "and problem_language = %s",
+        (1, "kr")
+    )
+
+    rows = util.fetch_all_json(result)
+
+    problem_text = rows[int(random.random() * len(rows))]['problem_text']
+
+
+    response = Response(
+        json.dumps(
+            {
+                'problem_text': problem_text
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
+
+@app.route('/wordpress/demoResult', methods=['POST'])
+def wordpress_demo():
+
+
+    problem_text = request.form['problem_text']
+    answer_text = request.form['answer_text']
+    elapsed_time = float(request.form['elapsed_time'])
+
+    accuracy = round(util.get_accuracy(max([answer_text, problem_text], key=len), util.get_edit_distance(answer_text, problem_text)), 3)
+    speed = round(util.get_speed(answer_text, elapsed_time), 3)
+    score = util.get_score(speed, accuracy)
+
+    response = Response(
+        json.dumps(
+            {
+                'speed' : speed,
+                'accuracy' : accuracy,
+                'score' : score
+            }
+        )
+    )
+    response.headers['Content-type'] = 'application/json'
+    return response
 
 if __name__ == '__main__':
 #    ssl_context = ('../../SSL_key/last.crt', '../../SSL_key/ssoma.key')

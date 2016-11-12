@@ -191,7 +191,7 @@ def fetch_all_json(result):
       # print(len(result.keys()))
       # print(i)
       # print(data)
-      dic[result.keys()[i]]= data
+      dic[result.keys()[i]]= str(data)
       if i == len(row)-1:
         lis.append(dic)
 

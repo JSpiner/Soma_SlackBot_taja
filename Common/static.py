@@ -122,6 +122,7 @@ CODE_TEXT_GAME_REVIEW       = "code_game_review"
 CODE_TEXT_NEW_BADGE         = "code_new_badge"
 CODE_TEXT_HELP              = "code_help"
 CODE_TEXT_GUID_KOK          = "code_guid_kok"
+CODE_TEXT_GUID_DM          = "code_guid_dm"
 
 CODE_TEXT_MISSION_RESULT_REVERSE = "code_text_mission_result_reverse"
 CODE_TEXT_MISSION_RESULT_SECONDORY = "code_text_mission_result_secondory"

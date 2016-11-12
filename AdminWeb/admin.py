@@ -10,6 +10,7 @@ from flask import redirect, url_for
 from Common.manager import db_manager
 
 # from flask_cors import CORS, cross_origin
+from Common.slackapi import SlackApi
 
 from flask import Flask
 from flask import request
@@ -90,6 +91,35 @@ app.add_url_rule('/dashBoard/getActiveGraph', defaults={'types': 'getActiveGraph
 
 app.add_url_rule('/dashBoard/getTopTwenty', defaults={'types': 'getTopTwenty'},
                  view_func=dashboard_view, methods=['GET',])
+
+
+@app.route('/member/sendNotification',methods=['POST'])
+def sendNotification():
+    notiInfo = request.form['notiInfo']
+    try:
+        conn = db_manager.engine.connect()
+        trans = conn.begin()
+        result = conn.execute(
+            "select *from TEAM inner join USER on TEAM.team_id = USER.team_id"
+        )
+        trans.commit()
+        conn.close()    
+        
+        rows =util.fetch_all_json(result)
+        for row in rows:        
+            slackApi = SlackApi(row['team_access_token'])
+            slackBotApi = SlackApi(row['team_bot_access_token'])
+            slackBotApi.chat.postMessage(
+                {
+                    'channel' : row['user_id'],
+                    'as_user'   : 'true',
+                    'text' : notiInfo
+                }
+            ) 
+        return json.dumps({'success': True,'suc_cnt':len(rows)}), 200, {'ContentType': 'application/json'}
+
+    except Exception as e:        
+        return json.dumps({'success': False,'reason':str(e)}), 400, {'ContentType': 'application/json'}
 
 
 

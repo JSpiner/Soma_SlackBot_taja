@@ -38,6 +38,7 @@
         const GET_ACTIVE_GRAPH = "/dashBoard/getActiveGraph"
         const GET_TOPTWENTY= "/dashBoard/getTopTwenty"
         const GET_INACTIVE_GRAPH = "/dashBoard/getInActiveGraph"
+        const POST_SEND_NOTI = "/member/sendNotification"
                           
         //최초실행될떄 뿌려줘야할것들
         function initView(){
@@ -145,11 +146,43 @@
                   });
             }
 
+            var btn_noti_send = $('#btn_noti_send');
+            btn_noti_send.click(function(){
+                var btn_noti_text_area = $('#btn_noti_text_area');
+                // console.log('vlaeu =>'+btn_noti_text_area.val());
+                
+              if (confirm(btn_noti_text_area.val()+"\n위 공지를 전송하시겠습니까? (모든 유저에게 dm으로 전송됩니다.)") == true){    //확인
+                reqSendNoti(POST_SEND_NOTI,btn_noti_text_area.val());
+
+              }else{   //취소
+                  return;
+              }
 
 
-
-
+            });
         });
+
+        function reqSendNoti(url,notiInfo){
+          // console.log(url);
+          // console.log(notiInfo);
+
+          $.post(BASE_URL+url,
+          {
+            notiInfo : notiInfo
+          },
+          function(res){
+              console.log(res);
+              obj = JSON.parse(res);
+              console.log(obj.success);
+              if(obj.success){
+                  alert(obj.suc_cnt+'명에게 공지가 성공적으로 보내졌습니다.');
+              }else{
+                  alert('err:'+obj.reason);
+              }
+
+          });
+
+        }
         function reqGet(url,whoo,periodd,graphName){
           $.get(BASE_URL+url,
           {
@@ -181,6 +214,7 @@
           });
         }
 
+
         
         function reqGetTop(url){
           $.get(BASE_URL+url,
@@ -201,16 +235,7 @@
                 }
                 trHTML += '<tr role="row" class="'+strEO+'"><td>' + i + '</td><td>' + obj.data[i].user_name + '</td>'+'<td>' + obj.data[i].problem_text + '</td>'+'<td>' + obj.data[i].answer_text +'</td><td>' + obj.data[i].score + '</td>'+'</td><td>' + obj.data[i].speed + '</td>'+'</td><td>' + obj.data[i].accuracy + '</td>'+'</td><td>' + obj.data[i].elapsed_time + '</td>'+ '</tr>' ;
             });
-                // <tr>
-                //   <th>num</th>
-                //   <th>userName</th>
-                //   <th>problemText</th>
-                //   <th>answerText</th>
-                //   <th>score</th>
-                //   <th>speed</th>
-                //   <th>accuracy</th>
-                //   <th>elapsed_time</th>
-                // </tr>
+                
             $('#tableTop').append(trHTML);
 
               $('#tableTop').DataTable({
@@ -562,6 +587,25 @@
             <!-- /.box-body -->
           </div>
           <!-- /.box -->
+          <div class="row">
+            <div class="col-xs-12">
+              <div class="box">
+                <div class="box-header">
+                  <h3 class="box-title">Send All Notifications</h3>                 
+                </div>
+                  <div class="form-group">
+                    <textarea class="form-control" id="btn_noti_text_area" rows="3" placeholder="Enter ..."></textarea>
+
+                    <div class="box-footer">
+                      <button type="submit" class="btn btn-primary" id="btn_noti_send">Submit</button>
+                    </div>
+                  </div>             
+                <!-- /.box-body -->
+              </div>
+              <!-- /.box -->
+            </div>
+          </div>
+
 
 
 
