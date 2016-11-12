@@ -664,6 +664,11 @@ def slack_game_kok():
 def slack_game_rank():
     payload = request.get_data().decode()
     app.logger.info(payload)
+
+    
+    raise NotImplementedError
+
+
     data = {}
     data['team_id'] = request.form.get('team_id')
     data['channel'] = request.form.get('channel_id')
