@@ -10,6 +10,7 @@ from functools import wraps
 from Common.slackapi import SlackApi
 from Common.manager import db_manager
 import random
+from datetime import datetime
 
 
 # 팀별 SlackApi 객체 생성
@@ -191,7 +192,10 @@ def fetch_all_json(result):
       # print(len(result.keys()))
       # print(i)
       # print(data)
-      dic[result.keys()[i]]= str(data)
+      if type(data) == datetime:
+        dic[result.keys()[i]]= str(data)
+      else:
+        dic[result.keys()[i]]= data
       if i == len(row)-1:
         lis.append(dic)
 
