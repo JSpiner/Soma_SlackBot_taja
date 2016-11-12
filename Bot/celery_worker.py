@@ -270,10 +270,7 @@ def command_start(data, round = 0):
 
         if(int(redis_client.get(static.GAME_MISSION_NOTI_CODE+ channelId))==static.GAME_MISSION_SWAP):
             randomChar = mission_manager.mission_swap_get_Random_Chosung(problem_text,channelId,teamLang)
-            sendMessage(slackApi, channelId, mission_manager.mission_swap_get_options_centence(randomChar,channelId,teamLang))
-        
-
-
+            sendMessage(slackApi, channelId, mission_manager.mission_swap_get_options_centence(randomChar,channelId,teamLang))    
 
     titleResponse = sendMessage(slackApi, channelId, util.get_start_centence(teamLang))
     # sendMessage(slackApi, channelId, util.get_start_centence(teamLang))
