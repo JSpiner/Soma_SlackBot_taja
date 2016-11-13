@@ -1295,7 +1295,8 @@ def game_end(slackApi, data, round = 0):
                 "LIMIT %s "
                 ") AS B "
                 ") "
-                "GROUP BY A.user_id",
+                "GROUP BY A.user_id "
+                "ORDER BY score DESC ,
                 (channelId, round)
             )
             rows =util.fetch_all_json(result)
@@ -1373,15 +1374,6 @@ def game_end(slackApi, data, round = 0):
             }
         )
         redis_client.set(static.GAME_MANAGER_PLAY_COUNTER + channelId, str(game_cnt+1))
-        
-    
-		
-	
-
-
-        
-
-
 
 
 def sendMessage(slackApi, channel, text):
