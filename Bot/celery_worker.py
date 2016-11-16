@@ -1296,11 +1296,11 @@ def game_end(slackApi, data, round = 0):
                 ") AS B "
                 ") "
                 "GROUP BY A.user_id "
-                "ORDER BY score DESC ,
+                "ORDER BY score DESC "
                 (channelId, round)
             )
             rows =util.fetch_all_json(result)
-
+            print('round query result : ' + str(rows))
 
             result_string = ""
             rank = 1
@@ -1331,7 +1331,7 @@ def game_end(slackApi, data, round = 0):
 
             sendResult = str(result_string)
             logger_celery.info(channelId)
-            
+            print("round result : " +str(sendResult))
             slackApi.chat.postMessage(
                 {
                     "channel" : channelId,
