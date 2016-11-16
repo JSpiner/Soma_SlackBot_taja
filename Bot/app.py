@@ -98,6 +98,18 @@ def home():
     app.logger.info('home')
     return html
 
+@app.route('/surfinger', methods=['GET', 'POST'])
+def slack_landing():
+    return 'hi'
+
+@app.route('/privacy', methods=['GET', 'POST'])
+def slack_policy():
+    return 'hi'
+
+@app.route('/review', methods=['GET', 'POST'])
+def slack_review():
+    return 'hi'
+
 @app.route('/slack/event_btn', methods=['POST'])
 def slack_event_btn():
     payload = json.loads(request.form.get('payload'))
