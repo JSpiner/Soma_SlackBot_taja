@@ -1274,7 +1274,10 @@ def game_end(slackApi, data, round = 0):
     if data['mode'] == "kok":
         print("start next round")
         start_kok(data, round+1)
+    logger_celery.info("check mode")
     if data['mode'] == "round":
+        logger_celery.info("check round num" + str(round))
+        print("check round num" + data['round'])
         if round == int(data['round']):
             print("end")
             
@@ -1296,11 +1299,11 @@ def game_end(slackApi, data, round = 0):
                 ") AS B "
                 ") "
                 "GROUP BY A.user_id "
-                "ORDER BY score DESC "
+                "ORDER BY score DESC ",
                 (channelId, round)
             )
             rows =util.fetch_all_json(result)
-            print('round query result : ' + str(rows))
+            logger_celery.info('round query result : ' + str(rows))
 
             result_string = ""
             rank = 1
@@ -1331,7 +1334,7 @@ def game_end(slackApi, data, round = 0):
 
             sendResult = str(result_string)
             logger_celery.info(channelId)
-            print("round result : " +str(sendResult))
+            logger_celery.info("round result : " +str(sendResult))
             slackApi.chat.postMessage(
                 {
                     "channel" : channelId,
