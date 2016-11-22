@@ -4,7 +4,7 @@
 
 **Surfinger** is Slack based keyboard typing game bot 
 
-You can install our app at [here](https://ssoma.xyz:20000)
+You can install our app at [here](https://surfinger.xyz)
 
 ![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
 
@@ -15,6 +15,9 @@ get some advice about bot
 
 ### /start 
 you can start typing game alone or together in channel.
+
+### /kok 
+you can start survival game mode alone or together in channel.
 
 ### /score
 you can check your score 
