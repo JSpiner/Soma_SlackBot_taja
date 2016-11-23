@@ -4,7 +4,7 @@
 
 **Surfinger** is Slack based keyboard typing game bot 
 
-You can install our app at [here](https://surfinger.xyz)
+You can install our app at [here](http://surfinger.xyz)
 
 ![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
 
