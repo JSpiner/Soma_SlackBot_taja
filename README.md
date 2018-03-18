@@ -4,11 +4,11 @@
 
 **Surfinger** is Slack based keyboard typing game bot 
 
-You can install our app at [here](http://surfinger.xyz)
+~~You can install our app at [here](http://surfinger.xyz)~~
+Surfinger is deprecated.
 
 ![slackbutton](https://platform.slack-edge.com/img/add_to_slack.png)  
-
-![game](https://www.surfinger.xyz:5014/wordpress/wp-content/uploads/2015/01/start-1.gif)
+[![Video Label](http://img.youtube.com/vi/5QxsR8_w66I/0.jpg)](https://youtu.be/5QxsR8_w66I?t=0s) 
 
 ## Slash Command
 
